@@ -340,3 +340,23 @@ for key, meta in AOIS.items():
 
 (out / "aois.json").write_text(json.dumps([{"key": k, "name": m["name"]} for k, m in AOIS.items()],
                                           ensure_ascii=False))
+
+# All regions month by month for the map (value and anomaly per region).
+REG_MONTHS = MONTHS + RECENT + [PARTIAL]
+reg_out = {"months": REG_MONTHS, "regions": {}}
+for r in REGIONS:
+    rows = combine([r])
+    cal = pd.DataFrame(rows)
+    cal["m"] = cal["month"].str[5:].astype(int)
+    hist = cal[cal.status.isin(["observed", "estimated"]) & (cal.month <= "2026-06")]
+    v, z = [], []
+    for rec in rows:
+        v.append(None if rec["value"] is None else round(rec["value"], 1))
+        if rec["value"] is None or rec["status"] == "partial":
+            z.append(None)
+        else:
+            h = hist[(hist.m == int(rec["month"][5:])) & (hist.month != rec["month"])]["value"].values
+            z.append(anomaly(rec["value"], h)[0])
+    reg_out["regions"][str(r)] = {"name": REGIONS[r], "v": v, "z": z, "s": [rec["status"][0] for rec in rows]}
+(out / "regions_monthly.json").write_text(json.dumps(reg_out, ensure_ascii=False, separators=(",", ":")))
+

@@ -15,6 +15,11 @@ const I18N = {
     controls: "Controls", area: "Area", rows: "Rows", opt_season: "Fire season (Jul–Jun)", opt_year: "Calendar year (Jan–Dec)",
     mode_h: "Harmonized", mode_r: "Raw (no harmonization)", csv: "Download CSV",
     cal_h: "Burning activity calendar",
+    map_h: "Chile, region by region", mm_z: "Anomaly", mm_v: "Hotspots",
+    map_sub: "Each region against its own normal for that month (robust z on the harmonized series). Press ▶ to watch 26 years of fire seasons; click a region to open it.",
+    north: "◂ North (Arica)", south: "South (Magallanes) ▸",
+    mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data or withheld",
+    mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
     season_h: "This season so far vs every past season",
     seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, in Suomi NPP-equivalent units, on a log scale. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
     seasonExcl: (l) => ` Atacama desert regions (${l}) are left out of both sides, because their recent near real-time data are withheld.`,
@@ -97,6 +102,11 @@ const I18N = {
     controls: "Controles", area: "Área", rows: "Filas", opt_season: "Temporada de incendios (jul–jun)", opt_year: "Año calendario (ene–dic)",
     mode_h: "Armonizado", mode_r: "Crudo (sin armonizar)", csv: "Descargar CSV",
     cal_h: "Calendario de actividad de quemas",
+    map_h: "Chile, región por región", mm_z: "Anomalía", mm_v: "Focos de calor",
+    map_sub: "Cada región frente a su propio normal para ese mes (z robusto sobre la serie armonizada). Presiona ▶ para ver 26 años de temporadas de incendios; haz clic en una región para abrirla.",
+    north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
+    mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos o retenido",
+    mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
     season_h: "Esta temporada hasta ahora frente a todas las anteriores",
     seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en unidades equivalentes a Suomi NPP, en escala logarítmica. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
     seasonExcl: (l) => ` Las regiones del desierto de Atacama (${l}) quedan fuera de ambos lados, porque sus datos recientes casi en tiempo real están retenidos.`,
@@ -442,6 +452,77 @@ function renderStatus() {
   }
 }
 
+// ---------- map of Chile ----------
+// Diverging scale for the robust z: blue below normal, dark at normal, orange to gold above.
+const ZSTOPS = [[-3, "#3d9bff"], [-1.5, "#1f4f8a"], [0, "#17284c"], [1.5, "#9a4f2c"], [3, "#ff8a3d"], [4.5, "#ffe08a"]].map(([z, c]) => [z, hex2rgb(c)]);
+function zcol(z) {
+  if (z == null) return "url(#mhatch)";
+  z = Math.max(-3, Math.min(4.5, z));
+  let i = 0; while (i < ZSTOPS.length - 2 && z > ZSTOPS[i + 1][0]) i++;
+  const [z0, a] = ZSTOPS[i], [z1, b] = ZSTOPS[i + 1], f = (z - z0) / (z1 - z0);
+  return `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * f)).join(",")})`;
+}
+const map = { geo: null, reg: null, i: 0, mode: "z", timer: null, vmax: 1 };
+
+async function initMap() {
+  [map.geo, map.reg] = await Promise.all([fetch("data/geo/regions_svg.json").then((r) => r.json()), fetch("data/regions_monthly.json").then((r) => r.json())]);
+  map.vmax = Math.max(...Object.values(map.reg.regions).flatMap((r) => r.v.filter((x) => x != null)));
+  const M = map.reg.months;
+  map.i = M.lastIndexOf("2026-10");
+  $("map-slider").max = M.length - 1; $("map-slider").value = map.i;
+  const w = map.geo.width;
+  $("map").innerHTML = `<svg viewBox="0 0 1000 ${w}" role="img">
+    <defs><pattern id="mhatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="${NO_DATA}"/><line x1="0" y1="0" x2="0" y2="4" stroke="#2a3d63" stroke-width="1.5"/></pattern></defs>
+    <g transform="translate(0,${w}) rotate(-90)">${Object.entries(map.geo.regions).map(([k, d]) => `<path class="reg" data-r="${k}" d="${d}"/>`).join("")}</g></svg>`;
+  $("map").querySelectorAll(".reg").forEach((el) => {
+    el.addEventListener("mousemove", (e) => mapTip(e, el.dataset.r));
+    el.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
+    el.addEventListener("click", () => { $("tip").style.display = "none"; selectAoi(`r${el.dataset.r}`); });
+  });
+  paintMap();
+}
+
+function paintMap() {
+  if (!map.reg) return;
+  const T = L(), M = map.reg.months, mo = M[map.i], [y, m] = mo.split("-");
+  $("map-month").textContent = `${T.monthsLong[+m - 1][0].toUpperCase() + T.monthsLong[+m - 1].slice(1)} ${y}`;
+  $("map").querySelectorAll(".reg").forEach((el) => {
+    const R = map.reg.regions[el.dataset.r];
+    el.style.fill = map.mode === "z" ? zcol(R.z[map.i]) : (colour(R.v[map.i], map.vmax) || "url(#mhatch)");
+    el.classList.toggle("sel", state.aoi === `r${el.dataset.r}`);
+  });
+  const grad = (stops) => `linear-gradient(90deg,${stops.join(",")})`;
+  $("map-legend").innerHTML = (map.mode === "z"
+    ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad(["#3d9bff", "#1f4f8a", "#17284c", "#9a4f2c", "#ff8a3d", "#ffe08a"])}"></i> ${T.mlgZ[2]}</span>`
+    : `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgV(fmt(map.vmax))}</span>`)
+    + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>`;
+  document.querySelectorAll("[data-mm]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mm === map.mode));
+}
+
+function mapTip(e, r) {
+  const T = L(), R = map.reg.regions[r], mo = map.reg.months[map.i], [y, m] = mo.split("-");
+  const v = R.v[map.i], z = R.z[map.i];
+  $("tip").innerHTML = `<b>${R.name}</b><br>${T.monthsLong[+m - 1]} ${y}<br>${v == null ? T.mlgNo : T.mTip(fmt(v), z == null ? null : dec(z))}`;
+  $("tip").style.display = "block";
+  $("tip").style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
+  $("tip").style.top = Math.min(e.clientY + 14, innerHeight - $("tip").offsetHeight - 8) + "px";
+}
+
+function togglePlay() {
+  if (map.timer) { clearInterval(map.timer); map.timer = null; $("play").textContent = "▶"; return; }
+  if (map.i >= map.reg.months.length - 1) map.i = 0;
+  $("play").textContent = "❚❚";
+  map.timer = setInterval(() => {
+    map.i++; $("map-slider").value = map.i; paintMap();
+    if (map.i >= map.reg.months.length - 1) togglePlay();
+  }, REDUCED ? 400 : 140);
+}
+
+function selectAoi(key) {
+  state.aoi = key; $("aoi").value = key; $("day-panel").hidden = true; load();
+  document.querySelector(".headline").closest(".card").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
+}
+
 // ---------- this season vs past seasons ----------
 function renderSeason() {
   const T = L(), S = state.data.season_to_date, card = $("season").closest(".card");
@@ -624,7 +705,7 @@ function downloadCSV() {
 
 function render(animate) {
   state.animNext = animate; state.chartAnim = animate;
-  renderStatus(); renderSeason(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
+  renderStatus(); paintMap(); renderSeason(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
   state.animNext = false; state.chartAnim = false;
 }
 
@@ -647,9 +728,13 @@ async function init() {
   state.aois = await (await fetch("data/aois.json")).json();
   applyStatic();
   load();
+  initMap();
 }
 
 $("aoi").addEventListener("change", (e) => { state.aoi = e.target.value; $("day-panel").hidden = true; load(); });
+$("play").addEventListener("click", togglePlay);
+$("map-slider").addEventListener("input", (e) => { map.i = +e.target.value; paintMap(); });
+document.querySelectorAll("[data-mm]").forEach((b) => b.addEventListener("click", () => { map.mode = b.dataset.mm; paintMap(); }));
 $("rows").addEventListener("change", (e) => { state.rows = e.target.value; renderCalendar(true); });
 $("mode-h").addEventListener("click", () => setMode("harmonized"));
 $("mode-r").addEventListener("click", () => setMode("raw"));
