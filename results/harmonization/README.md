@@ -1,6 +1,6 @@
 # Harmonization v1: quantile mapping to Suomi NPP (Biobío)
 
-Produced by `pipeline/06_quantile_mapping_to_snpp.py` (one run per source sensor: `Aqua`, `Terra`).
+Produced by `pipeline/06_quantile_mapping_to_snpp.py` or its R twin `pipeline/06_quantile_mapping_to_snpp.R` (same results; only the bootstrap intervals differ slightly because of the random generator). One run per source sensor: `Aqua`, `Terra`.
 
 **Question.** If we only had a MODIS sensor, how well could we reconstruct the monthly Suomi NPP hotspot count?
 
