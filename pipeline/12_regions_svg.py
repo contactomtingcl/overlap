@@ -61,7 +61,8 @@ for reg, es in edges.items():
         paths.append(P)
     res[reg] = paths
 W = 1000.0 / (maxy - miny)  # scale so height = 1000
-geo = {"width": round((maxx - minx) * W, 1), "height": 1000, "regions": {}}
+geo = {"width": round((maxx - minx) * W, 1), "height": 1000, "regions": {},
+       "proj": {"lat0": -36, "minx": minx, "miny": miny, "scale": W}}
 for reg, paths in res.items():
     geo["regions"][str(reg)] = "".join("M" + "L".join(f"{(x-minx)*W:.1f},{(y-miny)*W:.1f}" for x, y in P) + "Z" for P in paths)
 json.dump(geo, open(out, "w"), separators=(",", ":"))

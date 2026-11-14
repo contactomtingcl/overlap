@@ -20,8 +20,13 @@ const I18N = {
     cal_h: "Burning activity calendar",
     cvd: "◐ Colour-blind safe", gis_lead: "Download for GIS (QGIS, ArcGIS):",
     gis_note: "Region polygons (WGS84, BCN boundaries, referential and simplified) with the latest month, plus a monthly table for every region since 2000. In QGIS, join regions_monthly to regions on codregion; month is a date, so the Temporal Controller can animate it.",
+    back: "← Chile", whereH: (r) => `Where in ${r}`,
+    whereNote: (sen) => `Raw ${sen} detections per commune, not harmonized: they show where the hotspots fall, not totals to compare across years.`,
+    whereNone: "No hotspots detected in any commune this month.", whereWithheld: "Withheld this month (near real-time data over the Atacama desert).",
+    cTip: (v, sh) => `${v} hotspots${sh == null ? "" : ` · ${sh} of the region`}`,
+    map_hint: "Click a region to open it and zoom into its communes.",
     map_h: "Chile, region by region", mm_z: "Anomaly", mm_v: "Hotspots",
-    map_sub: "Each region against its own normal for that month (robust z on the harmonized series). Press ▶ to watch 26 years of fire seasons; click a region to open it.",
+    map_sub: "Each region against its own normal for that month (robust z on the harmonized series). Press ▶ to watch 26 years of fire seasons.",
     north: "◂ North (Arica)", south: "South (Magallanes) ▸",
     mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data or withheld",
     mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
@@ -109,8 +114,13 @@ const I18N = {
     cal_h: "Calendario de actividad de quemas",
     cvd: "◐ Paleta para daltonismo", gis_lead: "Descarga para SIG (QGIS, ArcGIS):",
     gis_note: "Polígonos de las regiones (WGS84, límites de la BCN, referenciales y simplificados) con el último mes, más una tabla mensual de cada región desde 2000. En QGIS, une regions_monthly con regions por codregion; month es una fecha, así que el Controlador temporal puede animarla.",
+    back: "← Chile", whereH: (r) => `Dónde, en ${r}`,
+    whereNote: (sen) => `Detecciones crudas de ${sen} por comuna, sin armonizar: muestran dónde caen los focos, no totales para comparar entre años.`,
+    whereNone: "No se detectaron focos en ninguna comuna este mes.", whereWithheld: "Retenido este mes (datos casi en tiempo real sobre el desierto de Atacama).",
+    cTip: (v, sh) => `${v} focos de calor${sh == null ? "" : ` · ${sh} de la región`}`,
+    map_hint: "Haz clic en una región para abrirla y acercarte a sus comunas.",
     map_h: "Chile, región por región", mm_z: "Anomalía", mm_v: "Focos de calor",
-    map_sub: "Cada región frente a su propio normal para ese mes (z robusto sobre la serie armonizada). Presiona ▶ para ver 26 años de temporadas de incendios; haz clic en una región para abrirla.",
+    map_sub: "Cada región frente a su propio normal para ese mes (z robusto sobre la serie armonizada). Presiona ▶ para ver 26 años de temporadas de incendios.",
     north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
     mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos o retenido",
     mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
@@ -485,7 +495,9 @@ function zcol(z) {
   const [z0, a] = ZSTOPS[i], [z1, b] = ZSTOPS[i + 1], f = (z - z0) / (z1 - z0);
   return `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * f)).join(",")})`;
 }
-const map = { geo: null, reg: null, i: 0, mode: "z", timer: null, vmax: 1 };
+const map = { geo: null, reg: null, i: 0, mode: "z", timer: null, vmax: 1, zoom: null, vb: null, com: {}, anim: null };
+const SENSOR_NAME = { Terra: "MODIS Terra", Aqua: "MODIS Aqua", SNPP: "VIIRS Suomi NPP", NOAA20: "VIIRS NOAA-20" };
+const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 async function initMap() {
   [map.geo, map.reg] = await Promise.all([fetch(DATA("geo/regions_svg.json")).then((r) => r.json()), fetch(DATA("regions_monthly.json")).then((r) => r.json())]);
@@ -496,13 +508,109 @@ async function initMap() {
   const w = map.geo.width;
   $("map").innerHTML = `<svg viewBox="0 0 1000 ${w}" role="img">
     <defs><pattern id="mhatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="${NO_DATA}"/><line x1="0" y1="0" x2="0" y2="4" stroke="#2a3d63" stroke-width="1.5"/></pattern></defs>
-    <g transform="translate(0,${w}) rotate(-90)">${Object.entries(map.geo.regions).map(([k, d]) => `<path class="reg" data-r="${k}" d="${d}"/>`).join("")}</g></svg>`;
+    <g transform="translate(0,${w}) rotate(-90)"><g id="mregs">${Object.entries(map.geo.regions).map(([k, d]) => `<path class="reg" data-r="${k}" d="${d}" vector-effect="non-scaling-stroke"/>`).join("")}</g><g id="mcoms"></g></g></svg>
+    <button type="button" id="map-back" class="mapback" hidden></button>`;
+  map.vb = [0, 0, 1000, w];
+  $("map-back").addEventListener("click", () => zoomOut());
   $("map").querySelectorAll(".reg").forEach((el) => {
     el.addEventListener("mousemove", (e) => mapTip(e, el.dataset.r));
     el.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
-    el.addEventListener("click", () => { $("tip").style.display = "none"; selectAoi(`r${el.dataset.r}`); });
+    el.addEventListener("click", () => { $("tip").style.display = "none"; selectAoi(`r${el.dataset.r}`, false); });
   });
   paintMap();
+}
+
+// ---- zoom into a region and its communes ----
+function setViewBox(vb) { map.vb = vb; $("map").querySelector("svg").setAttribute("viewBox", vb.map((v) => v.toFixed(2)).join(" ")); }
+function flyTo(target, height, instant) {
+  const svg = $("map").querySelector("svg"), from = map.vb.slice(), t0 = performance.now(), dur = instant || REDUCED ? 0 : 1100;
+  svg.style.height = height + "px";
+  cancelAnimationFrame(map.anim);
+  const step = (t) => {
+    const k = dur ? Math.min(1, (t - t0) / dur) : 1, e = ease(k);
+    setViewBox(from.map((v, i) => v + (target[i] - v) * e));
+    if (k < 1) map.anim = requestAnimationFrame(step);
+  };
+  map.anim = requestAnimationFrame(step);
+}
+
+async function zoomTo(r, instant) {
+  const w = map.geo.width, box = $("map").clientWidth || 1000;
+  const el = $("map").querySelector(`.reg[data-r="${r}"]`);
+  if (!el) return;
+  map.zoom = r;
+  const bb = el.getBBox(); // in un-rotated map units; the map is drawn rotated (north to the left)
+  let x1 = bb.y, x2 = bb.y + bb.height, y1 = w - (bb.x + bb.width), y2 = w - bb.x;
+  const aspect = box < 620 ? 1.15 : 2.1, pad = 0.08;
+  let bw = (x2 - x1) * (1 + 2 * pad), bh = (y2 - y1) * (1 + 2 * pad);
+  if (bw / bh > aspect) bh = bw / aspect; else bw = bh * aspect;
+  const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+  flyTo([cx - bw / 2, cy - bh / 2, bw, bh], Math.min(560, box / aspect), instant);
+  $("map").querySelectorAll(".reg").forEach((p) => p.classList.toggle("dim", p.dataset.r !== r));
+  $("map-back").hidden = false; $("map-back").textContent = L().back;
+  document.querySelector(".ns").hidden = true;
+  if (!map.com[r]) {
+    const [geo, data] = await Promise.all([fetch(DATA(`geo/comunas/r${r}.json`)).then((x) => x.json()), fetch(DATA(`comunas_monthly/r${r}.json`)).then((x) => x.json())]);
+    let cmax = 1; Object.values(data.v).forEach((o) => Object.values(o).forEach((n) => { if (n > cmax) cmax = n; }));
+    map.com[r] = { geo, data, cmax };
+  }
+  if (map.zoom !== r) return;
+  const C = map.com[r];
+  $("mcoms").innerHTML = Object.entries(C.geo.paths).map(([cod, d], i) =>
+    `<path class="com${instant || REDUCED ? "" : " draw"}" data-c="${cod}" d="${d}" pathLength="1" vector-effect="non-scaling-stroke" style="animation-delay:${400 + i * 25}ms"/>`).join("");
+  $("mcoms").querySelectorAll(".com").forEach((p) => {
+    p.addEventListener("mousemove", (e) => comTip(e, r, p.dataset.c));
+    p.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
+    p.addEventListener("click", () => { if (state.aoi !== `r${r}`) selectAoi(`r${r}`, false); });
+  });
+  paintMap();
+}
+
+function zoomOut() {
+  map.zoom = null;
+  $("mcoms").innerHTML = "";
+  $("map").querySelectorAll(".reg").forEach((p) => p.classList.remove("dim"));
+  $("map-back").hidden = true;
+  document.querySelector(".ns").hidden = false;
+  const box = $("map").clientWidth || 1000;
+  flyTo([0, 0, 1000, map.geo.width], box * map.geo.width / 1000);
+  $("map-side").innerHTML = "";
+}
+
+function comValue(r, cod) {
+  const C = map.com[r];
+  if (C.data.withheld.includes(map.i)) return undefined;
+  return (C.data.v[cod] && C.data.v[cod][map.i]) || 0;
+}
+
+function comTip(e, r, cod) {
+  const T = L(), C = map.com[r], v = comValue(r, cod);
+  const tot = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(r, c) || 0), 0);
+  const mo = map.reg.months[map.i], [y, m] = mo.split("-");
+  $("tip").innerHTML = `<b>${C.geo.names[cod]}</b><br>${T.monthsLong[+m - 1]} ${y} · ${SENSOR_NAME[C.data.sensor[map.i]]}<br>`
+    + (v === undefined ? T.whereWithheld : T.cTip(fmt(v), tot ? `${Math.round((100 * v) / tot)}${state.lang === "es" ? " %" : "%"}` : null));
+  $("tip").style.display = "block";
+  $("tip").style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
+  $("tip").style.top = Math.min(e.clientY + 14, innerHeight - $("tip").offsetHeight - 8) + "px";
+}
+
+function paintComunas() {
+  const r = map.zoom, C = r && map.com[r];
+  if (!C) { $("map-side").innerHTML = ""; return; }
+  const T = L();
+  const vals = Object.keys(C.geo.paths).map((cod) => [cod, comValue(r, cod)]);
+  $("mcoms").querySelectorAll(".com").forEach((p) => {
+    const v = comValue(r, p.dataset.c);
+    p.style.fill = v === undefined ? "url(#mhatch)" : v === 0 ? "#0f1f3d" : colour(v, C.cmax);
+  });
+  const name = map.reg.regions[r].name, sen = SENSOR_NAME[C.data.sensor[map.i]];
+  let body;
+  if (vals.some(([, v]) => v === undefined)) body = `<p class="sub">${T.whereWithheld}</p>`;
+  else {
+    const top = vals.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6), max = top.length ? top[0][1] : 1;
+    body = top.length ? `<div class="bars">${top.map(([cod, v]) => `<div class="bar"><span>${C.geo.names[cod]}</span><i style="width:${Math.max(4, (100 * v) / max)}%;background:${colour(v, C.cmax)}"></i><b>${fmt(v)}</b></div>`).join("")}</div>` : `<p class="sub">${T.whereNone}</p>`;
+  }
+  $("map-side").innerHTML = `<h3>${T.whereH(name)}</h3>${body}<p class="sub" style="margin:8px 0 0">${T.whereNote(sen)}</p>`;
 }
 
 function paintMap() {
@@ -514,6 +622,7 @@ function paintMap() {
     el.style.fill = map.mode === "z" ? zcol(R.z[map.i]) : (colour(R.v[map.i], map.vmax) || "url(#mhatch)");
     el.classList.toggle("sel", state.aoi === `r${el.dataset.r}`);
   });
+  paintComunas();
   const grad = (stops) => `linear-gradient(90deg,${stops.join(",")})`;
   $("map-legend").innerHTML = (map.mode === "z"
     ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad((state.cvd ? ZPAL.cvd : ZPAL.brand).map((x) => x[1]))}"></i> ${T.mlgZ[2]}</span>`
@@ -541,9 +650,10 @@ function togglePlay() {
   }, REDUCED ? 400 : 140);
 }
 
-function selectAoi(key) {
+function selectAoi(key, scroll = true) {
   state.aoi = key; $("aoi").value = key; $("day-panel").hidden = true; load();
-  document.querySelector(".headline").closest(".card").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
+  if (map.geo) { if (key.startsWith("r")) zoomTo(key.slice(1)); else if (map.zoom) zoomOut(); }
+  if (scroll) document.querySelector(".headline").closest(".card").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
 }
 
 // ---------- this season vs past seasons ----------
@@ -757,7 +867,7 @@ async function init() {
   initMap();
 }
 
-$("aoi").addEventListener("change", (e) => { state.aoi = e.target.value; $("day-panel").hidden = true; load(); });
+$("aoi").addEventListener("change", (e) => selectAoi(e.target.value, false));
 $("play").addEventListener("click", togglePlay);
 $("cvd").addEventListener("click", () => { setPalette(!state.cvd); if (state.data) render(false); });
 $("map-slider").addEventListener("input", (e) => { map.i = +e.target.value; paintMap(); });
@@ -768,5 +878,5 @@ $("mode-r").addEventListener("click", () => setMode("raw"));
 $("csv").addEventListener("click", downloadCSV);
 document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
 let rz;
-addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderJump(); } }, 150); });
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderJump(); if (map.zoom) zoomTo(map.zoom, true); else if (map.geo) flyTo([0, 0, 1000, map.geo.width], $("map").clientWidth * map.geo.width / 1000, true); } }, 150); });
 init();

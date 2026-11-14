@@ -141,13 +141,31 @@
   .playbtn:hover { box-shadow:0 0 34px rgba(234,255,40,.75); }
   .mlabel { font-family:var(--head); font-size:24px; font-weight:600; min-width:170px; letter-spacing:-.01em; }
   #map-slider { flex:1; accent-color:var(--lime); min-width:0; }
-  #map svg { display:block; width:100%; height:auto; overflow:visible; }
+  .mapwrap { display:grid; grid-template-columns:minmax(0,1fr); gap:14px; }
+  #map { position:relative; }
+  #map svg { display:block; width:100%; height:auto; transition:height 1.1s cubic-bezier(.65,0,.35,1); }
+  #map-side:empty { display:none; }
+  #map-side { animation:rise .7s cubic-bezier(.16,1,.3,1) both; }
+  #map-side h3 { font-family:var(--head); font-size:16px; margin:2px 0 10px; }
+  .bars { display:grid; gap:7px 28px; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); }
+  .bar { display:grid; grid-template-columns:110px 1fr auto; gap:8px; align-items:center; font-size:12.5px; }
+  .bar span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#c9d6ea; }
+  .bar i { height:9px; border-radius:5px; transition:width .25s; box-shadow:0 0 10px rgba(234,255,40,.25); }
+  .bar b { font-variant-numeric:tabular-nums; }
+  .reg { transition:fill .25s linear, opacity .8s ease; }
+  .reg.dim { opacity:.14; }
+  .com { stroke:rgba(234,255,40,.55); stroke-width:.7; transition:fill .25s linear; cursor:crosshair; }
+  .com:hover { stroke:#fff; stroke-width:1.6; }
+  .com.draw { stroke-dasharray:1; stroke-dashoffset:1; fill-opacity:0; animation:draw 1.2s cubic-bezier(.65,0,.35,1) forwards; }
+  @keyframes draw { 60% { fill-opacity:0; } to { stroke-dashoffset:0; fill-opacity:1; } }
+  .mapback { position:absolute; left:8px; top:8px; font-size:13px; padding:6px 12px; border-radius:999px; background:rgba(13,31,69,.85); backdrop-filter:blur(6px); }
   .reg { cursor:pointer; stroke:#071536; stroke-width:.6; transition:fill .25s linear; }
   .reg:hover { stroke:#fff; stroke-width:1.2; }
   .reg.sel { stroke:var(--lime); stroke-width:1.6; filter:drop-shadow(0 0 4px rgba(234,255,40,.8)); }
   #cvd[aria-pressed="true"] { background:var(--blue); color:#fff; border-color:var(--blue); }
   .gis { color:var(--quiet); font-size:13px; margin:12px 0 0; }
   .gis a { color:var(--lime); font-weight:600; }
+  .ns[hidden] { display:none; }
   .ns { display:flex; justify-content:space-between; color:var(--quiet); font-size:12px; margin-top:4px; }
   @media (max-width:620px) { .mlabel { font-size:18px; min-width:120px; } .playbtn { width:40px; height:40px; } }
   .bigfig { display:flex; flex-wrap:wrap; gap:10px 28px; margin:4px 0 10px; }
@@ -232,11 +250,11 @@
   <section class="card" id="map-card">
     <div class="maphead"><h2 data-i18n="map_h"></h2>
       <div class="seg" role="group"><button type="button" data-mm="z" aria-pressed="true" data-i18n="mm_z"></button><button type="button" data-mm="v" aria-pressed="false" data-i18n="mm_v"></button></div></div>
-    <p class="sub" data-i18n="map_sub"></p>
+    <p class="sub"><span data-i18n="map_sub"></span> <span data-i18n="map_hint"></span></p>
     <div class="player"><button type="button" id="play" class="playbtn" aria-label="Play">▶</button>
       <div class="mlabel" id="map-month"></div>
       <input type="range" id="map-slider" min="0" max="0" value="0" aria-label="Month"></div>
-    <div id="map"></div>
+    <div class="mapwrap"><div id="map"></div><div id="map-side"></div></div>
     <div class="ns"><span data-i18n="north"></span><span data-i18n="south"></span></div>
     <div class="legend" id="map-legend"></div>
     <p class="gis"><span data-i18n="gis_lead"></span> <a href="data/gis/overlap_chile_regions.gpkg" download>GeoPackage (.gpkg)</a> · <a href="data/gis/overlap_chile_regions.geojson" download>GeoJSON</a><br><small data-i18n="gis_note"></small></p>
@@ -289,6 +307,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261114-1750"></script>
+<script src="app.js?v=20261114-1820"></script>
 </body>
 </html>
