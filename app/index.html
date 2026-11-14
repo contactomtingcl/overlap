@@ -102,6 +102,22 @@
   #aoi { width:300px; }
   button { cursor:pointer; transition:border-color .2s, background .2s, color .2s; }
   button:hover, select:hover { border-color:rgba(234,255,40,.5); }
+  .cta { position:relative; display:inline-flex; align-items:center; gap:8px; margin:0 0 20px; padding:11px 18px; border-radius:999px;
+    background:var(--lime); color:#0a1430; font-weight:700; text-decoration:none; box-shadow:0 0 26px rgba(234,255,40,.45);
+    animation:rise .9s cubic-bezier(.16,1,.3,1) .55s both; transition:box-shadow .2s, transform .2s; }
+  .cta:hover { box-shadow:0 0 40px rgba(234,255,40,.75); transform:translateY(-1px); }
+  .chnav { display:flex; gap:4px; flex-wrap:wrap; }
+  .chnav a { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:13px; color:var(--quiet); text-decoration:none; }
+  .chnav a b { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; background:#1a2d55; color:var(--ink); font-size:11px; }
+  .chnav a:hover { color:var(--ink); background:#0d1f45; }
+  .chnav a.hot { color:var(--lime); } .chnav a.hot b { background:var(--lime); color:#0a1430; }
+  .chapter { scroll-margin-top:90px; }
+  .muted { color:var(--quiet); font-weight:400; }
+  .com.csel { stroke-dasharray:none; stroke:#eaff28; stroke-width:2.2; filter:drop-shadow(0 0 5px rgba(234,255,40,.8)); }
+  .com.cdim { opacity:.28; }
+  .reg.dim { opacity:.08; }
+  .reg.under { fill-opacity:0 !important; stroke:none !important; filter:none !important; pointer-events:none; }
+  #kchart svg { display:block; width:100%; height:auto; }
   .ibtn { display:inline-flex; align-items:center; gap:7px; }
   .ibtn svg { flex:none; }
   .calctl { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; }
@@ -176,7 +192,7 @@
   .bar i { height:9px; border-radius:5px; transition:width .25s; box-shadow:0 0 10px rgba(234,255,40,.25); }
   .bar b { font-variant-numeric:tabular-nums; }
   .reg { transition:fill .25s linear, opacity .8s ease; }
-  .reg.dim { opacity:.14; }
+  .reg.dim { opacity:.08; }
   .com { stroke:rgba(255,255,255,.35); stroke-width:.7; transition:fill .25s linear; cursor:crosshair; }
   .com:hover { stroke:#fff; stroke-width:1.6; }
   .com.draw { stroke-dasharray:1; stroke-dashoffset:1; fill-opacity:0; animation:draw 1.2s cubic-bezier(.65,0,.35,1) forwards; }
@@ -227,6 +243,7 @@
     .controls { position:static; }
     .field { width:100%; }
     .controls { gap:8px; }
+    .chnav { display:none; }
     .ibtn { flex:1; justify-content:center; padding:8px 6px; font-size:12.5px; }
     .maphead { align-items:flex-start; }
     .field select, #aoi { flex:1; width:auto; }
@@ -252,19 +269,21 @@
       </div>
     </div>
     <p class="tag" data-i18n="tag"></p>
+    <a href="#ch3" class="cta" data-go="ch3"><span data-i18n="cta"></span> <span aria-hidden="true">↓</span></a>
   </div>
 </header>
 <main class="wrap">
   <p id="err" class="card err" role="alert" hidden></p>
   <section class="card controls" data-i18n-label="controls">
     <label class="field"><span data-i18n="area"></span> <select id="aoi"></select></label>
+    <nav class="chnav" aria-label="Sections"><a href="#ch1" data-go="ch1"><b>1</b> <span data-nav="0"></span></a><a href="#ch2" data-go="ch2"><b>2</b> <span data-nav="1"></span></a><a href="#ch3" data-go="ch3" class="hot"><b>3</b> <span data-nav="2"></span></a><a href="#ch4" data-go="ch4"><b>4</b> <span data-nav="3"></span></a></nav>
     <span class="spacer"></span>
-    <button id="share" type="button" class="ibtn" data-i18n-title="share"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span id="share-t" data-i18n="share"></span></button>
-    <button id="cvd" type="button" class="ibtn" aria-pressed="false" data-i18n-title="cvd"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span data-i18n="cvd"></span></button>
-    <button id="csv" type="button" class="ibtn" data-i18n-title="csv"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span data-i18n="csv"></span></button>
+    <button id="share" type="button" class="ibtn" data-i18n-title="share"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span id="share-t" data-i18n="share_s"></span></button>
+    <button id="cvd" type="button" class="ibtn" aria-pressed="false" data-i18n-title="cvd"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span data-i18n="cvd_s"></span></button>
+    <button id="csv" type="button" class="ibtn" data-i18n-title="csv"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span data-i18n="csv_s"></span></button>
   </section>
 
-  <h2 class="chapter"><span>1</span> <span data-i18n="ch_where"></span></h2>
+  <h2 class="chapter" id="ch1"><span>1</span> <span data-i18n="ch_where"></span></h2>
 
   <section class="card" id="map-card">
     <div class="maphead"><h2 data-i18n="map_h"></h2>
@@ -279,7 +298,7 @@
     <p class="gis"><span data-i18n="gis_lead"></span> <a href="data/gis/overlap_chile_regions.gpkg" download>GeoPackage (.gpkg)</a> · <a href="data/gis/overlap_chile_regions.geojson" download>GeoJSON</a><br><small data-i18n="gis_note"></small></p>
   </section>
 
-  <h2 class="chapter"><span>2</span> <span data-i18n="ch_now"></span></h2>
+  <h2 class="chapter" id="ch2"><span>2</span> <span data-i18n="ch_now"></span></h2>
 
   <section class="card">
     <p class="sub" id="status-kicker"></p>
@@ -301,7 +320,7 @@
     </details>
   </section>
 
-  <h2 class="chapter"><span>3</span> <span data-i18n="ch_history"></span></h2>
+  <h2 class="chapter" id="ch3"><span>3</span> <span data-i18n="ch_history"></span></h2>
 
   <section class="card">
     <div class="maphead"><h2 data-i18n="cal_h"></h2>
@@ -336,7 +355,7 @@
     </details>
   </section>
 
-  <h2 class="chapter"><span>4</span> <span data-i18n="ch_trust"></span></h2>
+  <h2 class="chapter" id="ch4"><span>4</span> <span data-i18n="ch_trust"></span></h2>
 
   <section class="card">
     <h2 data-i18n="jump_h"></h2>
@@ -344,6 +363,14 @@
     <div class="bigfig" id="jump-figs"></div>
     <div id="jump"></div>
     <div class="legend" id="jump-legend"></div>
+  </section>
+
+  <section class="card" id="kcard">
+    <h2 data-i18n="kH"></h2>
+    <p class="sub" id="k-sub"></p>
+    <p class="plain" id="k-plain"></p>
+    <div id="kchart"></div>
+    <div class="legend" id="k-legend"></div>
   </section>
 
   <section class="card">
@@ -363,6 +390,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261114-2010"></script>
+<script src="app.js?v=20261114-2035"></script>
 </body>
 </html>
