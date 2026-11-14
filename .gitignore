@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Overlap: raw FIRMS downloads and secrets stay out of the repository
+data/raw/
+*.zip
+*.csv.gz
+.env
