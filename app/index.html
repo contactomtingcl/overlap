@@ -134,6 +134,9 @@
   .ico.viirs { background:radial-gradient(circle, #4db8ff 1.1px, transparent 1.4px) 0 0/4px 4px #0d2a52; }
   /* jump chart */
   #jump svg, #season svg, #clock svg { display:block; width:100%; height:auto; }
+  .chapter { display:flex; align-items:center; gap:12px; font-family:var(--head); font-size:13px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--quiet); margin:18px 2px -4px; }
+  .chapter span:first-child { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--lime); color:#0a1430; letter-spacing:0; box-shadow:0 0 14px rgba(234,255,40,.45); }
+  .chapter::after { content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--line), transparent); }
   .plain { font-family:var(--head); font-size:clamp(18px, 2.2vw, 23px); line-height:1.3; margin:4px 0 14px; letter-spacing:-.01em; }
   .plain b { color:var(--lime); font-weight:600; }
   .plain .lo { color:var(--low); } .plain .hi { color:var(--high); }
@@ -255,12 +258,7 @@
     <button id="csv" type="button" data-i18n="csv"></button>
   </section>
 
-  <section class="card">
-    <p class="sub" id="status-kicker"></p>
-    <p class="headline" id="headline"></p>
-    <p class="sub" id="status-sub"></p>
-    <div class="status" id="status"></div>
-  </section>
+  <h2 class="chapter"><span>1</span> <span data-i18n="ch_where"></span></h2>
 
   <section class="card" id="map-card">
     <div class="maphead"><h2 data-i18n="map_h"></h2>
@@ -273,6 +271,15 @@
     <div class="ns"><span data-i18n="north"></span><span data-i18n="south"></span></div>
     <div class="legend" id="map-legend"></div>
     <p class="gis"><span data-i18n="gis_lead"></span> <a href="data/gis/overlap_chile_regions.gpkg" download>GeoPackage (.gpkg)</a> · <a href="data/gis/overlap_chile_regions.geojson" download>GeoJSON</a><br><small data-i18n="gis_note"></small></p>
+  </section>
+
+  <h2 class="chapter"><span>2</span> <span data-i18n="ch_now"></span></h2>
+
+  <section class="card">
+    <p class="sub" id="status-kicker"></p>
+    <p class="headline" id="headline"></p>
+    <p class="sub" id="status-sub"></p>
+    <div class="status" id="status"></div>
   </section>
 
   <section class="card">
@@ -288,17 +295,7 @@
     </details>
   </section>
 
-  <section class="card" id="clock-card">
-    <h2 data-i18n="clock_h"></h2>
-    <p class="sub" id="clock-sub"></p>
-    <div class="dialwrap"><div id="dial"></div><div><p class="plain" id="clock-plain"></p><div class="legend" id="dial-legend"></div></div></div>
-    <details class="more"><summary data-i18n="more_clock"></summary>
-      <p class="sub" id="clock-tech" style="margin-top:10px"></p>
-      <div class="chips" id="clock-chips"></div>
-      <div id="clock"></div>
-      <div class="legend" id="clock-legend"></div>
-    </details>
-  </section>
+  <h2 class="chapter"><span>3</span> <span data-i18n="ch_history"></span></h2>
 
   <section class="card">
     <h2 data-i18n="cal_h"></h2>
@@ -313,6 +310,20 @@
     <div id="day-grid"></div>
     <div class="legend" id="day-legend"></div>
   </section>
+
+  <section class="card" id="clock-card">
+    <h2 data-i18n="clock_h"></h2>
+    <p class="sub" id="clock-sub"></p>
+    <div class="dialwrap"><div id="dial"></div><div><p class="plain" id="clock-plain"></p><div class="legend" id="dial-legend"></div></div></div>
+    <details class="more"><summary data-i18n="more_clock"></summary>
+      <p class="sub" id="clock-tech" style="margin-top:10px"></p>
+      <div class="chips" id="clock-chips"></div>
+      <div id="clock"></div>
+      <div class="legend" id="clock-legend"></div>
+    </details>
+  </section>
+
+  <h2 class="chapter"><span>4</span> <span data-i18n="ch_trust"></span></h2>
 
   <section class="card">
     <h2 data-i18n="jump_h"></h2>
@@ -339,6 +350,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261114-1910"></script>
+<script src="app.js?v=20261114-1925"></script>
 </body>
 </html>
