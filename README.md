@@ -51,6 +51,11 @@ Same fires, different counts: both sensors rise and fall together, but VIIRS rec
 4. Dates and times in UTC.
 5. Raw counts from different sensors are never added together, and VIIRS satellites are never summed with each other.
 
+## Beyond the calendar (what the harmonized record makes possible)
+
+- **Season clock** (`pipeline/17`): start (10 %), busiest month and end (90 %) of every fire season, with Theil-Sen trends and the Mann-Kendall test. A shift counts as confirmed only if it also appears in the VIIRS-only seasons. Example: in O'Higgins the busiest month moved from autumn to summer (about 59 days earlier per decade, confirmed in VIIRS-only years); the cause is not established (agricultural burning practices are one hypothesis).
+- **Scenarios, not forecasts**: the current season plus what each past season added afterwards gives a 10–90 % band for the end of the season. We checked whether the start of a season anticipates the rest (`pipeline/16`): in the fire regions it does not, so the app says so.
+
 ## Known limitations
 
 1. **Polar satellites see each place only about twice a day** (one daytime and one night overpass per satellite). Fires that start and end between overpasses, or that burn under clouds or thick smoke, are missed. No detection is not the same as no fire.

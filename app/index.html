@@ -133,7 +133,10 @@
   .ico.modis { background:repeating-conic-gradient(#4d6b85 0 25%, #22384a 0 50%) 0 0/8px 8px; }
   .ico.viirs { background:radial-gradient(circle, #4db8ff 1.1px, transparent 1.4px) 0 0/4px 4px #0d2a52; }
   /* jump chart */
-  #jump svg, #season svg { display:block; width:100%; height:auto; }
+  #jump svg, #season svg, #clock svg { display:block; width:100%; height:auto; }
+  .chips { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin:6px 0 12px; }
+  .chip { background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:12.5px; color:var(--quiet); }
+  .chip b { display:block; font-family:var(--head); font-size:17px; color:var(--ink); margin:2px 0; }
   .maphead { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; justify-content:space-between; }
   .player { display:flex; align-items:center; gap:14px; margin:6px 0 10px; }
   .playbtn { width:46px; height:46px; border-radius:50%; font-size:17px; padding:0; background:var(--lime); color:#0a1430; border:0;
@@ -269,6 +272,14 @@
     <div class="legend" id="season-legend"></div>
   </section>
 
+  <section class="card" id="clock-card">
+    <h2 data-i18n="clock_h"></h2>
+    <p class="sub" id="clock-sub"></p>
+    <div class="chips" id="clock-chips"></div>
+    <div id="clock"></div>
+    <div class="legend" id="clock-legend"></div>
+  </section>
+
   <section class="card">
     <h2 data-i18n="cal_h"></h2>
     <p class="sub" id="cal-sub"></p>
@@ -308,6 +319,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261114-1830"></script>
+<script src="app.js?v=20261114-1845"></script>
 </body>
 </html>

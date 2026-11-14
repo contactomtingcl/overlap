@@ -30,6 +30,17 @@ const I18N = {
     north: "◂ North (Arica)", south: "South (Magallanes) ▸",
     mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data or withheld", mlgC: (m) => `communes: 0 – ${m} raw detections / month (log)`,
     mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
+    clock_h: "Season clock: is the fire season shifting?",
+    clockSub: "Each bar is one fire season: it starts when 10% of its hotspots have occurred, ends at 90%, and the dot marks the busiest month. Trends use Theil-Sen slopes and the Mann-Kendall test over 25 seasons; a shift counts as confirmed only if it also appears in the VIIRS-only seasons (2012–13 to 2025–26). Hotspot seasons include agricultural burning.",
+    clockDesert: "Not shown for the Atacama desert regions: their hotspots include persistent false detections, so the season shape is not meaningful.",
+    clockMetric: { onset: "Start (10%)", peak: "Busiest month", end: "End (90%)", length: "Length" },
+    clockVal: (k, v) => k === "length" ? `${Math.abs(v)} days ${v < 0 ? "shorter" : "longer"} per decade` : `${Math.abs(v)} days ${v < 0 ? "earlier" : "later"} per decade`,
+    clockV: { robust: "confirmed in VIIRS-only years", possible: "possible, not confirmed in VIIRS-only years", none: "no clear change" },
+    clockCI: (a, b, p) => `95% CI ${a} to ${b} · p = ${p}`,
+    clockLg: ["season, start to end (colour = total hotspots)", "busiest month", "trend of the busiest month"],
+    clockMulti: "With 16 regions and 4 measures, a few apparent trends are expected by chance; the VIIRS-only check filters most of them.",
+    scen: (v, a, b) => `If the rest of the season is like past seasons: about ${v} hotspots by June (${a}–${b}). A scenario, not a forecast.`,
+    scenLg: "scenarios: the rest of the season like past seasons (10–90%)",
     season_h: "This season so far vs every past season",
     seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, in Suomi NPP-equivalent units, on a log scale. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
     seasonWarn: " A quiet or busy start is not a forecast: from Valparaíso to La Araucanía, July–October activity did not anticipate November–June in the last 25 seasons.",
@@ -128,6 +139,17 @@ const I18N = {
     north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
     mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos o retenido", mlgC: (m) => `comunas: 0 – ${m} detecciones crudas / mes (log)`,
     mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
+    clock_h: "Reloj de la temporada: ¿se está desplazando la temporada de incendios?",
+    clockSub: "Cada barra es una temporada: empieza cuando ocurrió el 10 % de sus focos, termina al 90 %, y el punto marca el mes con más focos. Las tendencias usan pendientes de Theil-Sen y la prueba de Mann-Kendall sobre 25 temporadas; un desplazamiento se considera confirmado solo si también aparece en las temporadas solo VIIRS (2012–13 a 2025–26). Las temporadas de focos incluyen las quemas agrícolas.",
+    clockDesert: "No se muestra para las regiones del desierto de Atacama: sus focos incluyen detecciones falsas persistentes, así que la forma de la temporada no tiene sentido.",
+    clockMetric: { onset: "Inicio (10 %)", peak: "Mes con más focos", end: "Fin (90 %)", length: "Duración" },
+    clockVal: (k, v) => k === "length" ? `${dec(Math.abs(v), 1)} días ${v < 0 ? "más corta" : "más larga"} por década` : `${dec(Math.abs(v), 1)} días ${v < 0 ? "antes" : "después"} por década`,
+    clockV: { robust: "confirmado en los años solo VIIRS", possible: "posible, no confirmado en los años solo VIIRS", none: "sin cambio claro" },
+    clockCI: (a, b, p) => `IC 95 % ${a} a ${b} · p = ${p}`,
+    clockLg: ["temporada, de inicio a fin (color = total de focos)", "mes con más focos", "tendencia del mes con más focos"],
+    clockMulti: "Con 16 regiones y 4 medidas, se esperan algunas tendencias aparentes por azar; la prueba con los años solo VIIRS filtra la mayoría.",
+    scen: (v, a, b) => `Si el resto de la temporada fuera como las anteriores: cerca de ${v} focos a junio (${a}–${b}). Es un escenario, no un pronóstico.`,
+    scenLg: "escenarios: el resto de la temporada como las anteriores (10–90 %)",
     season_h: "Esta temporada hasta ahora frente a todas las anteriores",
     seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en unidades equivalentes a Suomi NPP, en escala logarítmica. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
     seasonWarn: " Un inicio tranquilo o activo no es un pronóstico: de Valparaíso a La Araucanía, la actividad de julio a octubre no anticipó la de noviembre a junio en las últimas 25 temporadas.",
@@ -701,9 +723,10 @@ function renderSeason() {
     const col = b <= 2 ? "var(--low)" : b >= n - 2 ? "var(--high)" : "var(--ink)";
     $("season-figs").innerHTML = `<div>${T.sThrough(T.monthsLong[seasonMonths[k]])}${num(S.current[k])}${T.sThroughSub}</div>`
       + (r == null ? "" : `<div>${T.sVs}<b data-count="${Math.round(r * 100)}" data-dec="0" data-suf="${state.lang === "es" ? " %" : "%"}" style="color:${col}">${Math.round(r * 100)}${state.lang === "es" ? " %" : "%"}</b>${T.sVsSub(b, n)}</div>`);
+    if (S.scenario) { const e = S.scenario; $("season-figs").innerHTML += `<div style="max-width:340px">${T.scen(fmt(e.p50.at(-1)), fmt(e.p10.at(-1)), fmt(e.p90.at(-1)))}</div>`; }
   } else $("season-figs").innerHTML = "";
   const W = Math.max(340, Math.min(1100, $("season").clientWidth || 900)), H = W < 600 ? 240 : 300, l = W < 600 ? 46 : 58, r = 30, t = 14, b = 30;
-  const all = [...S.p90, ...S.current, ...S.top.cum, ...S.last, ...S.p10].filter((v) => v > 0);
+  const all = [...S.p90, ...S.current, ...S.top.cum, ...S.last, ...S.p10, ...(S.scenario ? S.scenario.p90 : [])].filter((v) => v > 0);
   const lo = Math.floor(Math.log10(Math.max(1, Math.min(...all)))), hi = Math.ceil(Math.log10(Math.max(...all) + 1));
   const x = (i) => l + (i / 11) * (W - l - r);
   const y = (v) => t + (1 - (Math.log10(Math.max(v, 1)) - lo) / (hi - lo)) * (H - t - b);
@@ -727,6 +750,8 @@ function renderSeason() {
     <path d="${line(S.top.cum)}" fill="none" stroke="#ff8a3d" stroke-width="1.6" stroke-dasharray="1.5 3" stroke-linecap="round" opacity=".85"/>
     <path d="${line(S.last)}" fill="none" stroke="#8fa6cc" stroke-width="1.5" opacity=".6"/>
     <path d="${line(S.p50)}" fill="none" stroke="#c9d6ea" stroke-width="2" stroke-dasharray="5 4"/>
+    ${S.scenario ? `<path d="${S.scenario.p90.map((v, j) => `${j ? "L" : "M"}${x(S.scenario.from + j).toFixed(1)},${y(v).toFixed(1)}`).join("") + S.scenario.p10.map((v, j, a) => `L${x(S.scenario.from + a.length - 1 - j).toFixed(1)},${y(a[a.length - 1 - j]).toFixed(1)}`).join("")}Z" fill="rgba(234,255,40,.10)" stroke="rgba(234,255,40,.35)" stroke-dasharray="3 3"/>
+    <path d="${S.scenario.p50.map((v, j) => `${j ? "L" : "M"}${x(S.scenario.from + j).toFixed(1)},${y(v).toFixed(1)}`).join("")}" fill="none" stroke="#eaff28" stroke-width="1.6" stroke-dasharray="2 4" opacity=".8"/>` : ""}
     <g clip-path="url(#wipe2)">
       <path d="${line(solid)}" fill="none" stroke="#eaff28" stroke-width="3.2" filter="url(#lglow2)"/>
       ${partial && k > 0 ? `<path d="M${x(k - 1)},${y(cur[k - 1])}L${x(k)},${y(cur[k])}" fill="none" stroke="#eaff28" stroke-width="2.4" stroke-dasharray="4 4"/>` : ""}
@@ -737,9 +762,53 @@ function renderSeason() {
   $("season-legend").innerHTML = `<span><i class="sw" style="background:#eaff28;border:0"></i>${T.sCur}</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#c9d6ea 0 5px,transparent 5px 8px);border:0;height:3px;vertical-align:3px"></i>${T.sMed}</span>`
     + `<span><i class="sw" style="background:rgba(1,151,248,.3)"></i>${T.sBand}</span>`
+    + (S.scenario ? `<span><i class="sw" style="background:rgba(234,255,40,.15);border:1px dashed rgba(234,255,40,.5)"></i>${T.scenLg}</span>` : "")
     + `<span><i class="sw" style="background:#8fa6cc;border:0;height:3px;vertical-align:3px"></i>2025–26</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#ff8a3d 0 2px,transparent 2px 5px);border:0;height:3px;vertical-align:3px"></i>${T.sTop(topLabel)}</span>`;
   if (state.chartAnim) armWipe("season", "season-figs");
+}
+
+// ---------- season clock ----------
+function clockVerdict(t, tv) {
+  if (!t || t.p >= 0.05) return "none";
+  return tv && tv.p < 0.05 && Math.sign(tv.per_decade) === Math.sign(t.per_decade) ? "robust" : "possible";
+}
+
+function renderClock() {
+  const T = L(), C = state.data.season_clock, card = $("clock").closest(".card");
+  const desert = ["r15", "r1", "r2", "r3"].includes(state.aoi);
+  if (!C || !C.seasons.length) { card.hidden = true; return; }
+  card.hidden = false;
+  $("clock-sub").textContent = desert ? T.clockDesert : T.clockSub;
+  if (desert) { $("clock-chips").innerHTML = $("clock").innerHTML = $("clock-legend").innerHTML = ""; return; }
+  const col = { robust: "var(--high)", possible: "var(--ink)", none: "var(--quiet)" };
+  $("clock-chips").innerHTML = ["onset", "peak", "end", "length"].map((k) => {
+    const t = C.trend[k], v = clockVerdict(t, C.trend_viirs[k]);
+    return `<div class="chip">${T.clockMetric[k]}<b style="color:${col[v]}">${v === "none" || !t ? T.clockV.none : T.clockVal(k, t.per_decade)}</b>${t ? `${v === "none" ? "" : T.clockV[v] + "<br>"}${T.clockCI(dec(t.lo, 1), dec(t.hi, 1), dec(t.p, 3))}` : ""}</div>`;
+  }).join("");
+  const S = C.seasons, W = Math.max(340, Math.min(1100, $("clock").clientWidth || 900)), l = W < 600 ? 40 : 64, r = 14, top = 22, rh = W < 600 ? 10 : 12;
+  const H = top + S.length * rh + 8, x = (d) => l + (d / 365) * (W - l - r);
+  const maxT = Math.max(...S.map((s) => s.total));
+  const starts = [0, 31, 62, 92, 123, 153, 184, 215, 243, 274, 304, 335], mlab = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
+  let g = starts.map((d, i) => `<line x1="${x(d)}" x2="${x(d)}" y1="${top - 4}" y2="${H - 6}" stroke="rgba(140,180,255,.10)"/><text x="${x(d + 15)}" y="12" text-anchor="middle" font-size="10.5" fill="#8fa6cc">${W < 600 ? T.months[mlab[i]][0].toUpperCase() : T.months[mlab[i]]}</text>`).join("");
+  S.forEach((s, i) => {
+    const y = top + i * rh;
+    if (W >= 600 || s.season % 5 === 0) g += `<text x="${l - 6}" y="${y + rh / 2 + 3.5}" text-anchor="end" font-size="10" fill="#8fa6cc">${W < 600 ? String(s.season).slice(2) : `${s.season}–${String(s.season + 1).slice(2)}`}</text>`;
+    g += `<rect x="${x(s.onset)}" y="${y + 2}" width="${Math.max(2, x(s.end) - x(s.onset))}" height="${rh - 4}" rx="${(rh - 4) / 2}" fill="${colour(s.total, maxT)}"><title>${s.season}–${String(s.season + 1).slice(2)}</title></rect>`
+      + `<circle cx="${x(s.peak)}" cy="${y + rh / 2}" r="${rh / 2 - 1.5}" fill="#eaff28" stroke="#071536" stroke-width="1"/>`;
+  });
+  const tp = C.trend.peak;
+  if (tp && clockVerdict(tp, C.trend_viirs.peak) !== "none") {
+    const s0 = S[0].season, s1 = S.at(-1).season, med = (arr) => { const a = [...arr].sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
+    const b = med(S.map((s) => s.peak - (tp.per_decade / 10) * (s.season - s0)));
+    const yAt = (ss) => top + (ss - s0) * rh + rh / 2;
+    g += `<line x1="${x(b)}" y1="${yAt(s0)}" x2="${x(b + (tp.per_decade / 10) * (s1 - s0))}" y2="${yAt(s1)}" stroke="#eaff28" stroke-width="2" stroke-dasharray="6 4" opacity=".9"/>`;
+  }
+  $("clock").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.clock_h}">${g}</svg>`;
+  $("clock-legend").innerHTML = `<span><i class="sw" style="background:linear-gradient(90deg,${RAMP.join(",")});border:0;border-radius:6px;width:28px"></i>${T.clockLg[0]}</span>`
+    + `<span><i class="sw" style="background:#eaff28;border-radius:50%;border:0"></i>${T.clockLg[1]}</span>`
+    + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#eaff28 0 6px,transparent 6px 10px);border:0;height:3px;vertical-align:3px"></i>${T.clockLg[2]}</span>`
+    + `<span>${T.clockMulti}</span>`;
 }
 
 // ---------- 2012 jump ----------
@@ -885,7 +954,7 @@ function downloadCSV() {
 
 function render(animate) {
   state.animNext = animate; state.chartAnim = animate;
-  renderStatus(); paintMap(); renderSeason(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
+  renderStatus(); paintMap(); renderSeason(); renderClock(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
   state.animNext = false; state.chartAnim = false;
 }
 
@@ -935,5 +1004,5 @@ $("mode-r").addEventListener("click", () => setMode("raw"));
 $("csv").addEventListener("click", downloadCSV);
 document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
 let rz;
-addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderJump(); if (map.zoom) zoomTo(map.zoom, true); else if (map.geo) flyTo([0, 0, 1000, map.geo.width], $("map").clientWidth * map.geo.width / 1000, true); } }, 150); });
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderClock(); renderJump(); if (map.zoom) zoomTo(map.zoom, true); else if (map.geo) flyTo([0, 0, 1000, map.geo.width], $("map").clientWidth * map.geo.width / 1000, true); } }, 150); });
 init();

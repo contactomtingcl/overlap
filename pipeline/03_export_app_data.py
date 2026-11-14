@@ -313,6 +313,12 @@ def season_block(regions):
             "last": [round(float(x), 1) for x in hist[2025]], "top": {"season": top, "cum": [round(float(x), 1) for x in hist[top]]},
             "n_seasons": len(hist)}
     if k is not None:
+        # Conditional scenarios: the current total at month k plus what each past season added after month k.
+        # "If the rest of the season is like past seasons": a scenario band, not a forecast.
+        paths = cur[k] + (H[:, k:] - H[:, [k]])
+        out_["scenario"] = {"from": k, "p10": [round(float(x), 1) for x in np.percentile(paths, 10, axis=0)],
+                            "p50": [round(float(x), 1) for x in np.percentile(paths, 50, axis=0)],
+                            "p90": [round(float(x), 1) for x in np.percentile(paths, 90, axis=0)]}
         out_.update(compare_index=k, below=int((H[:, k] < cur[k]).sum()),
                     ratio_to_median=round(float(cur[k] / np.percentile(H[:, k], 50)), 3) if np.percentile(H[:, k], 50) > 0 else None)
     return out_
