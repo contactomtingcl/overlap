@@ -56,6 +56,24 @@ std_d = d.groupby(["codregion", "date", "satellite"]).size()
 nrt_d = nrt.groupby(["codregion", "date", "satellite"]).size()
 
 qtab = pd.read_csv(qdir / "quantiles_all.csv")
+qmet = pd.read_csv(qdir / "metrics_all.csv").drop_duplicates()
+jump = pd.read_csv(qdir.parent / "validation_conaf" / "jump_at_2012_vs_conaf.csv")
+
+
+def trust(r):
+    """How wrong can the joined series be? Hidden-years test (2020-2026) and the CONAF jump check."""
+    if r not in QM_REGIONS:
+        return {"region": REGIONS[r], "validated": False}
+    out_ = {"region": REGIONS[r], "validated": True}
+    for sen in ["Aqua", "Terra"]:
+        row = qmet[(qmet.zone == f"region_{r:02d}") & (qmet.sensor == sen) & (qmet.method == "qmap")].iloc[0]
+        out_[sen] = {"typical_factor": round(float(np.exp(row.mae_log1p)), 2), "bias_pct": round(float(row.bias_total_pct), 1),
+                     "coverage80_pct": round(float(row.coverage80_pct), 1), "months": int(row.months)}
+    j = jump[jump.zone == f"region_{r:02d}"].set_index("series")
+    out_["jump_unharmonized"] = round(float(j.loc["unharmonized (Aqua, then Suomi NPP)", "jump_factor_at_2012"]), 2)
+    h = j.loc["harmonized (Suomi NPP-equivalent)"]
+    out_["jump_harmonized"] = [round(float(h.jump_factor_at_2012), 2), round(float(h.ci95_low), 2), round(float(h.ci95_high), 2)]
+    return out_
 
 
 def monthly_table(regions):
@@ -228,6 +246,7 @@ for key, meta in AOIS.items():
         "method": {"qmap_regions": [REGIONS[r] for r in qm_regs],
                    "ratio_regions": [REGIONS[r] for r in meta["regions"] if r not in qm_regs],
                    "factors": {REGIONS[r]: REGION_FACTORS[r] for r in meta["regions"] if r not in qm_regs}},
+        "trust": [trust(r) for r in meta["regions"]],
         "climatology_median": climatology,
         "latest": {"month": latest["month"], "value": latest["value"], "status": latest["status"],
                    "median": climatology[int(latest["month"][5:])], "z": latest.get("z"),

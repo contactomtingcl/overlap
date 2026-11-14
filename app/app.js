@@ -195,7 +195,24 @@ async function showMonth(key) {
   $("day-panel").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-function render() { renderStatus(); renderCalendar(); renderMethod(); }
+function renderTrust() {
+  const T = state.data.trust, ok = T.filter((t) => t.validated), no = T.filter((t) => !t.validated);
+  const era = (e) => `typical monthly error ×${e.typical_factor}, total bias ${e.bias_pct > 0 ? "+" : ""}${e.bias_pct}%, 80% band held ${Math.round(e.coverage80_pct)}% of months`;
+  let html = "";
+  if (ok.length) {
+    html += `<table class="trust"><thead><tr><th>Region</th><th>False jump at 2012 vs CONAF<br>(1 = no jump)</th><th>MODIS Aqua years, 2002–2012</th><th>MODIS Terra years, 2000–2002</th></tr></thead><tbody>`
+      + ok.map((t) => `<tr><td><b>${t.region}</b></td><td>unharmonized ×${t.jump_unharmonized}<br><b>harmonized ×${t.jump_harmonized[0]}</b> (95% CI ${t.jump_harmonized[1]}–${t.jump_harmonized[2]})</td><td>${era(t.Aqua)}</td><td>${era(t.Terra)}</td></tr>`).join("")
+      + `</tbody></table>`;
+  }
+  if (no.length) html += `<p class="sub" style="margin-top:10px">${no.length === T.length ? "This region uses" : `${no.map((t) => t.region).join(", ")} use`} a simple ratio between sensors that has not been validated yet. Treat the years before 2012 as indicative.</p>`;
+  if (ok.length) {
+    const cov = ok.map((t) => Math.round(t.Aqua.coverage80_pct)), f = ok[0].Aqua.typical_factor;
+    html += `<p class="sub">A typical error of ×${f} means the harmonized value is usually within a factor of ${f} of what Suomi NPP would have recorded. The 80% band on estimated months should contain 8 of 10 months; for MODIS Aqua on the hidden years it held ${Math.min(...cov)}${cov.length > 1 ? `–${Math.max(...cov)}` : ""}%, slightly fewer than promised.</p>`;
+  }
+  $("trust").innerHTML = html;
+}
+
+function render() { renderStatus(); renderCalendar(); renderMethod(); renderTrust(); }
 
 async function init() {
   const aois = await (await fetch("data/aois.json")).json();
