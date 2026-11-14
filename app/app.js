@@ -28,7 +28,7 @@ const I18N = {
     map_h: "Chile, region by region", mm_z: "Anomaly", mm_v: "Hotspots",
     map_sub: "Each region against its own normal for that month (robust z on the harmonized series). Press ▶ to watch 26 years of fire seasons.",
     north: "◂ North (Arica)", south: "South (Magallanes) ▸",
-    mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data or withheld",
+    mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data or withheld", mlgC: (m) => `communes: 0 – ${m} raw detections / month (log)`,
     mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
     season_h: "This season so far vs every past season",
     seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, in Suomi NPP-equivalent units, on a log scale. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
@@ -56,7 +56,7 @@ const I18N = {
     kNormal: (mo) => `Normal for ${mo}`, kNormalSub: "median, seasons 2000–01 to 2025–26",
     kAgainst: (n, mo) => `Against ${n} previous ${mo}s`, kAgainstSub: (b, n, z) => `higher than ${b} of ${n} · robust z = ${z}`,
     kTop: "Most active season", kTopSub: (v) => `${v} hotspots (Jul–Jun)`,
-    calSub: (area) => `${area}. Colour = hotspots per month in Suomi NPP-equivalent units (brighter = more). Hover a month for its range; click it to see its days.`,
+    calSub: (area) => `${area}. Colour = hotspots per month in Suomi NPP-equivalent units (brighter, more yellow = more). Hover a month for its range; click it to see its days.`,
     calSubRaw: "<b>Raw view:</b> each sensor's own count, joined as they are. Notice how activity seems to jump when VIIRS starts in 2012: that jump is the sensor, not the fire.",
     lgRamp: (max) => `${max} hotspots / month (log)`, lgNoData: "no data (not zero)", lgProv: "provisional (near real-time)",
     lgModis: "estimated from MODIS (coarse pixels)", lgViirs: "observed by VIIRS (fine pixels)", lgEra: "VIIRS era begins (2012)",
@@ -100,7 +100,7 @@ const I18N = {
     daySub: (v, st, fd, n, top) => `${v} hotspots this month (${st}). Hotspots on ${fd} of ${n} days${top ? `; busiest day: ${top}` : ""}.`,
     dayTop: (mo, d, v) => `${mo} ${d} with ${v}`,
     dayRaw: (s) => ` Daily values are raw ${s} detections; only the monthly total is harmonized.`,
-    dlg: ["hotspots detected (brighter = more)", "observed, no hotspots", "no satellite record", "A day without hotspots can still hide fire under clouds or smoke."],
+    dlg: ["hotspots detected (brighter, more yellow = more)", "observed, no hotspots", "no satellite record", "A day without hotspots can still hide fire under clouds or smoke."],
     dayTipNone: "no satellite record", dayTipHot: (v) => `${v} hotspots`,
     sources: { SNPP: "VIIRS Suomi NPP (observed)", NOAA20: "VIIRS NOAA-20 (scaled)", Aqua: "MODIS Aqua (scaled)", Terra: "MODIS Terra, morning orbit (scaled)" },
   },
@@ -125,7 +125,7 @@ const I18N = {
     map_h: "Chile, región por región", mm_z: "Anomalía", mm_v: "Focos de calor",
     map_sub: "Cada región frente a su propio normal para ese mes (z robusto sobre la serie armonizada). Presiona ▶ para ver 26 años de temporadas de incendios.",
     north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
-    mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos o retenido",
+    mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos o retenido", mlgC: (m) => `comunas: 0 – ${m} detecciones crudas / mes (log)`,
     mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
     season_h: "Esta temporada hasta ahora frente a todas las anteriores",
     seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en unidades equivalentes a Suomi NPP, en escala logarítmica. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
@@ -153,7 +153,7 @@ const I18N = {
     kNormal: (mo) => `Lo normal para ${mo}`, kNormalSub: "mediana, temporadas 2000–01 a 2025–26",
     kAgainst: (n, mo) => `Frente a los ${n} meses de ${mo} anteriores`, kAgainstSub: (b, n, z) => `mayor que ${b} de ${n} · z robusto = ${z}`,
     kTop: "Temporada más activa", kTopSub: (v) => `${v} focos de calor (jul–jun)`,
-    calSub: (area) => `${area}. Color = focos de calor por mes en unidades equivalentes a Suomi NPP (más brillante = más focos). Pasa el cursor sobre un mes para ver su rango; haz clic para ver sus días.`,
+    calSub: (area) => `${area}. Color = focos de calor por mes en unidades equivalentes a Suomi NPP (más claro y amarillo = más focos). Pasa el cursor sobre un mes para ver su rango; haz clic para ver sus días.`,
     calSubRaw: "<b>Vista cruda:</b> el conteo propio de cada sensor, unido tal cual. Fíjate cómo la actividad parece saltar cuando empieza VIIRS en 2012: ese salto es del sensor, no del fuego.",
     lgRamp: (max) => `${max} focos / mes (log)`, lgNoData: "sin datos (no es cero)", lgProv: "provisorio (casi en tiempo real)",
     lgModis: "estimado desde MODIS (píxeles gruesos)", lgViirs: "observado por VIIRS (píxeles finos)", lgEra: "comienza la era VIIRS (2012)",
@@ -197,7 +197,7 @@ const I18N = {
     daySub: (v, st, fd, n, top) => `${v} focos de calor este mes (${st}). Hubo focos en ${fd} de ${n} días${top ? `; día con más focos: ${top}` : ""}.`,
     dayTop: (mo, d, v) => `${d} de ${mo}, con ${v}`,
     dayRaw: (s) => ` Los valores diarios son detecciones crudas de ${s}; solo el total mensual está armonizado.`,
-    dlg: ["focos detectados (más brillante = más)", "observado, sin focos", "sin registro satelital", "Un día sin focos igual puede ocultar fuego bajo nubes o humo."],
+    dlg: ["focos detectados (más claro y amarillo = más)", "observado, sin focos", "sin registro satelital", "Un día sin focos igual puede ocultar fuego bajo nubes o humo."],
     dayTipNone: "sin registro satelital", dayTipHot: (v) => `${v} focos de calor`,
     sources: { SNPP: "VIIRS Suomi NPP (observado)", NOAA20: "VIIRS NOAA-20 (escalado)", Aqua: "MODIS Aqua (escalado)", Terra: "MODIS Terra, órbita de la mañana (escalado)" },
   },
@@ -214,11 +214,13 @@ function pickLang() {
 // Sequential ramp on a dark background: brightness grows with activity (slate -> blue -> lime glow),
 // taken from the Overlap logo. Monotonic in lightness, so it also reads in greyscale.
 const PALETTES = {
-  brand: ["#152a42", "#173f6c", "#0b5fae", "#0197f8", "#25c1d8", "#7fe08a", "#d6f53a", "#f7ffbf"],
+  // "inferno" (matplotlib), from 0.2 so the fewest hotspots still show on the dark background: dark purple ->
+  // red -> orange -> yellow-white, read as heat, perceptually uniform and monotonic in lightness.
+  fire: ["#420a68", "#6a176e", "#932667", "#bc3754", "#dd513a", "#f37819", "#fca50a", "#f6d746", "#fcffa4"],
   // cividis (Nuñez et al. 2018): designed to read the same with and without colour-vision deficiency
   cvd: ["#00224e", "#123570", "#3b496c", "#575d6d", "#707173", "#8a8779", "#a69d75", "#c4b56c", "#e4cf5b", "#fee838"],
 };
-let RAMP = PALETTES.brand;
+let RAMP = PALETTES.fire;
 const NO_DATA = "#0f1d38";
 const LEVEL_COLOUR = { "unusually high": "var(--high)", "unusually low": "var(--low)", "within normal": "var(--normal)" };
 // Four-region CONAF check (pipeline/10, results/validation_conaf/jump_at_2012_vs_conaf.csv)
@@ -511,7 +513,7 @@ const ZPAL = {
 let ZSTOPS = ZPAL.brand.map(([z, c]) => [z, hex2rgb(c)]);
 function setPalette(cvd) {
   state.cvd = cvd;
-  RAMP = cvd ? PALETTES.cvd : PALETTES.brand; RAMP_RGB = RAMP.map(hex2rgb);
+  RAMP = cvd ? PALETTES.cvd : PALETTES.fire; RAMP_RGB = RAMP.map(hex2rgb);
   ZSTOPS = (cvd ? ZPAL.cvd : ZPAL.brand).map(([z, c]) => [z, hex2rgb(c)]);
   $("cvd").setAttribute("aria-pressed", cvd);
   try { localStorage.setItem("overlap-cvd", cvd ? "1" : "0"); } catch (e) { /* storage blocked */ }
@@ -652,7 +654,8 @@ function paintMap() {
   });
   paintComunas();
   const grad = (stops) => `linear-gradient(90deg,${stops.join(",")})`;
-  $("map-legend").innerHTML = (map.mode === "z"
+  const Cz = map.zoom && map.com[map.zoom];
+  $("map-legend").innerHTML = Cz ? `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgC(fmt(Cz.cmax))}</span><span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>` : (map.mode === "z"
     ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad((state.cvd ? ZPAL.cvd : ZPAL.brand).map((x) => x[1]))}"></i> ${T.mlgZ[2]}</span>`
     : `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgV(fmt(map.vmax))}</span>`)
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>`;
