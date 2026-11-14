@@ -28,6 +28,11 @@
   h2 { font-size:17px; margin:0 0 4px; }
   .sub { color:var(--quiet); font-size:13px; margin:0 0 10px; }
   #calendar { width:100%; overflow-x:auto; }
+  .cell { cursor:pointer; }
+  #day-grid { display:grid; grid-template-columns: repeat(7, minmax(38px, 64px)); gap:4px; }
+  .day { border-radius:4px; height:42px; font-size:12px; padding:3px 5px; color:#1d2329; border:1px solid #0001; }
+  .day b { display:block; font-size:12.5px; }
+  .dow { font-size:12px; color:#5c6670; text-align:center; }
   #tip { position:fixed; pointer-events:none; background:#1d2329; color:#fff; font-size:12.5px; padding:8px 10px; border-radius:6px; display:none; max-width:280px; line-height:1.4; z-index:5; }
   .legend { display:flex; flex-wrap:wrap; gap:14px; align-items:center; font-size:12.5px; color:var(--quiet); margin-top:8px; }
   .sw { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:-2px; margin-right:4px; border:1px solid #0002; }
@@ -63,6 +68,13 @@
     <p class="sub" id="cal-sub"></p>
     <div id="calendar"></div>
     <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="card" id="day-panel" aria-label="Days of the selected month" hidden>
+    <h2 id="day-title"></h2>
+    <p class="sub" id="day-sub"></p>
+    <div id="day-grid"></div>
+    <div class="legend" id="day-legend"></div>
   </section>
 
   <section class="card notes" aria-label="Method and limits">

@@ -111,6 +111,26 @@ def export(key, meta):
     med = cal[cal.status.isin(["observed", "estimated"])].groupby("m")["value"].median()
     climatology = {int(k): round(float(v), 1) for k, v in med.items()}
     latest = cal[cal.status.isin(["observed", "estimated", "provisional"])].iloc[-1]
+    # daily series in the same unit: reference sensor of each period, scaled like the monthly values
+    dsub = sub.groupby(["date", "satellite"]).size().unstack(fill_value=0)
+    nd = nsub.groupby(["date", "satellite"]).size().unstack(fill_value=0)
+    days = {}
+    for day in pd.date_range("2000-11-01", "2026-11-07", freq="D").strftime("%Y-%m-%d"):
+        mo = day[:7]
+        src_tab = nd if mo >= "2026-08" else dsub
+        row = src_tab.loc[day] if day in src_tab.index else None
+        get = (lambda sat: 0 if row is None else int(row.get(sat, 0)))
+        if mo == PARTIAL:  # Suomi NPP stopped on Nov 2, 2026
+            v = get("NOAA20") * factors["NOAA20"]["k"]
+        elif mo >= "2012-02":
+            v = get("SNPP")
+        elif day >= "2002-07-04":
+            v = get("Aqua") * factors["Aqua"]["k"]
+        else:
+            v = get("Terra") * factors["Terra"]["k"]
+        days[day] = round(v, 1)
+    (out / f"{key}_daily.json").write_text(json.dumps(days, separators=(",", ":")))
+
     payload = {
         "aoi": key, "name": meta["name"], "bbox": meta["bbox"],
         "unit": "Suomi NPP-equivalent hotspots per month",

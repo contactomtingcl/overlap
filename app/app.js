@@ -9,7 +9,7 @@ const SOURCE_NAME = { SNPP: "VIIRS Suomi NPP (observed)", NOAA20: "VIIRS NOAA-20
 const RAMP = ["#fdf3dc", "#fdd49e", "#fdbb84", "#fc8d59", "#ef6548", "#d7301f", "#b30000", "#7f0000"];
 const NO_DATA = "#e9ecef";
 
-const state = { aoi: "biobio", rows: "season", data: null };
+const state = { aoi: "biobio", rows: "season", data: null, daily: {}, month: null };
 const $ = (id) => document.getElementById(id);
 const fmt = (v) => v == null ? "—" : Math.round(v).toLocaleString("en-US");
 
@@ -86,13 +86,14 @@ function renderCalendar() {
   $("calendar").querySelectorAll(".cell").forEach((el) => {
     el.addEventListener("mousemove", (e) => tip(e, el.dataset.key));
     el.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
+    el.addEventListener("click", () => showMonth(el.dataset.key));
   });
   const steps = [0, 10, 100, 1000, max].filter((v, i, a) => v <= max && a.indexOf(v) === i);
   $("legend").innerHTML = steps.map((v) => `<span><i class="sw" style="background:${colour(v, max)}"></i>${fmt(v)}</span>`).join("")
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#adb5bd 3px 5px)"></i>no data (not zero)</span>`
     + `<span>● estimated from MODIS or NOAA-20 (hover for range)</span>`
     + `<span><i class="sw" style="border:1.5px dashed #1d2329;background:#fff"></i>provisional (near real-time data, last months)</span>`;
-  $("cal-sub").textContent = `${state.data.name}. Colour = hotspots per month in Suomi NPP-equivalent units, log scale. Right column: which sensor each row comes from.`;
+  $("cal-sub").textContent = `${state.data.name}. Colour = hotspots per month in Suomi NPP-equivalent units, log scale. Right column: which sensor each row comes from. Click a month to see its days.`;
 }
 
 function tip(e, key) {
@@ -149,9 +150,46 @@ function downloadCSV() {
   URL.revokeObjectURL(a.href);
 }
 
+async function showMonth(key) {
+  const r = state.data.months.find((m) => m.month === key);
+  if (!r) return;
+  if (!state.daily[state.aoi]) state.daily[state.aoi] = await (await fetch(`data/${state.aoi}_daily.json`)).json();
+  const daily = state.daily[state.aoi];
+  state.month = key;
+  const [y, m] = key.split("-").map(Number);
+  const first = new Date(Date.UTC(y, m - 1, 1)), n = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const offset = (first.getUTCDay() + 6) % 7; // Monday first
+  const vals = Object.values(daily);
+  const max = Math.max(...vals);
+  let html = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => `<div class="dow">${d}</div>`).join("");
+  html += "<div></div>".repeat(offset);
+  let fireDays = 0, top = [0, null];
+  for (let d = 1; d <= n; d++) {
+    const k = `${key}-${String(d).padStart(2, "0")}`;
+    const v = daily[k];
+    let bg, label;
+    if (v === undefined) { bg = `repeating-linear-gradient(45deg,${NO_DATA} 0 4px,#adb5bd 4px 6px)`; label = "no data"; }
+    else if (v === 0) { bg = "#f6f8f4"; label = "0"; }
+    else { bg = colour(v, max); label = fmt(v); fireDays++; if (v > top[0]) top = [v, d]; }
+    const dark = v !== undefined && v > 0 && RAMP.indexOf(bg) >= 5;
+    html += `<div class="day" style="background:${bg};${dark ? "color:#fff" : ""}" title="${k}: ${v === undefined ? "no satellite record" : label + " hotspots"}"><b>${d}</b>${v === undefined ? "" : label}</div>`;
+  }
+  $("day-grid").innerHTML = html;
+  $("day-title").textContent = `${MONTHS[m - 1]} ${y}, day by day`;
+  const status = r.status === "estimated" ? `estimated from ${SOURCE_NAME[r.source]}` : r.status === "provisional" ? "provisional, near real-time data" : r.status === "partial" ? "partial month" : r.status === "no_data" ? "no record" : "observed by VIIRS Suomi NPP";
+  $("day-sub").textContent = r.value == null ? "No satellite record for this month." :
+    `${fmt(r.value)} hotspots this month (${status}). Hotspots on ${fireDays} of ${n} days${top[1] ? `; busiest day: ${MONTHS[m - 1]} ${top[1]} with ${fmt(top[0])}` : ""}.`;
+  $("day-legend").innerHTML = `<span><i class="sw" style="background:${colour(10, max)}"></i>hotspots detected (darker = more)</span>`
+    + `<span><i class="sw" style="background:#f6f8f4"></i>observed, no hotspots</span>`
+    + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#adb5bd 3px 5px)"></i>no satellite record</span>`
+    + `<span>A day without hotspots can still hide fire under clouds or smoke.</span>`;
+  $("day-panel").hidden = false;
+  $("day-panel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 function render() { renderStatus(); renderCalendar(); renderMethod(); }
 
-$("aoi").addEventListener("change", (e) => { state.aoi = e.target.value; load(); });
+$("aoi").addEventListener("change", (e) => { state.aoi = e.target.value; $("day-panel").hidden = true; load(); });
 $("rows").addEventListener("change", (e) => { state.rows = e.target.value; renderCalendar(); });
 $("csv").addEventListener("click", downloadCSV);
 load();
