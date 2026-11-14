@@ -1,0 +1,8 @@
+method,q10,q90
+qm_daily,-0.6032,0.3013
+qm_daynight,-0.6947,0.1874
+qm_monthly,-0.3301,0.485
+qm_season,-0.4464,0.3159
+qm_season_daynight,-0.7,0.193
+ratio,-0.2823,0.6745
+raw,1.2018,2.0746

@@ -1,0 +1,8 @@
+method,MAE,mean_abs_log_error,total_bias_pct
+qm_daily,198.764,0.294,-2.833
+qm_daynight,102.297,0.288,0.97
+qm_monthly,199.795,0.262,-5.193
+qm_season,192.203,0.259,-2.655
+qm_season_daynight,194.053,0.329,12.018
+ratio,217.17,0.344,-0.529
+raw,535.49,1.651,-77.264
