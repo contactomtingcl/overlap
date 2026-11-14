@@ -1,0 +1,11 @@
+"zone","series","jump_factor_at_2012","ci95_low","ci95_high","region_months"
+"all four regions","unharmonized (Aqua, then Suomi NPP)",4.7,4.08,5.636,864
+"all four regions","harmonized (Suomi NPP-equivalent)",0.889,0.766,1.066,864
+"region_07","unharmonized (Aqua, then Suomi NPP)",5.534,4.467,6.952,216
+"region_07","harmonized (Suomi NPP-equivalent)",0.904,0.729,1.118,216
+"region_08","unharmonized (Aqua, then Suomi NPP)",5.494,4.619,6.598,216
+"region_08","harmonized (Suomi NPP-equivalent)",1.008,0.843,1.218,216
+"region_09","unharmonized (Aqua, then Suomi NPP)",4.112,3.188,5.498,216
+"region_09","harmonized (Suomi NPP-equivalent)",0.923,0.69,1.298,216
+"region_16","unharmonized (Aqua, then Suomi NPP)",4.812,3.903,6.029,216
+"region_16","harmonized (Suomi NPP-equivalent)",0.922,0.758,1.122,216
