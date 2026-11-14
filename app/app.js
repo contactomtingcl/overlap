@@ -13,6 +13,12 @@ const I18N = {
     monthsLong: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     dows: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     logo_alt: "Overlap logo: a coarse-pixel band and a fine-dot band crossing in a glowing square",
+    def_hotspot: "A <b>hotspot</b> is a spot on the ground, about 375 m to 1 km wide, where a satellite measured unusual heat as it passed over. It can be a forest fire, an agricultural burn or another fire; one large fire produces many hotspots.",
+    info_anom: "<b>Anomaly</b> compares this month with the same month in the previous 25 seasons, in the same area. <b>Normal</b> is the middle value: half of those years had less, half had more. <b>Unusually high</b> or <b>low</b> means far from normal, something that almost never happens in 25 years.<br><small>Technically: robust z on a log scale beyond ±2.</small>",
+    info_unit: "Each cell counts the hotspots of one month <b>as if the same satellite (VIIRS Suomi NPP) had watched all 25 years</b>. Before 2012 the count is estimated from MODIS, which sees fewer small fires; hover a cell to see its range.",
+    info_lbl: "What does this mean?",
+    read_climate: "<b>Weather and climate.</b> El Niño, droughts and heat waves change how much fire there really is: Overlap shows that a month or a season is unusual, not why. The conversion between sensors was learned over 14 seasons that include El Niño, La Niña and the 2017 and 2023 megafires, and tested on years it never saw. Not yet done: adjusting the season-clock trends for El Niño, and testing the drift of the MODIS orbits after 2021.",
+
     title: "Overlap · two satellites, <em>one honest</em> burning calendar",
     tag: "25 years of NASA FIRMS fire hotspots from MODIS (coarse pixels, since 2000) and VIIRS (fine pixels, since 2012), harmonized into one comparable series for Chile. Every estimate shows how much to trust it.",
     controls: "Controls", area: "Area", rows: "Rows", opt_season: "Fire season (Jul–Jun)", opt_year: "Calendar year (Jan–Dec)",
@@ -62,7 +68,7 @@ const I18N = {
     clockPlainSame: (a) => `The busiest time of the fire season is still around <b>${a}</b>: no clear shift in 25 seasons.`,
     dialLg: ["each wedge: share of the season's hotspots in that month", "now: seasons 2012–13 to 2025–26 (VIIRS)", "before: seasons 2001–02 to 2011–12 (estimated from MODIS)", "hand = busiest month"],
     clock_h: "Season clock: is the fire season shifting?",
-    clockIntro: "When in the year do the hotspots happen, and has that changed? The dial is the year: January at 1 o'clock, December at 12.",
+    clockIntro: "When in the year do the hotspots happen, and has that changed? The dial is the year: January at 1 o'clock, December at 12. Climate cycles such as El Niño can create or hide an apparent shift over 25 seasons; trends are not adjusted for them yet.",
     clockSub: "Each bar is one fire season: it starts when 10% of its hotspots have occurred, ends at 90%, and the dot marks the busiest month. Trends use Theil-Sen slopes and the Mann-Kendall test over 25 seasons; a shift counts as confirmed only if it also appears in the VIIRS-only seasons (2012–13 to 2025–26). Hotspot seasons include agricultural burning.",
     clockDesert: "Not shown for the Atacama desert regions: their hotspots include persistent false detections, so the season shape is not meaningful.",
     clockMetric: { onset: "Start (10%)", peak: "Busiest month", end: "End (90%)", length: "Length" },
@@ -154,6 +160,12 @@ const I18N = {
     monthsLong: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
     dows: ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"],
     logo_alt: "Logo de Overlap: una franja de píxeles gruesos y otra de puntos finos que se cruzan en un cuadrado luminoso",
+    def_hotspot: "Un <b>foco de calor</b> es un punto de la superficie, de unos 375 m a 1 km, donde un satélite midió un calor anormal al pasar. Puede ser un incendio forestal, una quema agrícola u otro fuego; un incendio grande produce muchos focos.",
+    info_anom: "La <b>anomalía</b> compara este mes con el mismo mes de las 25 temporadas anteriores, en la misma área. <b>Lo normal</b> es el valor del medio: la mitad de esos años tuvo menos y la mitad tuvo más. <b>Inusualmente alta</b> o <b>baja</b> significa muy lejos de lo normal, algo que casi nunca pasa en 25 años.<br><small>Técnicamente: z robusto en escala logarítmica más allá de ±2.</small>",
+    info_unit: "Cada celda cuenta los focos de un mes <b>como si el mismo satélite (VIIRS Suomi NPP) hubiera observado los 25 años</b>. Antes de 2012 la cifra se estima desde MODIS, que ve menos fuegos pequeños; pasa el cursor sobre una celda para ver su rango.",
+    info_lbl: "¿Qué significa esto?",
+    read_climate: "<b>Tiempo y clima.</b> El Niño, las sequías y las olas de calor cambian cuánto fuego hay realmente: Overlap muestra que un mes o una temporada es inusual, no por qué. La conversión entre sensores se aprendió en 14 temporadas que incluyen El Niño, La Niña y los megaincendios de 2017 y 2023, y se probó en años que nunca vio. Pendiente: ajustar por El Niño las tendencias del reloj de la temporada y probar la deriva de las órbitas de MODIS después de 2021.",
+
     title: "Overlap · dos satélites, <em>un solo calendario</em> honesto de quemas",
     tag: "25 años de focos de calor de NASA FIRMS, de MODIS (píxeles gruesos, desde 2000) y VIIRS (píxeles finos, desde 2012), armonizados en una sola serie comparable para Chile. Cada estimación muestra cuánto confiar en ella.",
     controls: "Controles", area: "Área", rows: "Filas", opt_season: "Temporada de incendios (jul–jun)", opt_year: "Año calendario (ene–dic)",
@@ -203,7 +215,7 @@ const I18N = {
     clockPlainSame: (a) => `El momento de más focos de la temporada sigue siendo cerca de <b>${a}</b>: sin un cambio claro en 25 temporadas.`,
     dialLg: ["cada sector: parte de los focos de la temporada en ese mes", "ahora: temporadas 2012–13 a 2025–26 (VIIRS)", "antes: temporadas 2001–02 a 2011–12 (estimado desde MODIS)", "aguja = mes con más focos"],
     clock_h: "Reloj de la temporada: ¿se está desplazando la temporada de incendios?",
-    clockIntro: "¿En qué momento del año ocurren los focos, y ha cambiado eso? El reloj es el año: enero a la 1, diciembre a las 12.",
+    clockIntro: "¿En qué momento del año ocurren los focos, y ha cambiado eso? El reloj es el año: enero a la 1, diciembre a las 12. Ciclos climáticos como El Niño pueden crear u ocultar un desplazamiento aparente en 25 temporadas; las tendencias aún no se ajustan por ellos.",
     clockSub: "Cada barra es una temporada: empieza cuando ocurrió el 10 % de sus focos, termina al 90 %, y el punto marca el mes con más focos. Las tendencias usan pendientes de Theil-Sen y la prueba de Mann-Kendall sobre 25 temporadas; un desplazamiento se considera confirmado solo si también aparece en las temporadas solo VIIRS (2012–13 a 2025–26). Las temporadas de focos incluyen las quemas agrícolas.",
     clockDesert: "No se muestra para las regiones del desierto de Atacama: sus focos incluyen detecciones falsas persistentes, así que la forma de la temporada no tiene sentido.",
     clockMetric: { onset: "Inicio (10 %)", peak: "Mes con más focos", end: "Fin (90 %)", length: "Duración" },
@@ -370,6 +382,26 @@ function rawValue(r) {
 }
 const shown = (r) => (state.mode === "raw" ? rawValue(r) : (r ? r.value : null));
 
+// Small "i" buttons: a plain-language explanation on hover, focus or tap.
+function showInfo(btn) {
+  const t = $("tip"), r = btn.getBoundingClientRect();
+  t.innerHTML = L()[btn.dataset.info]; t.style.display = "block"; t.classList.add("infotip");
+  t.style.left = Math.max(8, Math.min(r.left - 10, innerWidth - t.offsetWidth - 8)) + "px";
+  t.style.top = (r.bottom + 8 + t.offsetHeight > innerHeight ? r.top - t.offsetHeight - 8 : r.bottom + 8) + "px";
+}
+function hideInfo() { const t = $("tip"); if (t.classList.contains("infotip")) { t.style.display = "none"; t.classList.remove("infotip"); } }
+function bindInfo() {
+  document.querySelectorAll(".info:not([data-bound])").forEach((b) => {
+    b.dataset.bound = "1";
+    b.setAttribute("aria-label", L().info_lbl); b.title = "";
+    b.addEventListener("mouseenter", () => showInfo(b)); b.addEventListener("mouseleave", hideInfo);
+    b.addEventListener("focus", () => showInfo(b)); b.addEventListener("blur", hideInfo);
+    b.addEventListener("click", (e) => { e.stopPropagation(); $("tip").style.display === "block" && $("tip").classList.contains("infotip") ? hideInfo() : showInfo(b); });
+  });
+}
+document.addEventListener("click", hideInfo);
+addEventListener("scroll", hideInfo, { passive: true });
+
 function showError(e) { console.error(e); $("err").textContent = L().loadErr; $("err").hidden = false; }
 
 async function load() {
@@ -393,6 +425,8 @@ function applyStatic() {
   document.querySelectorAll("[data-i18n-label]").forEach((el) => { el.setAttribute("aria-label", L()[el.dataset.i18nLabel]); });
   document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === state.lang));
   document.querySelectorAll("[data-nav]").forEach((el) => { el.textContent = L().nav[+el.dataset.nav]; });
+  document.querySelectorAll(".info").forEach((b) => b.setAttribute("aria-label", L().info_lbl));
+  bindInfo();
   document.querySelectorAll("[data-i18n-title]").forEach((el) => { el.title = L()[el.dataset.i18nTitle]; el.setAttribute("aria-label", L()[el.dataset.i18nTitle]); });
   if (state.aois.length) $("aoi").innerHTML = state.aois.map((a) => `<option value="${a.key}"${a.key === state.aoi ? " selected" : ""}>${aoiName(a.key, a.name)}</option>`).join("");
 }
@@ -560,7 +594,7 @@ function tip(e, key) {
     if (r.note) html += `<br>${T.noteDesert}`;
   }
   const t = $("tip");
-  t.innerHTML = html; t.style.display = "block";
+  t.classList.remove("infotip"); t.innerHTML = html; t.style.display = "block";
   t.style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
   t.style.top = Math.min(e.clientY + 14, innerHeight - t.offsetHeight - 8) + "px";
 }
@@ -590,7 +624,8 @@ function renderStatus() {
   const an = Lt.anomaly || "within normal";
   const prov = Lt.status === "provisional";
   $("status-kicker").innerHTML = `<span class="live"></span>${T.kicker(prov)}`;
-  $("headline").innerHTML = T.headline(mo, y, shortName(), `<span class="lvl" style="color:${LEVEL_COLOUR[an]}">${T.level[an]}</span>`);
+  $("headline").innerHTML = T.headline(mo, y, shortName(), `<span class="lvl" style="color:${LEVEL_COLOUR[an]}">${T.level[an]}</span>`) + ` <button type="button" class="info" data-info="info_anom">i</button>`;
+  bindInfo();
   $("status-sub").textContent = T.statusSub(prov, mo) + ((Lt.excluded || []).length ? T.likeNote(Lt.excluded.join(", ")) : "") + (DESERT_AOI.includes(state.aoi) ? T.desertNote : "");
   const top = seasonTotals().sort((a, b) => b.h - a.h)[0];
   const pos = Math.max(0, Math.min(100, 50 + (Lt.z / 4) * 50));
@@ -761,7 +796,7 @@ function comTip(e, r, cod) {
   const T = L(), C = map.com[r], v = comValue(r, cod);
   const tot = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(r, c) || 0), 0);
   const mo = map.reg.months[map.i], [y, m] = mo.split("-");
-  $("tip").innerHTML = `<b>${C.geo.names[cod]}</b><br>${T.monthsLong[+m - 1]} ${y} · ${SENSOR_NAME[C.data.sensor[map.i]]}<br>`
+  $("tip").classList.remove("infotip"); $("tip").innerHTML = `<b>${C.geo.names[cod]}</b><br>${T.monthsLong[+m - 1]} ${y} · ${SENSOR_NAME[C.data.sensor[map.i]]}<br>`
     + (v === undefined ? T.whereWithheld : T.cTip(fmt(v), tot ? `${Math.round((100 * v) / tot)}${state.lang === "es" ? " %" : "%"}` : null));
   $("tip").style.display = "block";
   $("tip").style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
@@ -878,7 +913,7 @@ function paintMap() {
 function mapTip(e, r) {
   const T = L(), R = map.reg.regions[r], mo = map.reg.months[map.i], [y, m] = mo.split("-");
   const v = R.v[map.i], z = R.z[map.i];
-  $("tip").innerHTML = `<b>${R.name}</b><br>${T.monthsLong[+m - 1]} ${y}<br>${v == null ? T.mlgNo : T.mTip(fmt(v), z == null ? null : dec(z))}`;
+  $("tip").classList.remove("infotip"); $("tip").innerHTML = `<b>${R.name}</b><br>${T.monthsLong[+m - 1]} ${y}<br>${v == null ? T.mlgNo : T.mTip(fmt(v), z == null ? null : dec(z))}`;
   $("tip").style.display = "block";
   $("tip").style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
   $("tip").style.top = Math.min(e.clientY + 14, innerHeight - $("tip").offsetHeight - 8) + "px";

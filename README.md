@@ -67,13 +67,15 @@ Normal is the median of the same calendar month over the seasons 2000–01 to 20
 2. **Pixel size grows towards the edge of the swath** (MODIS: from 1 km at nadir to about 4 km), where only larger or hotter fires are detected. We do not correct for viewing angle yet.
 3. **Hotspots are thermal anomalies, not fires:** one large fire produces many hotspots; small agricultural, waste or short-lived fires may produce none. Autumn (April–May) holds about 31 % of hotspots but about 2 % of CONAF burned area; agricultural burning is the likely explanation (hypothesis, not yet verified).
 4. **Harmonization uncertainty:** the MODIS Aqua map underestimates monthly totals by 10–17 % on hidden years; months with very few hotspots and the Terra-only months (2000–2002) are the least certain. Outside Maule–Araucanía errors are larger (typical monthly error about ×1.8–3.0); against CONAF, Valparaíso is overcorrected, Metropolitana undercorrected, and the north and Magallanes cannot be judged. For areas made of several regions (Chile), the 80 % band is the sum of the regional bands, which is wider than the true band (conservative).
-5. **Recent months are provisional** (near real-time data), and are withheld over the Atacama desert, where near real-time data hold many daytime false detections.
+5. **Weather and climate:** El Niño, droughts and heat waves change how much fire there really is; the app shows that a month or season is unusual, not why. The sensor conversion was learned over 14 seasons that include El Niño, La Niña and the 2017 and 2023 megafires, and tested on years it never saw. Season-clock trends are not yet adjusted for El Niño, and the drift of the MODIS orbits after 2021 is not yet tested (the VIIRS / Aqua ratio rises in recent seasons in Ñuble).
+6. **Recent months are provisional** (near real-time data), and are withheld over the Atacama desert, where near real-time data hold many daytime false detections.
 
 ## Roadmap
 
 - Own quantile maps for Valparaíso and Metropolitana (where the pooled map is off against CONAF), and a daily day/night model (v2, see `results/harmonization`).
 - Geostationary detections (GOES ABI, every few minutes over South America, available in FIRMS) to fill the hours between polar overpasses and the morning orbit that Terra leaves in 2027.
 - Independent check of large events with MODIS/VIIRS burned-area products and Sentinel-2/Landsat scars.
+- Season-clock trends adjusted for El Niño (Niño 1+2 index, NOAA CPC) and a test of the MODIS orbit drift.
 - Pre-fire context for anticipating critical periods: vegetation (NDVI), soil moisture and precipitation anomalies.
 - Alerts to the responsible agency when an area's current month becomes unusual.
 
