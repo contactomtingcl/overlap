@@ -32,4 +32,4 @@ Raw files are not committed (76 MB). To reproduce, download the requests above a
 
 Corporación Nacional Forestal (2024). *Registro histórico de incendios forestales*, V1. Datos para Resiliencia. https://doi.org/10.71578/UXAUN5
 
-File used: historical Biobío region (including the former Ñuble province), seasons 2002–03 to 2019–20, 45,757 fire records with coordinates (WGS84), start date and time, burned area by vegetation type and cause. Two records with coordinates outside the region were dropped. The raw file is not committed until its licence is confirmed; only derived results are in `results/validation/`.
+File used: historical Biobío region (including the former Ñuble province), seasons 2002–03 to 2019–20, 45,757 fire records with coordinates (WGS84), start date and time, burned area by vegetation type and cause. Two records with coordinates outside the region were dropped. Licence: CC BY 4.0. The file is in `data/conaf/` with its citation; derived results are in `results/validation/`.

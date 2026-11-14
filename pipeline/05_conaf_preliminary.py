@@ -2,7 +2,7 @@
 """Preliminary check of FIRMS hotspots against CONAF fire records (historical Biobío region, incl. Ñuble).
 
 CONAF data: Corporación Nacional Forestal (2024). Registro histórico de incendios forestales, V1.
-Datos para Resiliencia. https://doi.org/10.71578/UXAUN5 (raw file not committed until its licence is confirmed).
+Datos para Resiliencia. https://doi.org/10.71578/UXAUN5 (CC BY 4.0; file in data/conaf/).
 Outputs: monthly Spearman correlations, detection rate by burned-area class
 (any hotspot within 3 km, from 1 day before to 2 days after the CONAF start date), and monthly shares.
 The formal validation is Karla's (R); this is a first look.
