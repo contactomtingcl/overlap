@@ -18,6 +18,8 @@ const I18N = {
     controls: "Controls", area: "Area", rows: "Rows", opt_season: "Fire season (Jul–Jun)", opt_year: "Calendar year (Jan–Dec)",
     mode_h: "Harmonized", mode_r: "Raw (no harmonization)", csv: "Download CSV",
     cal_h: "Burning activity calendar",
+    cvd: "◐ Colour-blind safe", gis_lead: "Download for GIS (QGIS, ArcGIS):",
+    gis_note: "Region polygons (WGS84, BCN boundaries, referential and simplified) with the latest month, plus a monthly table for every region since 2000. In QGIS, join regions_monthly to regions on codregion; month is a date, so the Temporal Controller can animate it.",
     map_h: "Chile, region by region", mm_z: "Anomaly", mm_v: "Hotspots",
     map_sub: "Each region against its own normal for that month (robust z on the harmonized series). Press ▶ to watch 26 years of fire seasons; click a region to open it.",
     north: "◂ North (Arica)", south: "South (Magallanes) ▸",
@@ -105,6 +107,8 @@ const I18N = {
     controls: "Controles", area: "Área", rows: "Filas", opt_season: "Temporada de incendios (jul–jun)", opt_year: "Año calendario (ene–dic)",
     mode_h: "Armonizado", mode_r: "Crudo (sin armonizar)", csv: "Descargar CSV",
     cal_h: "Calendario de actividad de quemas",
+    cvd: "◐ Paleta para daltonismo", gis_lead: "Descarga para SIG (QGIS, ArcGIS):",
+    gis_note: "Polígonos de las regiones (WGS84, límites de la BCN, referenciales y simplificados) con el último mes, más una tabla mensual de cada región desde 2000. En QGIS, une regions_monthly con regions por codregion; month es una fecha, así que el Controlador temporal puede animarla.",
     map_h: "Chile, región por región", mm_z: "Anomalía", mm_v: "Focos de calor",
     map_sub: "Cada región frente a su propio normal para ese mes (z robusto sobre la serie armonizada). Presiona ▶ para ver 26 años de temporadas de incendios; haz clic en una región para abrirla.",
     north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
@@ -193,7 +197,12 @@ function pickLang() {
 // ---------- data & state ----------
 // Sequential ramp on a dark background: brightness grows with activity (slate -> blue -> lime glow),
 // taken from the Overlap logo. Monotonic in lightness, so it also reads in greyscale.
-const RAMP = ["#152a42", "#173f6c", "#0b5fae", "#0197f8", "#25c1d8", "#7fe08a", "#d6f53a", "#f7ffbf"];
+const PALETTES = {
+  brand: ["#152a42", "#173f6c", "#0b5fae", "#0197f8", "#25c1d8", "#7fe08a", "#d6f53a", "#f7ffbf"],
+  // cividis (Nuñez et al. 2018): designed to read the same with and without colour-vision deficiency
+  cvd: ["#00224e", "#123570", "#3b496c", "#575d6d", "#707173", "#8a8779", "#a69d75", "#c4b56c", "#e4cf5b", "#fee838"],
+};
+let RAMP = PALETTES.brand;
 const NO_DATA = "#0f1d38";
 const LEVEL_COLOUR = { "unusually high": "var(--high)", "unusually low": "var(--low)", "within normal": "var(--normal)" };
 // Four-region CONAF check (pipeline/10, results/validation_conaf/jump_at_2012_vs_conaf.csv)
@@ -231,7 +240,7 @@ function sweep(svg) {
 }
 
 function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
-const RAMP_RGB = RAMP.map(hex2rgb);
+let RAMP_RGB = RAMP.map(hex2rgb);
 function lev(v, max) { return Math.max(0, Math.min(1, Math.log10(v + 1) / Math.log10(max + 1))); }
 function colour(v, max) {
   if (v == null) return null;
@@ -457,7 +466,18 @@ function renderStatus() {
 
 // ---------- map of Chile ----------
 // Diverging scale for the robust z: blue below normal, dark at normal, orange to gold above.
-const ZSTOPS = [[-3, "#3d9bff"], [-1.5, "#1f4f8a"], [0, "#17284c"], [1.5, "#9a4f2c"], [3, "#ff8a3d"], [4.5, "#ffe08a"]].map(([z, c]) => [z, hex2rgb(c)]);
+const ZPAL = {
+  brand: [[-3, "#3d9bff"], [-1.5, "#1f4f8a"], [0, "#17284c"], [1.5, "#9a4f2c"], [3, "#ff8a3d"], [4.5, "#ffe08a"]],
+  cvd: [[-3, "#4f9cff"], [-1.5, "#24467e"], [0, "#1c2440"], [1.5, "#7b7350"], [3, "#d8c25a"], [4.5, "#fee838"]],
+};
+let ZSTOPS = ZPAL.brand.map(([z, c]) => [z, hex2rgb(c)]);
+function setPalette(cvd) {
+  state.cvd = cvd;
+  RAMP = cvd ? PALETTES.cvd : PALETTES.brand; RAMP_RGB = RAMP.map(hex2rgb);
+  ZSTOPS = (cvd ? ZPAL.cvd : ZPAL.brand).map(([z, c]) => [z, hex2rgb(c)]);
+  $("cvd").setAttribute("aria-pressed", cvd);
+  try { localStorage.setItem("overlap-cvd", cvd ? "1" : "0"); } catch (e) { /* storage blocked */ }
+}
 function zcol(z) {
   if (z == null) return "url(#mhatch)";
   z = Math.max(-3, Math.min(4.5, z));
@@ -496,7 +516,7 @@ function paintMap() {
   });
   const grad = (stops) => `linear-gradient(90deg,${stops.join(",")})`;
   $("map-legend").innerHTML = (map.mode === "z"
-    ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad(["#3d9bff", "#1f4f8a", "#17284c", "#9a4f2c", "#ff8a3d", "#ffe08a"])}"></i> ${T.mlgZ[2]}</span>`
+    ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad((state.cvd ? ZPAL.cvd : ZPAL.brand).map((x) => x[1]))}"></i> ${T.mlgZ[2]}</span>`
     : `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgV(fmt(map.vmax))}</span>`)
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>`;
   document.querySelectorAll("[data-mm]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mm === map.mode));
@@ -561,7 +581,7 @@ function renderSeason() {
       <linearGradient id="bandg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0197f8" stop-opacity=".30"/><stop offset="1" stop-color="#0197f8" stop-opacity=".10"/></linearGradient></defs>
     ${g}
     <path d="${band}" fill="url(#bandg)" stroke="none"/>
-    <path d="${line(S.top.cum)}" fill="none" stroke="#ff8a3d" stroke-width="1.5" opacity=".7"/>
+    <path d="${line(S.top.cum)}" fill="none" stroke="#ff8a3d" stroke-width="1.6" stroke-dasharray="1.5 3" stroke-linecap="round" opacity=".85"/>
     <path d="${line(S.last)}" fill="none" stroke="#8fa6cc" stroke-width="1.5" opacity=".6"/>
     <path d="${line(S.p50)}" fill="none" stroke="#c9d6ea" stroke-width="2" stroke-dasharray="5 4"/>
     <g clip-path="url(#wipe2)">
@@ -575,7 +595,7 @@ function renderSeason() {
     + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#c9d6ea 0 5px,transparent 5px 8px);border:0;height:3px;vertical-align:3px"></i>${T.sMed}</span>`
     + `<span><i class="sw" style="background:rgba(1,151,248,.3)"></i>${T.sBand}</span>`
     + `<span><i class="sw" style="background:#8fa6cc;border:0;height:3px;vertical-align:3px"></i>2025–26</span>`
-    + `<span><i class="sw" style="background:#ff8a3d;border:0;height:3px;vertical-align:3px"></i>${T.sTop(topLabel)}</span>`;
+    + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#ff8a3d 0 2px,transparent 2px 5px);border:0;height:3px;vertical-align:3px"></i>${T.sTop(topLabel)}</span>`;
   if (state.chartAnim) armWipe("season", "season-figs");
 }
 
@@ -727,6 +747,9 @@ document.addEventListener("pointermove", (e) => {
 });
 
 async function init() {
+  let cvd = new URLSearchParams(location.search).get("cvd") === "1";
+  try { cvd = cvd || localStorage.getItem("overlap-cvd") === "1"; } catch (e) { /* storage blocked */ }
+  setPalette(cvd);
   applyStatic();
   state.aois = await (await fetch(DATA("aois.json"))).json();
   applyStatic();
@@ -736,6 +759,7 @@ async function init() {
 
 $("aoi").addEventListener("change", (e) => { state.aoi = e.target.value; $("day-panel").hidden = true; load(); });
 $("play").addEventListener("click", togglePlay);
+$("cvd").addEventListener("click", () => { setPalette(!state.cvd); if (state.data) render(false); });
 $("map-slider").addEventListener("input", (e) => { map.i = +e.target.value; paintMap(); });
 document.querySelectorAll("[data-mm]").forEach((b) => b.addEventListener("click", () => { map.mode = b.dataset.mm; paintMap(); }));
 $("rows").addEventListener("change", (e) => { state.rows = e.target.value; renderCalendar(true); });

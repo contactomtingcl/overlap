@@ -34,3 +34,12 @@ Raw files are not committed (76 MB). To reproduce, download the requests above a
 Corporación Nacional Forestal (2024). *Registro histórico de incendios forestales*, V1. Datos para Resiliencia. https://doi.org/10.71578/UXAUN5
 
 File used: historical Biobío region (including the former Ñuble province), seasons 2002–03 to 2019–20, 45,757 fire records with coordinates (WGS84), start date and time, burned area by vegetation type and cause. Two records with coordinates outside the region were dropped. Licence: CC BY 4.0. The file is in `data/conaf/` with its citation; derived results are in `results/validation/`.
+
+## GIS downloads
+
+`app/data/gis/overlap_chile_regions.gpkg` (GeoPackage) and `.geojson`, built by `pipeline/13_export_gis.py` from the
+app data: 16 region polygons (WGS84, EPSG:4326) dissolved from the BCN commune boundaries (referential, simplified)
+with the harmonization method, CONAF check and latest month; plus the table `regions_monthly` (one row per region and
+month since 2000-11, `month` as DATE). In QGIS, join `regions_monthly` to `regions` on `codregion` and use the
+Temporal Controller on `month`. No GeoTIFF: the harmonized product is a region-month series, so a raster would either
+repeat region values or show raw, unharmonized counts.
