@@ -1,0 +1,5 @@
+"sensor","regions","median_mae_raw","median_mae_ratio_own","median_mae_ratio_pooled","median_mae_qmap_pooled","regions_qmap_pooled_beats_ratio_own"
+"Aqua",12,1.7797,1.0927,1.133,0.7559,9
+"Terra",12,1.9866,1.4635,1.3997,1.0122,9
+"NOAA20",12,0.362,0.3695,0.3648,0.3728,7
+"NOAA21",12,0.4511,0.4789,0.4587,0.4469,3

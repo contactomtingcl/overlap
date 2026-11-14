@@ -1,6 +1,6 @@
 # Validation against CONAF fire records
 
-Produced by `pipeline/10_conaf_validation.R`. CONAF records: seasons 2002–03 to 2019–20, regions Maule (7), Biobío (8), Araucanía (9) and Ñuble (16), 75,718 fires (`data/conaf/conaf_incendios_chile_2002_2020.csv.gz`). Hotspots: the harmonized monthly series from `results/normal` and raw monthly counts per comuna.
+Produced by `pipeline/10_conaf_validation.R`. CONAF comunas are matched to comuna codes by name, ignoring accents and case (Ránquil is spelled without the accent in `comunas_lookup.csv`); every fire of the four regions is matched. CONAF records: seasons 2002–03 to 2019–20, regions Maule (7), Biobío (8), Araucanía (9) and Ñuble (16), 76,002 fires (`data/conaf/conaf_incendios_chile_2002_2020.csv.gz`). Hotspots: the harmonized monthly series from `results/normal` and raw monthly counts per comuna.
 
 ## 1. Harmonization removes the false jump at the 2012 sensor change
 
@@ -8,11 +8,11 @@ Region-month regression of log(1 + hotspots) on CONAF burned area and number of 
 
 | Zone | Unharmonized (Aqua, then Suomi NPP) | Harmonized (Suomi NPP-equivalent) |
 | --- | --- | --- |
-| All four regions | ×4.70 (4.08–5.64) | ×0.89 (0.77–1.07) |
+| All four regions | ×4.71 (4.09–5.64) | ×0.89 (0.77–1.07) |
 | Maule | ×5.53 (4.47–6.95) | ×0.90 (0.73–1.12) |
 | Biobío | ×5.49 (4.62–6.60) | ×1.01 (0.84–1.22) |
 | Araucanía | ×4.11 (3.19–5.50) | ×0.92 (0.69–1.30) |
-| Ñuble | ×4.81 (3.90–6.03) | ×0.92 (0.76–1.12) |
+| Ñuble | ×4.85 (3.94–6.04) | ×0.93 (0.76–1.13) |
 
 Against independent ground records, joining the sensors without treatment creates a false increase of about ×4.7 in 2012; after harmonization the 95 % interval includes 1 in every region.
 
@@ -21,9 +21,9 @@ Against independent ground records, joining the sensors without treatment create
 | Scale | Period | vs number of fires | vs burned area |
 | --- | --- | --- | --- |
 | Region-month | Aqua era 2002–2012 | 0.27 | 0.35 |
-| Region-month | Suomi NPP era 2012–2020 | 0.49 | 0.55 |
+| Region-month | Suomi NPP era 2012–2020 | 0.48 | 0.55 |
 | Region-month | 2002–2020, unharmonized | 0.33 | 0.39 |
-| Region-month | 2002–2020, harmonized | 0.37 | 0.44 |
+| Region-month | 2002–2020, harmonized | 0.36 | 0.44 |
 | Comuna-month | Aqua era (Aqua counts) | 0.10 | 0.13 |
 | Comuna-month | Suomi NPP era (Suomi NPP counts) | 0.23 | 0.28 |
 
@@ -36,7 +36,7 @@ All four regions pooled; by region in `spearman_vs_conaf.csv` (Araucanía highes
 | < 1 ha | 40 % | 42 % | 75 % |
 | 1–10 ha | 52 % | 59 % | 87 % |
 | 10–200 ha | 70 % | 77 % | 94 % |
-| ≥ 200 ha (CONAF "incendio de magnitud") | 93 % | 97 % | 99.7 % |
+| ≥ 200 ha (CONAF "incendio de magnitud") | 93 % | 96 % | 99.7 % |
 
 This rate is lenient (a hotspot anywhere in the comuna that month counts, including from another burn), so the low size classes are inflated. The strict, point-based rate (hotspot within 3 km, from 1 day before to 2 days after the start) for Biobío is in `results/validation/conaf_detection_rate.csv`: ≥ 200 ha detected 88 % by Aqua and 97 % by Suomi NPP. Both agree: large fires are almost always seen, including in the MODIS-only years.
 

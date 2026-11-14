@@ -1,8 +1,8 @@
 "scale","zone","period","series","n","spearman_vs_conaf_fires","spearman_vs_conaf_area"
-"region-month","all four regions","Aqua era 2002-07 to 2012-01","either (same ranks within an era)",460,0.27,0.348
-"region-month","all four regions","Suomi NPP era 2012-02 to 2020-06","either (same ranks within an era)",404,0.487,0.549
-"region-month","all four regions","whole period 2002-07 to 2020-06","unharmonized",864,0.331,0.393
-"region-month","all four regions","whole period 2002-07 to 2020-06","harmonized",864,0.366,0.44
+"region-month","all four regions","Aqua era 2002-07 to 2012-01","either (same ranks within an era)",460,0.268,0.346
+"region-month","all four regions","Suomi NPP era 2012-02 to 2020-06","either (same ranks within an era)",404,0.485,0.548
+"region-month","all four regions","whole period 2002-07 to 2020-06","unharmonized",864,0.33,0.391
+"region-month","all four regions","whole period 2002-07 to 2020-06","harmonized",864,0.364,0.438
 "region-month","region_07","Aqua era 2002-07 to 2012-01","either (same ranks within an era)",115,0.074,0.181
 "region-month","region_07","Suomi NPP era 2012-02 to 2020-06","either (same ranks within an era)",101,0.215,0.365
 "region-month","region_07","whole period 2002-07 to 2020-06","unharmonized",216,0.216,0.239
@@ -15,17 +15,17 @@
 "region-month","region_09","Suomi NPP era 2012-02 to 2020-06","either (same ranks within an era)",101,0.716,0.736
 "region-month","region_09","whole period 2002-07 to 2020-06","unharmonized",216,0.521,0.576
 "region-month","region_09","whole period 2002-07 to 2020-06","harmonized",216,0.58,0.611
-"region-month","region_16","Aqua era 2002-07 to 2012-01","either (same ranks within an era)",115,0.176,0.27
-"region-month","region_16","Suomi NPP era 2012-02 to 2020-06","either (same ranks within an era)",101,0.141,0.248
-"region-month","region_16","whole period 2002-07 to 2020-06","unharmonized",216,0.152,0.241
-"region-month","region_16","whole period 2002-07 to 2020-06","harmonized",216,0.162,0.258
-"comuna-month","all four regions","Aqua era 2002-07 to 2012-01","Aqua",13340,0.102,0.134
-"comuna-month","all four regions","Suomi NPP era 2012-02 to 2020-06","SNPP",11716,0.233,0.283
+"region-month","region_16","Aqua era 2002-07 to 2012-01","either (same ranks within an era)",115,0.177,0.266
+"region-month","region_16","Suomi NPP era 2012-02 to 2020-06","either (same ranks within an era)",101,0.138,0.244
+"region-month","region_16","whole period 2002-07 to 2020-06","unharmonized",216,0.149,0.236
+"region-month","region_16","whole period 2002-07 to 2020-06","harmonized",216,0.16,0.254
+"comuna-month","all four regions","Aqua era 2002-07 to 2012-01","Aqua",13340,0.101,0.133
+"comuna-month","all four regions","Suomi NPP era 2012-02 to 2020-06","SNPP",11716,0.23,0.281
 "comuna-month","region_07","Aqua era 2002-07 to 2012-01","Aqua",3450,0.022,0.057
 "comuna-month","region_07","Suomi NPP era 2012-02 to 2020-06","SNPP",3030,0.104,0.161
 "comuna-month","region_08","Aqua era 2002-07 to 2012-01","Aqua",3795,0.075,0.124
 "comuna-month","region_08","Suomi NPP era 2012-02 to 2020-06","SNPP",3333,0.252,0.322
 "comuna-month","region_09","Aqua era 2002-07 to 2012-01","Aqua",3680,0.284,0.299
 "comuna-month","region_09","Suomi NPP era 2012-02 to 2020-06","SNPP",3232,0.433,0.454
-"comuna-month","region_16","Aqua era 2002-07 to 2012-01","Aqua",2415,0.048,0.066
-"comuna-month","region_16","Suomi NPP era 2012-02 to 2020-06","SNPP",2121,0.11,0.139
+"comuna-month","region_16","Aqua era 2002-07 to 2012-01","Aqua",2415,0.042,0.062
+"comuna-month","region_16","Suomi NPP era 2012-02 to 2020-06","SNPP",2121,0.095,0.127

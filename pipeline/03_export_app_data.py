@@ -8,8 +8,12 @@ Each region is harmonized on its own and areas are sums of regions:
   * Maule, Ñuble, Biobío, Araucanía: quantile mapping on log(1 + monthly hotspots) with Karla's tables
     (results/harmonization_qmap/quantiles_all.csv, fitted on 2012-02 to 2026-07; validated on hidden years
     and against CONAF). 80 % band: 10th-90th percentile of log errors on the hidden years 2020-2026.
-  * other regions: simple ratio k = sum(SNPP) / sum(sensor) on the overlap (national ratio if the region has
-    too few hotspots); band: 10th-90th percentile of yearly ratios. Flagged as not validated.
+  * other regions: Karla's pooled quantile map (results/harmonization_qmap/pooled, fitted on the four regions
+    together, whole overlap) wherever it beat the region's own simple ratio on the hidden years 2020-2026
+    (pipeline/11); 80 % band: 10th-90th percentile of log errors of the 2012-2019 fit on 2020-2026 in that
+    region. Elsewhere (Los Lagos, Aysén, Los Ríos) simple ratio k = sum(SNPP) / sum(sensor) on the overlap
+    (national ratio if too few hotspots); band: 10th-90th percentile of yearly ratios.
+    Tested on hidden years, not checked against CONAF.
 - provisional: Aug-Oct 2026, Suomi NPP near real-time data; partial: Nov 2026 (to Nov 7), NOAA-20 x ratio.
   Recent months over the Atacama desert (regions 15, 1, 2, 3) are withheld (daytime false detections).
 - no_data: no satellite record (never zero).
@@ -58,12 +62,26 @@ nrt_d = nrt.groupby(["codregion", "date", "satellite"]).size()
 qtab = pd.read_csv(qdir / "quantiles_all.csv")
 qmet = pd.read_csv(qdir / "metrics_all.csv").drop_duplicates()
 jump = pd.read_csv(qdir.parent / "validation_conaf" / "jump_at_2012_vs_conaf.csv")
+ptab = pd.read_csv(qdir / "pooled" / "quantiles_pooled.csv")
+ptest = pd.read_csv(qdir / "pooled" / "test_other_regions.csv")
+POOLED_USE = set()  # (region, sensor) where the pooled map beat the region's own ratio on hidden years
+for (zone, sen), g in ptest[ptest.sensor.isin(["Aqua", "Terra"])].groupby(["zone", "sensor"]):
+    mae = g.set_index("method").mae_log1p
+    if mae["qmap_pooled"] < mae["ratio_own_region"]:
+        POOLED_USE.add((int(zone[-2:]), sen))
 
 
 def trust(r):
     """How wrong can the joined series be? Hidden-years test (2020-2026) and the CONAF jump check."""
     if r not in QM_REGIONS:
-        return {"region": REGIONS[r], "validated": False}
+        out_ = {"region": REGIONS[r], "validated": False, "tested": True}
+        for sen in ["Aqua", "Terra"]:
+            meth = "qmap_pooled" if (r, sen) in POOLED_USE else "ratio_own_region"
+            row = ptest[(ptest.zone == f"region_{r:02d}") & (ptest.sensor == sen) & (ptest.method == meth)].iloc[0]
+            out_[sen] = {"method": "qmap_pooled" if meth == "qmap_pooled" else "ratio",
+                         "typical_factor": round(float(np.exp(row.mae_log1p)), 2),
+                         "bias_pct": round(float(row.bias_total_pct), 1), "months": int(row.months)}
+        return out_
     out_ = {"region": REGIONS[r], "validated": True}
     for sen in ["Aqua", "Terra"]:
         row = qmet[(qmet.zone == f"region_{r:02d}") & (qmet.sensor == sen) & (qmet.method == "qmap")].iloc[0]
@@ -114,6 +132,23 @@ def qm_model(region, sensor):
             "q10": float(le.quantile(.1)), "q90": float(le.quantile(.9))}
 
 
+def table_model(t):
+    g = t.groupby("sensor_value").snpp_value.apply(lambda s: np.log1p(s).mean())  # R approx(): ties = mean
+    return {"x": np.log1p(g.index.values.astype(float)), "y": g.values}
+
+
+def pooled_model(region, sensor, m):
+    """Pooled map (whole overlap); band from the 2012-2019 fit tested on 2020-2026 in this region."""
+    base = ptab[(ptab.sensor == sensor) & (ptab.season_group == "all_year")]
+    model = table_model(base[base.fit_period == "2012-02_2026-07"])
+    test_model = table_model(base[base.fit_period == "2012-02_2019-12"])
+    te = m[(m.index >= "2020-01") & (m.index <= END) & m["SNPP"].notna() & m[sensor].notna()]
+    pred = np.maximum(np.expm1(np.interp(np.log1p(te[sensor].values), test_model["x"], test_model["y"])), 0)
+    le = np.log((te["SNPP"].values + 1) / (pred + 1))
+    model.update(q10=float(np.quantile(le, .1)), q90=float(np.quantile(le, .9)), mae_check=float(np.mean(np.abs(le))))
+    return model
+
+
 def qm_apply(model, v):
     p = max(float(np.expm1(np.interp(np.log1p(v), model["x"], model["y"]))), 0.0)
     return p, max((p + 1) * np.exp(model["q10"]) - 1, 0.0), (p + 1) * np.exp(model["q90"]) - 1
@@ -126,7 +161,12 @@ def region_rows(r):
     """Harmonized monthly rows for one region (dict month -> row)."""
     m = monthly_table([r])
     f = ratio_factors(m, NATIONAL)
-    qm = {s: qm_model(r, s) for s in ["Aqua", "Terra"]} if r in QM_REGIONS else {}
+    if r in QM_REGIONS:
+        qm = {s: dict(qm_model(r, s), method="qmap") for s in ["Aqua", "Terra"]}
+    else:
+        qm = {s: dict(pooled_model(r, s, m), method="qmap_pooled") for s in ["Aqua", "Terra"] if (r, s) in POOLED_USE}
+        for s_, mod in qm.items():
+            print(f"region {r:02d} {s_}: pooled map, MAE check {mod['mae_check']:.3f}")
     rows = {}
     for month, row in m.iterrows():
         raw = {s: (None if pd.isna(row[s]) else int(row[s])) for s in SATS}
@@ -139,7 +179,7 @@ def region_rows(r):
             rows[month] = dict(raw=raw, value=None, low=None, high=None, status="no_data", source=None, method=None)
         elif sat in qm:
             v, lo, hi = qm_apply(qm[sat], raw[sat])
-            rows[month] = dict(raw=raw, value=v, low=lo, high=hi, status="estimated", source=sat, method="qmap")
+            rows[month] = dict(raw=raw, value=v, low=lo, high=hi, status="estimated", source=sat, method=qm[sat]["method"])
         else:
             k = f[sat]
             rows[month] = dict(raw=raw, value=raw[sat] * k["k"], low=raw[sat] * k["low"], high=raw[sat] * k["high"],
@@ -158,7 +198,7 @@ def region_rows(r):
             rows[month] = dict(raw=raw, value=raw["NOAA20"] * k["k"], low=raw["NOAA20"] * k["low"],
                                high=raw["NOAA20"] * k["high"], status="partial", source="NOAA20", method="ratio",
                                through="2026-11-07")
-    return rows, f, sorted(qm)
+    return rows, f, {s: mod["method"] for s, mod in qm.items()}
 
 
 REGION_ROWS, REGION_FACTORS, REGION_QM = {}, {}, {}
@@ -239,13 +279,16 @@ for key, meta in AOIS.items():
             h = hist[(hist.m == int(rec["month"][5:])) & (hist.month != rec["month"])]["value"].values
             rec["z"], rec["anomaly"] = anomaly(rec["value"], h)
     latest = next(r for r in reversed(rows) if r["status"] in ("observed", "estimated", "provisional"))
-    qm_regs = [r for r in meta["regions"] if REGION_QM[r]]
+    qm_regs = [r for r in meta["regions"] if r in QM_REGIONS]
+    pooled_regs = [r for r in meta["regions"] if r not in QM_REGIONS and REGION_QM[r]]
+    ratio_regs = [r for r in meta["regions"] if r not in QM_REGIONS and len(REGION_QM[r]) < 2]
     payload = {
         "aoi": key, "name": meta["name"], "regions": meta["regions"],
         "unit": "Suomi NPP-equivalent hotspots per month",
         "method": {"qmap_regions": [REGIONS[r] for r in qm_regs],
-                   "ratio_regions": [REGIONS[r] for r in meta["regions"] if r not in qm_regs],
-                   "factors": {REGIONS[r]: REGION_FACTORS[r] for r in meta["regions"] if r not in qm_regs}},
+                   "pooled_regions": [REGIONS[r] for r in pooled_regs],
+                   "ratio_regions": [REGIONS[r] for r in ratio_regs],
+                   "factors": {REGIONS[r]: REGION_FACTORS[r] for r in ratio_regs}},
         "trust": [trust(r) for r in meta["regions"]],
         "climatology_median": climatology,
         "latest": {"month": latest["month"], "value": latest["value"], "status": latest["status"],
@@ -255,7 +298,7 @@ for key, meta in AOIS.items():
     }
     (out / f"{key}.json").write_text(json.dumps(payload, ensure_ascii=False))
     (out / f"{key}_daily.json").write_text(json.dumps(daily(meta["regions"]), separators=(",", ":")))
-    print(key, "QM:", [REGIONS[r] for r in qm_regs] or "-", "latest", payload["latest"])
+    print(key, "QM:", len(qm_regs), "pooled:", len(pooled_regs), "ratio:", len(ratio_regs), "latest", payload["latest"])
 
 (out / "aois.json").write_text(json.dumps([{"key": k, "name": m["name"]} for k, m in AOIS.items()],
                                           ensure_ascii=False))

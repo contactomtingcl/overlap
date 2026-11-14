@@ -8,6 +8,7 @@
 <meta name="description" content="25 years of NASA FIRMS hotspots from MODIS and VIIRS, harmonized into one comparable burning activity calendar for Chile.">
 <meta property="og:title" content="Overlap · two satellites, one honest burning calendar">
 <meta property="og:image" content="assets/logo-512.png">
+<link rel="alternate" hreflang="es" href="?lang=es">
 <link rel="icon" type="image/png" href="assets/favicon-64.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +47,9 @@
   .brand img { width:58px; height:58px; border-radius:14px; box-shadow:0 0 0 1px var(--line), 0 6px 30px rgba(1,151,248,.35); }
   h1 { margin:0; font-family:var(--head); font-size:30px; letter-spacing:-.02em; line-height:1.1; }
   h1 em { font-style:normal; color:var(--lime); text-shadow:0 0 18px rgba(234,255,40,.45); }
+  .lang { margin-left:auto; display:inline-flex; background:#0d1f45; border:1px solid var(--line); border-radius:10px; padding:3px; align-self:flex-start; }
+  .lang button { border:0; background:transparent; padding:5px 10px; border-radius:7px; color:var(--quiet); font-size:13px; font-weight:600; }
+  .lang button[aria-pressed="true"] { background:var(--blue); color:#fff; }
   .tag { position:relative; color:var(--quiet); margin:8px 0 18px; max-width:760px; }
   main { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; padding-bottom:40px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 20px;
@@ -58,7 +62,7 @@
   select, button { font:inherit; font-size:14px; padding:8px 12px; border:1px solid var(--line); border-radius:10px;
     background:#0d1f45; color:var(--ink); }
   select { max-width:100%; min-width:0; }
-  #aoi { width:300px; }
+  #aoi { width:250px; }
   button { cursor:pointer; transition:border-color .2s, background .2s, color .2s; }
   button:hover, select:hover { border-color:rgba(234,255,40,.5); }
   .seg { display:inline-flex; background:#0d1f45; border:1px solid var(--line); border-radius:12px; padding:3px; }
@@ -121,7 +125,9 @@
   footer { color:var(--quiet); font-size:12.5px; padding-bottom:30px; }
   @media (max-width:620px) {
     .wrap { padding:0 14px; }
-    h1 { font-size:24px; }
+    h1 { font-size:21px; }
+    .brand { padding-top:58px; }
+    .lang { position:absolute; top:14px; right:0; }
     .brand img { width:46px; height:46px; }
     .card { padding:14px; border-radius:14px; }
     .controls { position:static; }
@@ -139,72 +145,71 @@
   <div class="bands" aria-hidden="true"><i class="viirs"></i><i class="modis"></i><b></b></div>
   <div class="wrap">
     <div class="brand">
-      <img src="assets/logo-160.png" alt="Overlap logo: a coarse-pixel band and a fine-dot band crossing in a glowing square">
-      <div>
-        <h1>Overlap · two satellites, <em>one honest</em> burning calendar</h1>
+      <img src="assets/logo-160.png" alt="Overlap logo" data-i18n-alt="logo_alt">
+      <h1 data-i18n="title"></h1>
+      <div class="lang" role="group" aria-label="Language / Idioma">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="es" aria-pressed="false">ES</button>
       </div>
     </div>
-    <p class="tag">25 years of NASA FIRMS fire hotspots from MODIS (coarse pixels, since 2000) and VIIRS (fine pixels, since 2012), harmonized into one comparable series for Chile. Every estimate shows how much to trust it.</p>
+    <p class="tag" data-i18n="tag"></p>
   </div>
 </header>
 <main class="wrap">
-  <section class="card controls" aria-label="Controls">
-    <label class="field">Area <select id="aoi"></select></label>
-    <label class="field">Rows <select id="rows"><option value="season">Fire season (Jul–Jun)</option><option value="year">Calendar year (Jan–Dec)</option></select></label>
-    <div class="seg" role="group" aria-label="Series">
-      <button type="button" id="mode-h" aria-pressed="true">Harmonized</button>
-      <button type="button" id="mode-r" class="raw" aria-pressed="false">Raw (no harmonization)</button>
+  <section class="card controls" data-i18n-label="controls">
+    <label class="field"><span data-i18n="area"></span> <select id="aoi"></select></label>
+    <label class="field"><span data-i18n="rows"></span> <select id="rows"><option value="season" data-i18n="opt_season"></option><option value="year" data-i18n="opt_year"></option></select></label>
+    <div class="seg" role="group">
+      <button type="button" id="mode-h" aria-pressed="true" data-i18n="mode_h"></button>
+      <button type="button" id="mode-r" class="raw" aria-pressed="false" data-i18n="mode_r"></button>
     </div>
     <span class="spacer"></span>
-    <button id="csv" type="button">Download CSV</button>
+    <button id="csv" type="button" data-i18n="csv"></button>
   </section>
 
-  <section class="card" aria-label="Current status">
+  <section class="card">
     <p class="sub" id="status-kicker"></p>
     <p class="headline" id="headline"></p>
     <p class="sub" id="status-sub"></p>
     <div class="status" id="status"></div>
   </section>
 
-  <section class="card" aria-label="Burning activity calendar">
-    <h2>Burning activity calendar</h2>
+  <section class="card">
+    <h2 data-i18n="cal_h"></h2>
     <p class="sub" id="cal-sub"></p>
     <div id="calendar"></div>
     <div class="legend" id="legend"></div>
   </section>
 
-  <section class="card" id="day-panel" aria-label="Days of the selected month" hidden>
+  <section class="card" id="day-panel" hidden>
     <h2 id="day-title"></h2>
     <p class="sub" id="day-sub"></p>
     <div id="day-grid"></div>
     <div class="legend" id="day-legend"></div>
   </section>
 
-  <section class="card" aria-label="The 2012 jump, before and after">
-    <h2>The 2012 jump, before and after</h2>
-    <p class="sub">When VIIRS arrives in 2012 it sees many more small fires than MODIS. Joined as they are, the record seems to explode overnight. Harmonized, every year speaks the same unit.</p>
+  <section class="card">
+    <h2 data-i18n="jump_h"></h2>
+    <p class="sub" data-i18n="jump_sub"></p>
     <div class="bigfig" id="jump-figs"></div>
     <div id="jump"></div>
     <div class="legend" id="jump-legend"></div>
   </section>
 
-  <section class="card" aria-label="How much to trust these numbers">
-    <h2>How much to trust these numbers</h2>
-    <p class="sub">Joining two sensors is never exact. We measured the error on years the model never saw (2020–2026) and against 75,718 CONAF fire records (2002–2020).</p>
+  <section class="card">
+    <h2 data-i18n="trust_h"></h2>
+    <p class="sub" data-i18n="trust_sub"></p>
     <div id="trust"></div>
   </section>
 
-  <details class="card notes" aria-label="Method and limits">
-    <summary>How to read this</summary>
+  <details class="card notes">
+    <summary data-i18n="read_h"></summary>
     <p id="method"></p>
-    <p><b>No detection is not the same as no fire.</b> Each polar satellite sees a place only about twice a day, and clouds, smoke and satellite gaps hide fires. Hatched cells mean the record could not be built for that month, not zero fire.</p>
-    <p><b>Hotspots are not fires.</b> One large fire produces many hotspots; small agricultural or short-lived burns may produce none.</p>
-    <p>Work in progress (NASA Space Apps Challenge 2026). Harmonization v1: quantile mapping (validated) in Maule, Ñuble, Biobío and La Araucanía; simple ratios in other regions (not yet validated).</p>
+    <p data-i18n="read_nodetect"></p>
+    <p data-i18n="read_notfire"></p>
+    <p data-i18n="read_wip"></p>
   </details>
 
-  <footer>
-    Data: NASA FIRMS (MODIS Collection 6.1, VIIRS Collection 2); CONAF fire records (CC BY 4.0); BCN commune boundaries. We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (<a href="https://earthdata.nasa.gov/firms">earthdata.nasa.gov/firms</a>), part of NASA's Earth Science Data and Information System (ESDIS). Code: <a href="https://github.com/contactomtingcl/overlap">github.com/contactomtingcl/overlap</a>.
-  </footer>
+  <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
 <script src="app.js"></script>

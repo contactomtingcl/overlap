@@ -31,11 +31,17 @@ months <- format(seq(as.Date(paste0(START, "-01")), as.Date(paste0(END, "-01")),
 season_of <- function(m) { y <- as.integer(substr(m, 1, 4)); s <- ifelse(as.integer(substr(m, 6, 7)) >= 7, y, y - 1); sprintf("%d-%d", s, s + 1) }
 
 # ---------- CONAF: match comunas to codes (accent- and case-insensitive) ----------
-norm <- function(s) tolower(trimws(iconv(s, "UTF-8", "ASCII//TRANSLIT")))
+# accents removed explicitly (iconv's transliteration depends on the system locale and turned "R\u00e1nquil" into
+# "r?nquil" in a C locale, so its 284 fires were lost); then every fire of the four regions must match a comuna
+norm <- function(s) tolower(trimws(chartr("\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1\u00c1\u00c9\u00cd\u00d3\u00da\u00dc\u00d1",
+                                          "aeiouunAEIOUUN", enc2utf8(s))))
 lookup$k <- norm(lookup$Comuna)
 conaf$k <- norm(conaf$comuna)
 conaf$cod_comuna <- lookup$cod_comuna[match(conaf$k, lookup$k)]
 conaf$codregion <- lookup$codregion[match(conaf$k, lookup$k)]
+in4 <- conaf$region %in% REG
+if (any(is.na(conaf$codregion[in4]))) stop("CONAF comunas without a code: ",
+  paste(unique(conaf$comuna[in4 & is.na(conaf$codregion)]), collapse = ", "))
 conaf <- conaf[!is.na(conaf$codregion) & conaf$codregion %in% as.integer(names(REG)), ]
 conaf$month <- substr(conaf$fecha, 1, 7)
 conaf <- conaf[conaf$month >= START & conaf$month <= END, ]
