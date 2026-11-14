@@ -18,7 +18,7 @@ const I18N = {
     controls: "Controls", area: "Area", rows: "Rows", opt_season: "Fire season (Jul–Jun)", opt_year: "Calendar year (Jan–Dec)",
     mode_h: "Harmonized", mode_r: "Raw (no harmonization)", csv: "Download CSV",
     cal_h: "Burning activity calendar",
-    cvd: "◐ Colour-blind safe", gis_lead: "Download for GIS (QGIS, ArcGIS):",
+    cvd: "◐ Colour-blind safe", share: "🔗 Copy link", copied: "✓ Link copied", gis_lead: "Download for GIS (QGIS, ArcGIS):",
     gis_note: "Region polygons (WGS84, BCN boundaries, referential and simplified) with the latest month, plus a monthly table for every region since 2000. In QGIS, join regions_monthly to regions on codregion; month is a date, so the Temporal Controller can animate it.",
     back: "← Chile", whereH: (r) => `Where in ${r}`,
     whereNote: (sen) => `Raw ${sen} detections per commune, not harmonized: they show where the hotspots fall, not totals to compare across years.`,
@@ -115,7 +115,7 @@ const I18N = {
     controls: "Controles", area: "Área", rows: "Filas", opt_season: "Temporada de incendios (jul–jun)", opt_year: "Año calendario (ene–dic)",
     mode_h: "Armonizado", mode_r: "Crudo (sin armonizar)", csv: "Descargar CSV",
     cal_h: "Calendario de actividad de quemas",
-    cvd: "◐ Paleta para daltonismo", gis_lead: "Descarga para SIG (QGIS, ArcGIS):",
+    cvd: "◐ Paleta para daltonismo", share: "🔗 Copiar link", copied: "✓ Link copiado", gis_lead: "Descarga para SIG (QGIS, ArcGIS):",
     gis_note: "Polígonos de las regiones (WGS84, límites de la BCN, referenciales y simplificados) con el último mes, más una tabla mensual de cada región desde 2000. En QGIS, une regions_monthly con regions por codregion; month es una fecha, así que el Controlador temporal puede animarla.",
     back: "← Chile", whereH: (r) => `Dónde, en ${r}`,
     whereNote: (sen) => `Detecciones crudas de ${sen} por comuna, sin armonizar: muestran dónde caen los focos, no totales para comparar entre años.`,
@@ -279,6 +279,7 @@ async function load() {
   state.data = await res.json();
   state.max = Math.max(...state.data.months.map((r) => r.value).filter((v) => v != null));
   render(true);
+  updateURL();
 }
 
 // ---------- static text ----------
@@ -292,10 +293,30 @@ function applyStatic() {
   if (state.aois.length) $("aoi").innerHTML = state.aois.map((a) => `<option value="${a.key}"${a.key === state.aoi ? " selected" : ""}>${aoiName(a.key, a.name)}</option>`).join("");
 }
 
+// The address bar always describes the current view, so any view can be shared as a link.
+function updateURL() {
+  const u = new URL(location.href), q = u.searchParams;
+  q.set("lang", state.lang); q.set("area", state.aoi);
+  if (state.mode === "raw") q.set("view", "raw"); else q.delete("view");
+  if (state.month && !$("day-panel").hidden) q.set("m", state.month); else q.delete("m");
+  if (state.cvd) q.set("cvd", "1"); else q.delete("cvd");
+  history.replaceState(null, "", u);
+}
+
+async function copyLink() {
+  updateURL();
+  const done = () => { $("share").textContent = L().copied; setTimeout(() => { $("share").textContent = L().share; }, 2200); };
+  try { await navigator.clipboard.writeText(location.href); done(); }
+  catch (e) {
+    const t = document.createElement("textarea"); t.value = location.href; document.body.appendChild(t); t.select();
+    try { document.execCommand("copy"); done(); } finally { t.remove(); }
+  }
+}
+
 function setLang(lang) {
   state.lang = lang;
   try { localStorage.setItem("overlap-lang", lang); } catch (e) { /* storage blocked */ }
-  const u = new URL(location.href); u.searchParams.set("lang", lang); history.replaceState(null, "", u);
+  updateURL();
   applyStatic();
   if (state.data) { render(false); if (!$("day-panel").hidden && state.month) showMonth(state.month, false); }
 }
@@ -409,6 +430,7 @@ function setMode(mode) {
   sweep($("calendar").querySelector("svg"));
   calSub();
   renderJump();
+  updateURL();
 }
 
 function methodLabel(methods) {
@@ -842,6 +864,7 @@ async function showMonth(key, scroll = true) {
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.dlg[2]}</span>`
     + `<span>${T.dlg[3]}</span>`;
   $("day-panel").hidden = false;
+  updateURL();
   if (scroll) $("day-panel").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -879,16 +902,26 @@ async function init() {
   let cvd = new URLSearchParams(location.search).get("cvd") === "1";
   try { cvd = cvd || localStorage.getItem("overlap-cvd") === "1"; } catch (e) { /* storage blocked */ }
   setPalette(cvd);
+  const q = new URLSearchParams(location.search);
   applyStatic();
   state.aois = await (await fetch(DATA("aois.json"))).json();
+  if (state.aois.some((a) => a.key === q.get("area"))) state.aoi = q.get("area");
   applyStatic();
-  load();
-  initMap();
+  await load();
+  await initMap();
+  if (q.get("view") === "raw") setMode("raw");
+  const m = q.get("m");
+  if (m && /^\d{4}-\d{2}$/.test(m) && state.data.months.some((r) => r.month === m)) {
+    const i = map.reg.months.indexOf(m);
+    if (i >= 0) { map.i = i; $("map-slider").value = i; paintMap(); }
+    showMonth(m);
+  }
 }
 
 $("aoi").addEventListener("change", (e) => selectAoi(e.target.value, false));
 $("play").addEventListener("click", togglePlay);
-$("cvd").addEventListener("click", () => { setPalette(!state.cvd); if (state.data) render(false); });
+$("cvd").addEventListener("click", () => { setPalette(!state.cvd); if (state.data) { render(false); updateURL(); } });
+$("share").addEventListener("click", copyLink);
 $("map-slider").addEventListener("input", (e) => { map.i = +e.target.value; paintMap(); });
 document.querySelectorAll("[data-mm]").forEach((b) => b.addEventListener("click", () => { map.mode = b.dataset.mm; paintMap(); }));
 $("rows").addEventListener("change", (e) => { state.rows = e.target.value; renderCalendar(true); });
