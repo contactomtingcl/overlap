@@ -141,7 +141,7 @@ function renderStatus() {
 function renderMethod() {
   const M = state.data.method;
   let txt = "All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Before Suomi NPP (2012), MODIS counts are mapped to that unit. ";
-  if (M.qmap_regions.length) txt += `<b>${M.qmap_regions.join(", ")}:</b> quantile mapping fitted where both sensors observed (2012–2026), tested on hidden years 2020–2026 and checked against CONAF fire records 2002–2020: unharmonized, the series jumps ×4.7 at 2012 relative to real fire activity; harmonized, ×0.89 (95% interval includes 1, no jump). `;
+  if (M.qmap_regions.length) txt += `<b>${M.qmap_regions.join(", ")}:</b> quantile mapping fitted where both sensors observed (2012–2026), tested on hidden years 2020–2026 and checked against CONAF fire records 2002–2020 (per-region results in the table above). Maule, Ñuble, Biobío and La Araucanía together: unharmonized, the series jumps ×4.7 at 2012 relative to real fire activity; harmonized, ×0.89 (95% interval includes 1, no jump). `;
   if (M.ratio_regions.length) txt += `<b>${M.ratio_regions.length > 3 ? "Other regions" : M.ratio_regions.join(", ")}:</b> simple ratio (` + Object.entries(M.factors).slice(0, 3).map(([n, f]) => `${n}: Aqua × ${f.Aqua.k}`).join("; ") + `${Object.keys(M.factors).length > 3 ? "; …" : ""}), not yet validated. `;
   txt += "Only science-quality FIRMS data, presumed vegetation fires (volcanoes, mining and industry removed), low-confidence detections removed. Regions use the BCN commune boundaries (referential, not official limits).";
   $("method").innerHTML = txt;
