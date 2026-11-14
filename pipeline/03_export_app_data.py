@@ -8,7 +8,9 @@ v0 is a placeholder to get real data on screen. Every month is expressed in
   in this priority: NOAA-20, Aqua MODIS, Terra MODIS (Terra = morning orbit, flagged)
 - the 80 % band uses the 10th-90th percentile of the yearly ratios
 - months with no standard data are "no_data", never zero
-Usage: python3 pipeline/03_export_app_data.py <detections_clean_chile.csv.gz> app/data
+Recent months (Aug-Oct 2026) come from near real-time data and are flagged "provisional";
+November 2026 is "partial" (data to Nov 7) and is not compared with history.
+Usage: python3 pipeline/03_export_app_data.py <detections_clean_chile.csv.gz> <detections_nrt_clean_chile.csv.gz> app/data
 """
 import json
 import sys
@@ -17,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-src, out = Path(sys.argv[1]), Path(sys.argv[2])
+src, nrt_src, out = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
 out.mkdir(parents=True, exist_ok=True)
 
 AOIS = {
@@ -31,6 +33,10 @@ END = "2026-07"  # last month with standard data for every satellite
 d = pd.read_csv(src, usecols=["latitude", "longitude", "date", "satellite"])
 d["month"] = d["date"].str[:7]
 d = d[d["month"] <= END]
+nrt = pd.read_csv(nrt_src, usecols=["latitude", "longitude", "date", "satellite"])
+nrt["month"] = nrt["date"].str[:7]
+RECENT = ["2026-08", "2026-09", "2026-10"]
+PARTIAL = "2026-11"
 
 
 def export(key, meta):
@@ -83,17 +89,34 @@ def export(key, meta):
                 rec[k] = round(rec[k], 1)
         rows.append(rec)
 
+    nsub = nrt
+    if meta["bbox"]:
+        nsub = nrt[nrt.longitude.between(w, e) & nrt.latitude.between(s, n)]
+    nm = nsub.groupby(["month", "satellite"]).size().unstack(fill_value=0)
+    for month in RECENT + [PARTIAL]:
+        r = nm.loc[month] if month in nm.index else pd.Series(dtype=float)
+        raw = {s_: int(r.get(s_, 0)) for s_ in ["Terra", "Aqua", "SNPP", "NOAA20", "NOAA21"]}
+        if month in RECENT:  # Suomi NPP NRT covers Aug 1 - Nov 1, 2026
+            v = float(raw["SNPP"])
+            rows.append({"month": month, "raw": raw, "value": v, "low": v, "high": v,
+                         "status": "provisional", "source": "SNPP"})
+        else:  # Nov 1-7 only, Suomi NPP ended Nov 2: NOAA-20 scaled
+            f = factors["NOAA20"]
+            rows.append({"month": month, "raw": raw, "value": round(raw["NOAA20"] * f["k"], 1),
+                         "low": round(raw["NOAA20"] * f["low"], 1), "high": round(raw["NOAA20"] * f["high"], 1),
+                         "status": "partial", "source": "NOAA20", "through": "2026-11-07"})
+
     cal = pd.DataFrame(rows)
     cal["m"] = cal["month"].str[5:].astype(int)
-    med = cal.groupby("m")["value"].median()
+    med = cal[cal.status.isin(["observed", "estimated"])].groupby("m")["value"].median()
     climatology = {int(k): round(float(v), 1) for k, v in med.items()}
-    latest = cal[cal.status != "no_data"].iloc[-1]
+    latest = cal[cal.status.isin(["observed", "estimated", "provisional"])].iloc[-1]
     payload = {
         "aoi": key, "name": meta["name"], "bbox": meta["bbox"],
         "unit": "Suomi NPP-equivalent hotspots per month",
         "method": "v0 simple ratio (to be replaced by the validated model)",
         "factors": factors, "climatology_median": climatology,
-        "latest": {"month": latest["month"], "value": latest["value"],
+        "latest": {"month": latest["month"], "value": latest["value"], "status": latest["status"],
                    "median": climatology[int(latest["m"])]},
         "months": rows,
     }

@@ -67,6 +67,10 @@ function renderCalendar() {
       const fill = colour(v, max);
       const hatch = v == null ? ` fill="url(#hatch)"` : ` fill="${fill}"`;
       body += `<rect class="cell" data-key="${c.key}" x="${x + 1}" y="${y + 1}" width="${cw - 2}" height="${ch - 2}" rx="3"${hatch} stroke="#fff"/>`;
+      if (r && (r.status === "provisional" || r.status === "partial")) {
+        sources.add("SNPP");
+        body += `<rect x="${x + 2.5}" y="${y + 2.5}" width="${cw - 5}" height="${ch - 5}" rx="2" fill="none" stroke="#1d2329" stroke-width="1.2" stroke-dasharray="3 2" pointer-events="none"/>`;
+      }
       if (r && r.status === "estimated") {
         sources.add(r.source);
         body += `<circle cx="${x + cw - 7}" cy="${y + 7}" r="2.4" fill="#1d2329" pointer-events="none"/>`;
@@ -86,7 +90,8 @@ function renderCalendar() {
   const steps = [0, 10, 100, 1000, max].filter((v, i, a) => v <= max && a.indexOf(v) === i);
   $("legend").innerHTML = steps.map((v) => `<span><i class="sw" style="background:${colour(v, max)}"></i>${fmt(v)}</span>`).join("")
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#adb5bd 3px 5px)"></i>no data (not zero)</span>`
-    + `<span>● estimated from MODIS or NOAA-20 (hover for range)</span>`;
+    + `<span>● estimated from MODIS or NOAA-20 (hover for range)</span>`
+    + `<span><i class="sw" style="border:1.5px dashed #1d2329;background:#fff"></i>provisional (near real-time data, last months)</span>`;
   $("cal-sub").textContent = `${state.data.name}. Colour = hotspots per month in Suomi NPP-equivalent units, log scale. Right column: which sensor each row comes from.`;
 }
 
@@ -98,6 +103,8 @@ function tip(e, key) {
   else {
     html += `${fmt(r.value)} hotspots (Suomi NPP-equivalent)<br>`;
     if (r.status === "estimated") html += `80% range: ${fmt(r.low)}–${fmt(r.high)}<br>Source: ${SOURCE_NAME[r.source]}<br>`;
+    else if (r.status === "provisional") html += "Provisional: near real-time Suomi NPP data, final values arrive about 5 months later<br>";
+    else if (r.status === "partial") html += `Partial month: data through ${r.through}, from NOAA-20 (Suomi NPP stopped on Nov 2, 2026)<br>`;
     else html += "Observed by VIIRS Suomi NPP<br>";
     const med = state.data.climatology_median[+m];
     html += `Median for ${MONTHS[+m - 1]}: ${fmt(med)}`;
@@ -109,12 +116,13 @@ function tip(e, key) {
 
 function renderStatus() {
   const d = state.data, L = d.latest, [y, m] = L.month.split("-");
-  const same = d.months.filter((r) => r.month.endsWith(`-${m}`) && r.month !== L.month && r.value != null).map((r) => r.value);
+  const same = d.months.filter((r) => r.month.endsWith(`-${m}`) && r.month !== L.month && r.value != null && (r.status === "observed" || r.status === "estimated")).map((r) => r.value);
   const below = same.filter((v) => v < L.value).length;
   const pct = Math.round(100 * below / same.length);
   const level = pct >= 90 ? ["Critical", "#b30000"] : pct >= 75 ? ["Elevated", "#ef6548"] : ["Normal or below", "#2b8a3e"];
-  $("status-title").textContent = `${MONTHS[+m - 1]} ${y} vs every previous ${MONTHS[+m - 1]}`;
-  $("status-sub").textContent = "Latest month with science-quality data. Near real-time months (Aug–Nov 2026) are being added.";
+  const prov = L.status === "provisional";
+  $("status-title").textContent = `${MONTHS[+m - 1]} ${y}${prov ? " (provisional)" : ""} vs every previous ${MONTHS[+m - 1]}`;
+  $("status-sub").textContent = prov ? "Latest complete month, from near real-time data: it may change slightly when science-quality data arrives. November 2026 is still in progress." : "Latest month with science-quality data.";
   const seasons = {};
   d.months.forEach((r) => { if (r.value == null) return; const [yy, mm] = r.month.split("-").map(Number); const s = mm >= 7 ? yy : yy - 1; seasons[s] = (seasons[s] || 0) + r.value; });
   const full = Object.entries(seasons).filter(([s]) => +s >= 2001 && +s <= 2024);
