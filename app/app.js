@@ -30,7 +30,18 @@ const I18N = {
     north: "◂ North (Arica)", south: "South (Magallanes) ▸",
     mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data or withheld", mlgC: (m) => `communes: 0 – ${m} raw detections / month (log)`,
     mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
+    more_curve: "See the full curve, month by month",
+    seasonIntro: "Fire season 2026–27 (July to June), in Suomi NPP-equivalent hotspots.",
+    clockPlainUnclear: (a, b) => `The busiest month was ${a} in 2001–2012 and <b>${b}</b> in 2013–2026, but over 25 seasons the shift is not statistically clear.`, more_clock: "See every season and the trend tests",
+    seasonPlain: (area, mo, cur, med, lo, hi, lvl) => `${area} has <b>${cur}</b> hotspots so far this season (to ${mo}). A normal season has about ${med} by now; 8 of every 10 seasons had between ${lo} and ${hi}. <span class="${lvl}">${lvl === "lo" ? "So far, a quiet season." : lvl === "hi" ? "So far, a busy season." : "So far, a normal season."}</span>`,
+    meterLg: ["8 of every 10 past seasons", "normal (median)", "this season"],
+    dialThen: "2001–2012", dialNow: "2013–2026",
+    clockPlainMoved: (a, b) => `The busiest time of the fire season <b>moved from ${a} to ${b}</b>, and the change holds in the VIIRS-only years.`,
+    clockPlainMaybe: (a, b) => `The busiest time may have moved from ${a} to ${b}, but it is not confirmed in the VIIRS-only years.`,
+    clockPlainSame: (a) => `The busiest time of the fire season is still around <b>${a}</b>: no clear shift in 25 seasons.`,
+    dialLg: ["each wedge: share of the season's hotspots in that month", "now (2013–2026)", "then (2001–2012)", "hand = busiest month"],
     clock_h: "Season clock: is the fire season shifting?",
+    clockIntro: "When in the year do the hotspots happen, and has that changed? The dial is the year: January at 1 o'clock, December at 12.",
     clockSub: "Each bar is one fire season: it starts when 10% of its hotspots have occurred, ends at 90%, and the dot marks the busiest month. Trends use Theil-Sen slopes and the Mann-Kendall test over 25 seasons; a shift counts as confirmed only if it also appears in the VIIRS-only seasons (2012–13 to 2025–26). Hotspot seasons include agricultural burning.",
     clockDesert: "Not shown for the Atacama desert regions: their hotspots include persistent false detections, so the season shape is not meaningful.",
     clockMetric: { onset: "Start (10%)", peak: "Busiest month", end: "End (90%)", length: "Length" },
@@ -139,7 +150,18 @@ const I18N = {
     north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
     mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos o retenido", mlgC: (m) => `comunas: 0 – ${m} detecciones crudas / mes (log)`,
     mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
+    more_curve: "Ver la curva completa, mes a mes",
+    seasonIntro: "Temporada de incendios 2026–27 (julio a junio), en focos de calor equivalentes a Suomi NPP.",
+    clockPlainUnclear: (a, b) => `El mes con más focos era ${a} en 2001–2012 y es <b>${b}</b> en 2013–2026, pero en 25 temporadas el cambio no es estadísticamente claro.`, more_clock: "Ver cada temporada y las pruebas de tendencia",
+    seasonPlain: (area, mo, cur, med, lo, hi, lvl) => `${area} lleva <b>${cur}</b> focos de calor en esta temporada (hasta ${mo}). Una temporada normal lleva cerca de ${med} a esta altura; 8 de cada 10 temporadas tenían entre ${lo} y ${hi}. <span class="${lvl}">${lvl === "lo" ? "Por ahora, una temporada tranquila." : lvl === "hi" ? "Por ahora, una temporada activa." : "Por ahora, una temporada normal."}</span>`,
+    meterLg: ["8 de cada 10 temporadas anteriores", "lo normal (mediana)", "esta temporada"],
+    dialThen: "2001–2012", dialNow: "2013–2026",
+    clockPlainMoved: (a, b) => `El momento de más focos de la temporada <b>se movió de ${a} a ${b}</b>, y el cambio se mantiene en los años solo VIIRS.`,
+    clockPlainMaybe: (a, b) => `El momento de más focos podría haberse movido de ${a} a ${b}, pero no se confirma en los años solo VIIRS.`,
+    clockPlainSame: (a) => `El momento de más focos de la temporada sigue siendo cerca de <b>${a}</b>: sin un cambio claro en 25 temporadas.`,
+    dialLg: ["cada sector: parte de los focos de la temporada en ese mes", "ahora (2013–2026)", "antes (2001–2012)", "aguja = mes con más focos"],
     clock_h: "Reloj de la temporada: ¿se está desplazando la temporada de incendios?",
+    clockIntro: "¿En qué momento del año ocurren los focos, y ha cambiado eso? El reloj es el año: enero a la 1, diciembre a las 12.",
     clockSub: "Cada barra es una temporada: empieza cuando ocurrió el 10 % de sus focos, termina al 90 %, y el punto marca el mes con más focos. Las tendencias usan pendientes de Theil-Sen y la prueba de Mann-Kendall sobre 25 temporadas; un desplazamiento se considera confirmado solo si también aparece en las temporadas solo VIIRS (2012–13 a 2025–26). Las temporadas de focos incluyen las quemas agrícolas.",
     clockDesert: "No se muestra para las regiones del desierto de Atacama: sus focos incluyen detecciones falsas persistentes, así que la forma de la temporada no tiene sentido.",
     clockMetric: { onset: "Inicio (10 %)", peak: "Mes con más focos", end: "Fin (90 %)", length: "Duración" },
@@ -717,7 +739,9 @@ function renderSeason() {
   if (!S || !S.current.length) { card.hidden = true; return; }
   card.hidden = false;
   const seasonMonths = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
-  $("season-sub").textContent = T.seasonSub(shortName()) + T.seasonWarn + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
+  $("season-sub").textContent = T.seasonIntro + T.seasonWarn + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
+  $("season-tech").textContent = T.seasonSub(shortName());
+  renderMeter(S, seasonMonths);
   if (S.compare_index != null) {
     const k = S.compare_index, r = S.ratio_to_median, b = S.below, n = S.n_seasons;
     const col = b <= 2 ? "var(--low)" : b >= n - 2 ? "var(--high)" : "var(--ink)";
@@ -768,6 +792,69 @@ function renderSeason() {
   if (state.chartAnim) armWipe("season", "season-figs");
 }
 
+// Plain-language status of the season and a simple "thermometer": where this season stands among past ones.
+function renderMeter(S, seasonMonths) {
+  const T = L(), k = S.compare_index;
+  if (k == null) { $("season-plain").innerHTML = ""; $("season-meter").innerHTML = ""; return; }
+  const cur = S.current[k], lo = S.p10[k], med = S.p50[k], hi = S.p90[k];
+  const lvl = S.below <= 2 ? "lo" : S.below >= S.n_seasons - 2 ? "hi" : "";
+  $("season-plain").innerHTML = T.seasonPlain(shortName(), T.monthsLong[seasonMonths[k]], fmt(cur), fmt(med), fmt(lo), fmt(hi), lvl);
+  const W = Math.max(320, Math.min(1100, $("season-meter").clientWidth || 900)), H = 74, pad = 16;
+  const top = Math.max(hi, cur) * 1.12, x = (v) => pad + (v / top) * (W - 2 * pad);
+  const mk = lvl === "lo" ? "#4db8ff" : lvl === "hi" ? "#ff8a3d" : "#eaff28";
+  $("season-meter").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.season_h}">
+    <rect x="${pad}" y="26" width="${W - 2 * pad}" height="14" rx="7" fill="#10203d"/>
+    <rect x="${x(lo)}" y="26" width="${x(hi) - x(lo)}" height="14" rx="7" fill="rgba(1,151,248,.38)"/>
+    <line x1="${x(med)}" x2="${x(med)}" y1="20" y2="46" stroke="#c9d6ea" stroke-width="2" stroke-dasharray="3 2"/>
+    <text x="${x(med)}" y="14" text-anchor="middle" font-size="11.5" fill="#c9d6ea">${T.meterLg[1]} · ${fmt(med)}</text>
+    <circle cx="${x(cur)}" cy="33" r="10" fill="${mk}" stroke="#071536" stroke-width="2" style="filter:drop-shadow(0 0 8px ${mk})"/>
+    <text x="${x(cur)}" y="66" text-anchor="middle" font-size="12.5" font-weight="600" fill="${mk}">${T.meterLg[2]} · ${fmt(cur)}</text>
+    <text x="${x(lo)}" y="66" text-anchor="start" font-size="11" fill="#8fa6cc">${Math.abs(x(cur) - x(lo)) > 120 ? fmt(lo) : ""}</text>
+    <text x="${x(hi)}" y="66" text-anchor="end" font-size="11" fill="#8fa6cc">${Math.abs(x(cur) - x(hi)) > 120 ? fmt(hi) : ""}</text>
+  </svg><div class="legend"><span><i class="sw" style="background:rgba(1,151,248,.38)"></i>${T.meterLg[0]}</span></div>`;
+}
+
+// A literal clock: 12 months on a dial, like 12 hours (January at 1 o'clock, December at 12).
+function monthShares(from, to) {
+  const by = new Map(state.data.months.map((r) => [r.month, r])), acc = Array(12).fill(0);
+  let n = 0;
+  for (let s = from; s <= to; s++) {
+    const v = [];
+    for (let i = 0; i < 12; i++) { const mm = ((6 + i) % 12) + 1, yy = i < 6 ? s : s + 1; const r = by.get(`${yy}-${String(mm).padStart(2, "0")}`); v.push(r && ["observed", "estimated"].includes(r.status) ? r.value : null); }
+    if (v.includes(null)) continue;
+    const tot = v.reduce((a, b) => a + b, 0);
+    if (!tot) continue;
+    v.forEach((x, i) => { acc[((6 + i) % 12)] += x / tot; }); n++;
+  }
+  return n ? acc.map((x) => x / n) : null;
+}
+
+function renderDial() {
+  const T = L(), then = monthShares(2001, 2011), now = monthShares(2012, 2025);
+  if (!then || !now) { $("dial").innerHTML = ""; return; }
+  const S = 340, c = S / 2, R = 120, mx = Math.max(...then, ...now);
+  const ang = (m) => ((m + 1) / 12) * 2 * Math.PI - Math.PI / 2; // month index 0 = January at 1 o'clock
+  const pt = (a, r) => [c + r * Math.cos(a), c + r * Math.sin(a)];
+  const wedge = (m, r) => { const a0 = ang(m) - Math.PI / 12 + 0.02, a1 = ang(m) + Math.PI / 12 - 0.02, [x0, y0] = pt(a0, r), [x1, y1] = pt(a1, r); return `M${c},${c}L${x0.toFixed(1)},${y0.toFixed(1)}A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)}Z`; };
+  const rad = (v) => 14 + Math.sqrt(v / mx) * (R - 14); // area-true
+  const pkThen = then.indexOf(Math.max(...then)), pkNow = now.indexOf(Math.max(...now));
+  let g = `<circle cx="${c}" cy="${c}" r="${R + 6}" fill="#0c1a35" stroke="rgba(140,180,255,.18)"/>`;
+  for (let m = 0; m < 12; m++) {
+    g += `<path d="${wedge(m, rad(now[m]))}" fill="${colour(now[m], mx)}" opacity=".95"><title>${T.monthsLong[m]}: ${Math.round(now[m] * 100)}% (2013–2026) · ${Math.round(then[m] * 100)}% (2001–2012)</title></path>`
+      + `<path d="${wedge(m, rad(then[m]))}" fill="none" stroke="#c9d6ea" stroke-width="1.4" stroke-dasharray="3 3" pointer-events="none"/>`;
+    const [tx, ty] = pt(ang(m), R + 22);
+    g += `<text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle" font-size="12" fill="${m === pkNow ? "#eaff28" : "#8fa6cc"}" font-weight="${m === pkNow ? 700 : 400}">${T.months[m]}</text>`;
+  }
+  const hand = (m, len, colr, w, dash) => { const [hx, hy] = pt(ang(m), len); return `<line x1="${c}" y1="${c}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="${colr}" stroke-width="${w}" stroke-linecap="round"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`; };
+  g += hand(pkThen, R * 0.62, "#c9d6ea", 3, "4 4") + `<g class="hand">${hand(pkNow, R * 0.86, "#eaff28", 5)}</g><circle cx="${c}" cy="${c}" r="7" fill="#eaff28"/>`;
+  $("dial").innerHTML = `<svg viewBox="-30 -30 ${S + 60} ${S + 60}" role="img" aria-label="${T.clock_h}"><style>.hand{filter:drop-shadow(0 0 6px #eaff28)}</style>${g}</svg>`;
+  const C = state.data.season_clock, v = C ? clockVerdict(C.trend.peak, C.trend_viirs.peak) : "none";
+  const a = T.monthsLong[pkThen], b = T.monthsLong[pkNow];
+  $("clock-plain").innerHTML = pkThen !== pkNow && v === "robust" ? T.clockPlainMoved(a, b) : pkThen !== pkNow && v === "possible" ? T.clockPlainMaybe(a, b) : pkThen !== pkNow ? T.clockPlainUnclear(a, b) : T.clockPlainSame(b);
+  $("dial-legend").innerHTML = `<span>${T.dialLg[0]}</span><span><i class="sw" style="background:linear-gradient(90deg,${RAMP.join(",")});border:0"></i>${T.dialLg[1]}</span>`
+    + `<span><i class="sw" style="border:1.5px dashed #c9d6ea;background:transparent"></i>${T.dialLg[2]}</span><span><i class="sw" style="background:#eaff28;border:0;height:4px;vertical-align:3px"></i>${T.dialLg[3]}</span>`;
+}
+
 // ---------- season clock ----------
 function clockVerdict(t, tv) {
   if (!t || t.p >= 0.05) return "none";
@@ -779,8 +866,10 @@ function renderClock() {
   const desert = ["r15", "r1", "r2", "r3"].includes(state.aoi);
   if (!C || !C.seasons.length) { card.hidden = true; return; }
   card.hidden = false;
-  $("clock-sub").textContent = desert ? T.clockDesert : T.clockSub;
-  if (desert) { $("clock-chips").innerHTML = $("clock").innerHTML = $("clock-legend").innerHTML = ""; return; }
+  $("clock-sub").textContent = desert ? T.clockDesert : T.clockIntro;
+  $("clock-tech").textContent = desert ? "" : T.clockSub;
+  if (desert) { $("clock-chips").innerHTML = $("clock").innerHTML = $("clock-legend").innerHTML = $("dial").innerHTML = $("clock-plain").innerHTML = $("dial-legend").innerHTML = ""; return; }
+  renderDial();
   const col = { robust: "var(--high)", possible: "var(--ink)", none: "var(--quiet)" };
   $("clock-chips").innerHTML = ["onset", "peak", "end", "length"].map((k) => {
     const t = C.trend[k], v = clockVerdict(t, C.trend_viirs[k]);
