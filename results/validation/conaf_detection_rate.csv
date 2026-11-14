@@ -1,5 +1,11 @@
-min_area_ha,satellite,fires,detected,detection_rate
-10,Aqua,1947,812,0.417
-10,SNPP,1127,779,0.691
-100,Aqua,352,278,0.79
-100,SNPP,200,187,0.935
+area_class_ha,satellite,fires,detected,detection_rate
+1-10,Aqua,8324,696,0.084
+1-10,SNPP,4133,1229,0.297
+10-100,Aqua,1595,534,0.335
+10-100,SNPP,927,592,0.639
+100-200,Aqua,149,99,0.664
+100-200,SNPP,85,75,0.882
+>=200,Aqua,203,179,0.882
+>=200,SNPP,115,112,0.974
+>=1,Aqua,10271,1508,0.147
+>=1,SNPP,5260,2008,0.382

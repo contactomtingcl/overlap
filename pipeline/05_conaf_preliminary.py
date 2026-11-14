@@ -3,7 +3,7 @@
 
 CONAF data: Corporación Nacional Forestal (2024). Registro histórico de incendios forestales, V1.
 Datos para Resiliencia. https://doi.org/10.71578/UXAUN5 (raw file not committed until its licence is confirmed).
-Outputs: monthly Spearman correlations, detection rate of fires >= 10 and >= 100 ha
+Outputs: monthly Spearman correlations, detection rate by burned-area class
 (any hotspot within 3 km, from 1 day before to 2 days after the CONAF start date), and monthly shares.
 The formal validation is Karla's (R); this is a first look.
 Usage: python3 pipeline/05_conaf_preliminary.py <conaf.csv> <detections_clean_chile.csv.gz> results/validation
@@ -47,12 +47,15 @@ def detected(fires, det, km=3.0):
 
 
 rows = []
-for thr in [10, 100]:
+# size classes: the lower bound (1 ha) is Karla's; >= 200 ha is CONAF's "incendio de magnitud"
+CLASSES = [(1, 10), (10, 100), (100, 200), (200, None), (1, None)]
+for lo, hi in CLASSES:
     for sat, start in [("Aqua", "2002-07-04"), ("SNPP", "2012-02-01")]:
-        b = c[(c.ha >= thr) & (c.Fecha >= start)]
+        sel = (c.ha >= lo) & (c.Fecha >= start) & ((c.ha < hi) if hi else True)
+        b = c[sel]
         h = detected(b, f[f.satellite == sat])
-        rows.append({"min_area_ha": thr, "satellite": sat, "fires": len(b), "detected": int(h.sum()),
-                     "detection_rate": round(h.mean(), 3)})
+        rows.append({"area_class_ha": f"{lo}-{hi}" if hi else f">={lo}", "satellite": sat, "fires": len(b),
+                     "detected": int(h.sum()), "detection_rate": round(h.mean(), 3)})
 pd.DataFrame(rows).to_csv(out / "conaf_detection_rate.csv", index=False)
 
 cc, ff = c[c.Fecha >= "2012-07-01"], f[(f.satellite == "SNPP") & (f.date >= "2012-07-01") & (f.date <= "2020-05-31")]
