@@ -1,0 +1,5 @@
+"zone","sensor","method","label","fit_period","test_period","months","mae_log1p","mae_log1p_ci95_low","mae_log1p_ci95_high","bias_log1p","bias_total_pct","coverage80_pct","interval80_median_width_factor","mae_hotspots","mae_log1p_high_season","mae_log1p_low_season"
+"region_09","NOAA21","raw","No harmonization (SNPP = NOAA21)","2023-03_2024-12","2025-01_2026-07",19,0.1058,0.1002,0.1153,-0.0371,-5.006,94.7368,2.284,76.5263,0.1641,0.0788
+"region_09","NOAA21","ratio","Simple ratio","2023-03_2024-12","2025-01_2026-07",19,0.1072,0.0999,0.1199,-0.0047,-1.8452,94.7368,1.8469,76.4888,0.1533,0.086
+"region_09","NOAA21","qmap","Quantile mapping (qmap), all months","2023-03_2024-12","2025-01_2026-07",19,0.168,0.16,0.1726,-0.1198,0.272,94.7368,2.472,86.5008,0.1833,0.1609
+"region_09","NOAA21","qmap_season","Quantile mapping (qmap), high season (months 2,3,4) and rest fitted separately","2023-03_2024-12","2025-01_2026-07",19,0.2563,0.1774,0.3914,-0.0108,5.0536,89.4737,2.3187,121.1782,0.4665,0.1593

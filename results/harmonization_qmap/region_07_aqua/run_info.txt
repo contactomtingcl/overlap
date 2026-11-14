@@ -1,0 +1,4 @@
+zone: region_07 (codregion 7), sensor: Aqua
+high season months (>= 70 % of SNPP hotspots, 2012-02_2019-12): 1, 4, 5
+simple ratio k (2012-02_2019-12): 5.6032
+qstep 0.05, bootstrap replicates 1000, seed 2026

@@ -3,9 +3,12 @@
 # with a hidden-years test.
 #
 # Data: results/model_input/monthly_comuna_counts_chile.csv.gz, filtered to one region (codregion,
-#       default 8 = Biobío, official boundary via comunas) and to the source sensor (default Aqua) and SNPP,
+#       default 8 = Biobío, official boundary via comunas) and to the source sensor (Aqua, Terra, NOAA20 or
+#       NOAA21; default Aqua) and SNPP,
 #       summed by month (day and night together). Months with no row for a sensor in its operating period = 0.
-# Period: 2012-02 to 2026-07. Fit on 2012-02 to 2019-12; test on 2020-01 to 2026-07 (not used to fit).
+# Period (Aqua, Terra): 2012-02 to 2026-07. Fit on 2012-02 to 2019-12; test on 2020-01 to 2026-07 (not used
+# to fit). NOAA-20: fit 2018-04 to 2022-12, test 2023-01 to 2026-07. NOAA-21: fit 2023-03 to 2024-12, test
+# 2025-01 to 2026-07 (only two fitting years: a weak test).
 # Methods:
 #   raw          no harmonization (SNPP = source)
 #   ratio        k = sum(SNPP) / sum(source) over the fitting months
@@ -33,11 +36,19 @@ src_file <- if (length(args) >= 1) args[1] else "results/model_input/monthly_com
 out <- if (length(args) >= 2) args[2] else "results/harmonization_qmap"
 REGION <- if (length(args) >= 3) as.integer(args[3]) else 8L
 SENSOR <- if (length(args) >= 4) args[4] else "Aqua"
-stopifnot(SENSOR %in% c("Aqua", "Terra"))
+stopifnot(SENSOR %in% c("Aqua", "Terra", "NOAA20", "NOAA21"))
+SENSOR_LABEL <- c(Aqua = "MODIS Aqua", Terra = "MODIS Terra", NOAA20 = "VIIRS NOAA-20", NOAA21 = "VIIRS NOAA-21")[[SENSOR]]
+REGION_NAME <- c(`7` = "Maule", `8` = "Biob\u00edo", `9` = "Araucan\u00eda", `16` = "\u00d1uble")[as.character(REGION)]
+REGION_NAME <- if (is.na(REGION_NAME)) paste("Region", REGION) else sprintf("%s (region %d)", REGION_NAME, REGION)
 dir.create(out, showWarnings = FALSE, recursive = TRUE)
 
 ZONE <- sprintf("region_%02d", REGION)
-START <- "2012-02"; FIT_END <- "2019-12"; TEST_START <- "2020-01"; END <- "2026-07"
+# fit / test periods by sensor: each sensor is calibrated directly against Suomi NPP on its own overlap
+PERIODS <- list(Aqua = c("2012-02", "2019-12", "2020-01", "2026-07"),
+                Terra = c("2012-02", "2019-12", "2020-01", "2026-07"),
+                NOAA20 = c("2018-04", "2022-12", "2023-01", "2026-07"),   # NOAA-20 standard data from 2018-04
+                NOAA21 = c("2023-03", "2024-12", "2025-01", "2026-07"))   # NOAA-21 from 2023-03: weak test (2 fitting years)
+START <- PERIODS[[SENSOR]][1]; FIT_END <- PERIODS[[SENSOR]][2]; TEST_START <- PERIODS[[SENSOR]][3]; END <- PERIODS[[SENSOR]][4]
 QSTEP <- 0.05; B <- 1000; HIGH_SHARE <- 0.70
 PFX <- sprintf("%s_%s_snpp", ZONE, tolower(SENSOR))
 set.seed(2026)
@@ -180,9 +191,8 @@ par(mar = c(3, 5.8, 3.2, 1), cex = .8, mgp = c(4, .8, 0))
 tt <- as.Date(paste0(pred$month, "-01"))
 yl <- c(0, max(slog(c(pred$snpp_observed, pred$qmap_high, pred$ratio))) * 1.08)
 plot(tt, slog(pred$snpp_observed), type = "n", ylim = yl, yaxt = "n", xlab = "", ylab = "Hotspots per month (log scale)",
-     main = sprintf("%s, test months %s to %s: Suomi NPP observed vs reconstructed from MODIS %s (fitted on %s to %s)",
-                    if (REGION == 8) "Biob\u00edo (region 8)" else paste("Region", REGION),
-                    TEST_START, END, SENSOR, START, FIT_END))
+     main = sprintf("%s, test months %s to %s: Suomi NPP observed vs reconstructed from %s (fitted on %s to %s)",
+                    REGION_NAME, TEST_START, END, SENSOR_LABEL, START, FIT_END))
 ticks <- c(0, 1, 10, 100, 1000, 10000, 1e5)
 axis(2, at = slog(ticks), labels = c("0", "1", "10", "100", "1,000", "10,000", "100,000"), las = 1)
 abline(h = slog(ticks), col = "grey90")
@@ -195,7 +205,7 @@ lines(tt, slog(pred$qmap), col = cols["qmap"], lwd = 1.6)
 lines(tt, slog(pred$snpp_observed), col = cols["obs"], lwd = 2.2)
 box()
 legend("topright", bty = "n", ncol = 3, cex = .9,
-       legend = c("Suomi NPP observed (hidden when fitting)", sprintf("No harmonization (MODIS %s)", SENSOR),
+       legend = c("Suomi NPP observed (hidden when fitting)", sprintf("No harmonization (%s)", SENSOR_LABEL),
                   "Simple ratio", "Quantile mapping (qmap)", "Quantile mapping, 80 % interval", "High season months"),
        col = c(cols["obs"], cols["raw"], cols["ratio"], cols["qmap"], adjustcolor(cols["qmap"], .3), "grey90"),
        lwd = c(2.2, 1, 1, 1.6, 8, 8), lty = c(1, 1, 2, 1, 1, 1))

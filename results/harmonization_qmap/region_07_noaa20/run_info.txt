@@ -1,0 +1,4 @@
+zone: region_07 (codregion 7), sensor: NOAA20
+high season months (>= 70 % of SNPP hotspots, 2018-04_2022-12): 1, 2, 3, 4, 5, 9
+simple ratio k (2018-04_2022-12): 1.0104
+qstep 0.05, bootstrap replicates 1000, seed 2026

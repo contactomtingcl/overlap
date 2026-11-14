@@ -1,0 +1,5 @@
+"zone","sensor","method","label","fit_period","test_period","months","mae_log1p","mae_log1p_ci95_low","mae_log1p_ci95_high","bias_log1p","bias_total_pct","coverage80_pct","interval80_median_width_factor","mae_hotspots","mae_log1p_high_season","mae_log1p_low_season"
+"region_07","Aqua","raw","No harmonization (SNPP = Aqua)","2012-02_2019-12","2020-01_2026-07",79,1.9411,1.8159,2.0685,-1.9411,-84.0618,79.7468,3.1579,215.7089,1.7084,2.0253
+"region_07","Aqua","ratio","Simple ratio","2012-02_2019-12","2020-01_2026-07",79,0.4897,0.3398,0.6521,-0.332,-10.6944,81.0127,3.4431,67.2139,0.2531,0.5754
+"region_07","Aqua","qmap","Quantile mapping (qmap), all months","2012-02_2019-12","2020-01_2026-07",79,0.3547,0.2872,0.4206,-0.1277,-16.7734,77.2152,2.5389,70.1321,0.2363,0.3975
+"region_07","Aqua","qmap_season","Quantile mapping (qmap), high season (months 1,4,5) and rest fitted separately","2012-02_2019-12","2020-01_2026-07",79,0.3506,0.2763,0.4214,-0.1275,-9.6619,77.2152,2.7117,55.4858,0.267,0.381

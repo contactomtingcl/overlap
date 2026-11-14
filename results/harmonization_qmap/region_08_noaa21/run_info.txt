@@ -1,0 +1,4 @@
+zone: region_08 (codregion 8), sensor: NOAA21
+high season months (>= 70 % of SNPP hotspots, 2023-03_2024-12): 3, 4, 5, 10
+simple ratio k (2023-03_2024-12): 0.9825
+qstep 0.05, bootstrap replicates 1000, seed 2026

@@ -1,0 +1,4 @@
+zone: region_16 (codregion 16), sensor: Terra
+high season months (>= 70 % of SNPP hotspots, 2012-02_2019-12): 1, 3, 4, 5
+simple ratio k (2012-02_2019-12): 17.3451
+qstep 0.05, bootstrap replicates 1000, seed 2026

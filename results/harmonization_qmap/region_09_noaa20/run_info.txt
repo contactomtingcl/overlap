@@ -1,0 +1,4 @@
+zone: region_09 (codregion 9), sensor: NOAA20
+high season months (>= 70 % of SNPP hotspots, 2018-04_2022-12): 2, 3, 4, 12
+simple ratio k (2018-04_2022-12): 1.0474
+qstep 0.05, bootstrap replicates 1000, seed 2026
