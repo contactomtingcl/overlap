@@ -27,7 +27,7 @@ Produced by `pipeline/07_qmap_monthly_region.R` (one run per region and sensor, 
 | NOAA21 | Maule (7) | 0.13 | 0.13 | 0.13 | 0.18 | -1 % | 95 % |
 | NOAA21 | Araucanía (9) | 0.11 | 0.11 | 0.17 | 0.26 | +0 % | 95 % |
 
-Reading: an MAE of 0.40 on log(1 + hotspots) means a typical monthly error of about a factor of 1.5.
+Reading: an MAE of 0.40 on log(1 + hotspots) means a mean monthly error of about a factor of 1.5 (over the four regions pooled: mean ×1.47, median ×1.33).
 
 - **Aqua:** quantile mapping beats the simple ratio in all four regions; its total bias is −10 to −17 %. Splitting by season adds nothing for Aqua, so the all-year map is the default.
 - **Terra:** quantile mapping is the best option, but outside Maule its errors are 1.5 to 2.4 times Aqua's and the bias reaches +72 % in Araucanía. Terra passes in the morning and its orbit has drifted since 2020, so it is flagged as less comparable.
