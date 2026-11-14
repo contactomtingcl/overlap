@@ -1,6 +1,9 @@
 // Written with AI assistance (Claude, Anthropic); reviewed by the Overlap team. See docs/AI_USE.md.
 // Overlap web app: month x year burning activity calendar from pre-computed JSON (no server). English / Spanish.
 "use strict";
+// Cache-busting: index.html loads app.js?v=<build>; data files are fetched with the same version.
+const V = (() => { try { return new URL(document.currentScript.src).searchParams.get("v") || ""; } catch (e) { return ""; } })();
+const DATA = (path) => `data/${path}${V ? `?v=${V}` : ""}`;
 
 // ---------- language ----------
 const I18N = {
@@ -247,7 +250,7 @@ function rawValue(r) {
 const shown = (r) => (state.mode === "raw" ? rawValue(r) : (r ? r.value : null));
 
 async function load() {
-  const res = await fetch(`data/${state.aoi}.json`);
+  const res = await fetch(DATA(`${state.aoi}.json`));
   state.data = await res.json();
   state.max = Math.max(...state.data.months.map((r) => r.value).filter((v) => v != null));
   render(true);
@@ -257,7 +260,7 @@ async function load() {
 function applyStatic() {
   document.documentElement.lang = state.lang;
   document.title = state.lang === "es" ? "Overlap · Calendario armonizado de actividad de quemas" : "Overlap · Harmonized burning activity calendar";
-  document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = L()[el.dataset.i18n]; });
+  document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L()[el.dataset.i18n]; if (typeof v === "string") el.innerHTML = v; });
   document.querySelectorAll("[data-i18n-alt]").forEach((el) => { el.alt = L()[el.dataset.i18nAlt]; });
   document.querySelectorAll("[data-i18n-label]").forEach((el) => { el.setAttribute("aria-label", L()[el.dataset.i18nLabel]); });
   document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === state.lang));
@@ -465,7 +468,7 @@ function zcol(z) {
 const map = { geo: null, reg: null, i: 0, mode: "z", timer: null, vmax: 1 };
 
 async function initMap() {
-  [map.geo, map.reg] = await Promise.all([fetch("data/geo/regions_svg.json").then((r) => r.json()), fetch("data/regions_monthly.json").then((r) => r.json())]);
+  [map.geo, map.reg] = await Promise.all([fetch(DATA("geo/regions_svg.json")).then((r) => r.json()), fetch(DATA("regions_monthly.json")).then((r) => r.json())]);
   map.vmax = Math.max(...Object.values(map.reg.regions).flatMap((r) => r.v.filter((x) => x != null)));
   const M = map.reg.months;
   map.i = M.lastIndexOf("2026-10");
@@ -662,7 +665,7 @@ function renderTrust() {
 async function showMonth(key, scroll = true) {
   const T = L(), r = state.data.months.find((m) => m.month === key);
   if (!r) return;
-  if (!state.daily[state.aoi]) state.daily[state.aoi] = await (await fetch(`data/${state.aoi}_daily.json`)).json();
+  if (!state.daily[state.aoi]) state.daily[state.aoi] = await (await fetch(DATA(`${state.aoi}_daily.json`))).json();
   const daily = state.daily[state.aoi];
   state.month = key;
   const [y, m] = key.split("-").map(Number);
@@ -725,7 +728,7 @@ document.addEventListener("pointermove", (e) => {
 
 async function init() {
   applyStatic();
-  state.aois = await (await fetch("data/aois.json")).json();
+  state.aois = await (await fetch(DATA("aois.json"))).json();
   applyStatic();
   load();
   initMap();
