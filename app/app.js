@@ -15,6 +15,13 @@ const I18N = {
     controls: "Controls", area: "Area", rows: "Rows", opt_season: "Fire season (Jul–Jun)", opt_year: "Calendar year (Jan–Dec)",
     mode_h: "Harmonized", mode_r: "Raw (no harmonization)", csv: "Download CSV",
     cal_h: "Burning activity calendar",
+    season_h: "This season so far vs every past season",
+    seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, in Suomi NPP-equivalent units, on a log scale. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
+    seasonExcl: (l) => ` Atacama desert regions (${l}) are left out of both sides, because their recent near real-time data are withheld.`,
+    sThrough: (mo) => `Through ${mo}`, sThroughSub: "hotspots so far this season",
+    sVs: "Compared with the median past season", sVsSub: (b, n) => `higher than ${b} of ${n} past seasons at this point`,
+    sCur: "Season 2026–27 (open dots: provisional; dashed: November in progress)", sMed: "median of past seasons", sBand: "10th–90th percentile of past seasons",
+    sTop: (s) => `${s} (most active)`, sPt: (mo, v, st) => `${mo}: ${v} hotspots so far${st}`, sProv: " (provisional)", sPart: " (partial, through Nov 7)",
     jump_h: "The 2012 jump, before and after",
     jump_sub: "When VIIRS arrives in 2012 it sees many more small fires than MODIS. Joined as they are, the record seems to explode overnight. Harmonized, every year speaks the same unit.",
     trust_h: "How much to trust these numbers",
@@ -90,6 +97,13 @@ const I18N = {
     controls: "Controles", area: "Área", rows: "Filas", opt_season: "Temporada de incendios (jul–jun)", opt_year: "Año calendario (ene–dic)",
     mode_h: "Armonizado", mode_r: "Crudo (sin armonizar)", csv: "Descargar CSV",
     cal_h: "Calendario de actividad de quemas",
+    season_h: "Esta temporada hasta ahora frente a todas las anteriores",
+    seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en unidades equivalentes a Suomi NPP, en escala logarítmica. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
+    seasonExcl: (l) => ` Las regiones del desierto de Atacama (${l}) quedan fuera de ambos lados, porque sus datos recientes casi en tiempo real están retenidos.`,
+    sThrough: (mo) => `Hasta ${mo}`, sThroughSub: "focos de calor acumulados en la temporada",
+    sVs: "Frente a la temporada mediana", sVsSub: (b, n) => `mayor que ${b} de ${n} temporadas anteriores a esta altura`,
+    sCur: "Temporada 2026–27 (puntos huecos: provisorio; punteado: noviembre en curso)", sMed: "mediana de las temporadas anteriores", sBand: "percentil 10–90 de las temporadas anteriores",
+    sTop: (s) => `${s} (la más activa)`, sPt: (mo, v, st) => `${mo}: ${v} focos acumulados${st}`, sProv: " (provisorio)", sPart: " (parcial, hasta el 7 de noviembre)",
     jump_h: "El salto de 2012, antes y después",
     jump_sub: "Cuando VIIRS llega en 2012 ve muchos más fuegos pequeños que MODIS. Unidas tal cual, las series parecen dispararse de un día para otro. Armonizadas, todos los años quedan en la misma unidad.",
     trust_h: "Cuánto confiar en estas cifras",
@@ -186,8 +200,8 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // Count a number up from zero (KPIs, big figures). Elements carry data-count, data-dec, data-pre.
 function countUp(root) {
   root.querySelectorAll("[data-count]").forEach((el) => {
-    const to = +el.dataset.count, d = +(el.dataset.dec || 0), pre = el.dataset.pre || "";
-    const out = (v) => pre + (d ? dec(v, d) : fmt(v));
+    const to = +el.dataset.count, d = +(el.dataset.dec || 0), pre = el.dataset.pre || "", suf = el.dataset.suf || "";
+    const out = (v) => pre + (d ? dec(v, d) : fmt(v)) + suf;
     if (REDUCED) { el.textContent = out(to); return; }
     const t0 = performance.now(), dur = 1100;
     const step = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = out(to * e); if (k < 1) requestAnimationFrame(step); };
@@ -428,6 +442,59 @@ function renderStatus() {
   }
 }
 
+// ---------- this season vs past seasons ----------
+function renderSeason() {
+  const T = L(), S = state.data.season_to_date, card = $("season").closest(".card");
+  if (!S || !S.current.length) { card.hidden = true; return; }
+  card.hidden = false;
+  const seasonMonths = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
+  $("season-sub").textContent = T.seasonSub(shortName()) + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
+  if (S.compare_index != null) {
+    const k = S.compare_index, r = S.ratio_to_median, b = S.below, n = S.n_seasons;
+    const col = b <= 2 ? "var(--low)" : b >= n - 2 ? "var(--high)" : "var(--ink)";
+    $("season-figs").innerHTML = `<div>${T.sThrough(T.monthsLong[seasonMonths[k]])}${num(S.current[k])}${T.sThroughSub}</div>`
+      + (r == null ? "" : `<div>${T.sVs}<b data-count="${Math.round(r * 100)}" data-dec="0" data-suf="${state.lang === "es" ? " %" : "%"}" style="color:${col}">${Math.round(r * 100)}${state.lang === "es" ? " %" : "%"}</b>${T.sVsSub(b, n)}</div>`);
+  } else $("season-figs").innerHTML = "";
+  const W = Math.max(340, Math.min(1100, $("season").clientWidth || 900)), H = W < 600 ? 240 : 300, l = W < 600 ? 46 : 58, r = 30, t = 14, b = 30;
+  const all = [...S.p90, ...S.current, ...S.top.cum, ...S.last, ...S.p10].filter((v) => v > 0);
+  const lo = Math.floor(Math.log10(Math.max(1, Math.min(...all)))), hi = Math.ceil(Math.log10(Math.max(...all) + 1));
+  const x = (i) => l + (i / 11) * (W - l - r);
+  const y = (v) => t + (1 - (Math.log10(Math.max(v, 1)) - lo) / (hi - lo)) * (H - t - b);
+  const line = (arr) => arr.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const band = line(S.p90) + S.p10.map((v, i) => `L${x(11 - i).toFixed(1)},${y(S.p10[11 - i]).toFixed(1)}`).join("") + "Z";
+  let g = "";
+  for (let e = lo; e <= hi; e++) g += `<line x1="${l}" x2="${W - r}" y1="${y(10 ** e)}" y2="${y(10 ** e)}" stroke="rgba(140,180,255,.12)"/><text x="${l - 8}" y="${y(10 ** e) + 4}" text-anchor="end" font-size="11" fill="#8fa6cc">${(10 ** e).toLocaleString(L().locale, { notation: "compact" })}</text>`;
+  g += seasonMonths.map((m, i) => `<text x="${x(i)}" y="${H - 9}" text-anchor="middle" font-size="11" fill="#8fa6cc">${W < 600 ? T.months[m][0].toUpperCase() : T.months[m]}</text>`).join("");
+  const cur = S.current, k = cur.length - 1, partial = S.status[k] === "partial";
+  const solid = partial ? cur.slice(0, k) : cur;
+  const pts = cur.map((v, i) => {
+    const st = S.status[i], open = st !== "observed";
+    return `<circle cx="${x(i)}" cy="${y(v)}" r="${i === k ? 5 : 4}" fill="${open ? "#071536" : "#eaff28"}" stroke="#eaff28" stroke-width="2"><title>${T.sPt(T.monthsLong[seasonMonths[i]], fmt(v), st === "provisional" ? T.sProv : st === "partial" ? T.sPart : "")}</title></circle>`;
+  }).join("");
+  const topLabel = `${S.top.season}–${String(S.top.season + 1).slice(2)}`;
+  $("season").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.season_h}">
+    <defs><clipPath id="wipe2"><rect class="wipe" x="0" y="0" width="${state.chartAnim && !REDUCED ? 0 : W}" height="${H}"><animate attributeName="width" from="0" to="${W}" dur="1.8s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".65 0 .35 1"/></rect></clipPath>
+      <linearGradient id="bandg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0197f8" stop-opacity=".30"/><stop offset="1" stop-color="#0197f8" stop-opacity=".10"/></linearGradient></defs>
+    ${g}
+    <path d="${band}" fill="url(#bandg)" stroke="none"/>
+    <path d="${line(S.top.cum)}" fill="none" stroke="#ff8a3d" stroke-width="1.5" opacity=".7"/>
+    <path d="${line(S.last)}" fill="none" stroke="#8fa6cc" stroke-width="1.5" opacity=".6"/>
+    <path d="${line(S.p50)}" fill="none" stroke="#c9d6ea" stroke-width="2" stroke-dasharray="5 4"/>
+    <g clip-path="url(#wipe2)">
+      <path d="${line(solid)}" fill="none" stroke="#eaff28" stroke-width="3.2" filter="url(#lglow2)"/>
+      ${partial && k > 0 ? `<path d="M${x(k - 1)},${y(cur[k - 1])}L${x(k)},${y(cur[k])}" fill="none" stroke="#eaff28" stroke-width="2.4" stroke-dasharray="4 4"/>` : ""}
+      ${pts}
+    </g>
+    <filter id="lglow2" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </svg>`;
+  $("season-legend").innerHTML = `<span><i class="sw" style="background:#eaff28;border:0"></i>${T.sCur}</span>`
+    + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#c9d6ea 0 5px,transparent 5px 8px);border:0;height:3px;vertical-align:3px"></i>${T.sMed}</span>`
+    + `<span><i class="sw" style="background:rgba(1,151,248,.3)"></i>${T.sBand}</span>`
+    + `<span><i class="sw" style="background:#8fa6cc;border:0;height:3px;vertical-align:3px"></i>2025–26</span>`
+    + `<span><i class="sw" style="background:#ff8a3d;border:0;height:3px;vertical-align:3px"></i>${T.sTop(topLabel)}</span>`;
+  if (state.chartAnim) armWipe("season", "season-figs");
+}
+
 // ---------- 2012 jump ----------
 function renderJump() {
   const T = L(), S = seasonTotals();
@@ -462,23 +529,22 @@ function renderJump() {
     <path d="${path("raw")}" fill="none" stroke="${rawOn ? "#c9d6ea" : "#7d93b8"}" stroke-width="${rawOn ? 3 : 2.2}" stroke-dasharray="6 4"/>
     ${S.map((d) => `<circle cx="${x(d.s)}" cy="${y(d.h)}" r="3.2" fill="#eaff28"><title>${T.chTitle(`${d.s}–${String(d.s + 1).slice(2)}`, fmt(d.h), fmt(d.raw))}</title></circle>`).join("")}</g>
   </svg>`;
-  if (state.chartAnim) armChart();
+  if (state.chartAnim) armWipe("jump", "jump-figs");
   $("jump-legend").innerHTML = `<span><i class="sw" style="background:#eaff28;border:0"></i>${T.chLgH}</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#7d93b8 0 6px,transparent 6px 9px);border:0"></i>${T.chLgR}</span>`
     + `<span>${T.chLgNote}</span>`;
 }
 
 // Draw the chart (and count its figures) the first time it scrolls into view after an area loads.
-function armChart() {
-  const card = $("jump").closest(".card");
+function armWipe(id, figsId) {
+  const card = $(id).closest(".card");
   const go = () => {
-    state.chartAnim = false;
-    countUp($("jump-figs"));
-    const a = $("jump").querySelector("#wipe animate");
+    countUp($(figsId));
+    const a = $(id).querySelector("clipPath animate");
     if (a && !REDUCED) a.beginElement();
   };
-  if (card.classList.contains("in")) { go(); return; }
-  state.pendingChart = go;
+  if (card.classList.contains("in")) { requestAnimationFrame(go); return; }
+  card._pending = go;
 }
 
 // ---------- method & trust ----------
@@ -558,15 +624,15 @@ function downloadCSV() {
 
 function render(animate) {
   state.animNext = animate; state.chartAnim = animate;
-  renderStatus(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
-  state.animNext = false;
+  renderStatus(); renderSeason(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
+  state.animNext = false; state.chartAnim = false;
 }
 
 // Cards rise into view as you scroll; the cursor lights the card under it.
 const io = new IntersectionObserver((entries) => entries.forEach((e) => {
   if (!e.isIntersecting) return;
   e.target.classList.add("in"); io.unobserve(e.target);
-  if (e.target.contains($("jump")) && state.pendingChart) { const f = state.pendingChart; state.pendingChart = null; f(); }
+  if (e.target._pending) { const f = e.target._pending; e.target._pending = null; f(); }
 }), { threshold: 0.12 });
 document.querySelectorAll("main > .card:not(.controls)").forEach((c, i) => { c.classList.add("reveal"); c.style.transitionDelay = `${Math.min(i, 2) * 90}ms`; io.observe(c); });
 document.addEventListener("pointermove", (e) => {
@@ -590,5 +656,5 @@ $("mode-r").addEventListener("click", () => setMode("raw"));
 $("csv").addEventListener("click", downloadCSV);
 document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
 let rz;
-addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderJump(); } }, 150); });
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderJump(); } }, 150); });
 init();

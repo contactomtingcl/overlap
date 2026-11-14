@@ -268,6 +268,43 @@ def anomaly(value, history):
     return round(float(z), 2), ("unusually high" if z >= 2 else "unusually low" if z <= -2 else "within normal")
 
 
+def season_block(regions):
+    """Season-to-date (Jul-Jun) cumulative hotspots for the current season against every complete past season.
+    Desert regions are left out of both sides when their recent months are withheld, so the comparison is like for like."""
+    keep = [r for r in regions if r not in DESERT] or regions
+    val = lambda r, mo: REGION_ROWS[r].get(mo, {}).get("value")
+    months = lambda s: [f"{s + (i >= 6)}-{(i + 6) % 12 + 1:02d}" for i in range(12)]
+    hist = {}
+    for s in range(2001, 2026):
+        v = [[val(r, mo) for r in keep] for mo in months(s)]
+        if all(x is not None for row in v for x in row):
+            hist[s] = np.cumsum([sum(row) for row in v])
+    cur, status = [], []
+    for mo in months(2026):
+        v = [val(r, mo) for r in keep]
+        if mo > PARTIAL or any(x is None for x in v):
+            break
+        cur.append(sum(v))
+        status.append(max((REGION_ROWS[r][mo]["status"] for r in keep), key=lambda x: ORDER[x]))
+    cur = np.cumsum(cur)
+    H = np.array(list(hist.values()))
+    k = max(i for i, st in enumerate(status) if st != "partial") if any(st != "partial" for st in status) else None
+    totals = {s: c[-1] for s, c in hist.items()}
+    top = max(totals, key=totals.get)
+    out_ = {"season": 2026, "regions_used": [REGIONS[r] for r in keep],
+            "excluded": [REGIONS[r] for r in regions if r not in keep],
+            "current": [round(float(x), 1) for x in cur], "status": status,
+            "p10": [round(float(x), 1) for x in np.percentile(H, 10, axis=0)],
+            "p50": [round(float(x), 1) for x in np.percentile(H, 50, axis=0)],
+            "p90": [round(float(x), 1) for x in np.percentile(H, 90, axis=0)],
+            "last": [round(float(x), 1) for x in hist[2025]], "top": {"season": top, "cum": [round(float(x), 1) for x in hist[top]]},
+            "n_seasons": len(hist)}
+    if k is not None:
+        out_.update(compare_index=k, below=int((H[:, k] < cur[k]).sum()),
+                    ratio_to_median=round(float(cur[k] / np.percentile(H[:, k], 50)), 3) if np.percentile(H[:, k], 50) > 0 else None)
+    return out_
+
+
 for key, meta in AOIS.items():
     rows = combine(meta["regions"])
     cal = pd.DataFrame(rows)
@@ -290,6 +327,7 @@ for key, meta in AOIS.items():
                    "ratio_regions": [REGIONS[r] for r in ratio_regs],
                    "factors": {REGIONS[r]: REGION_FACTORS[r] for r in ratio_regs}},
         "trust": [trust(r) for r in meta["regions"]],
+        "season_to_date": season_block(meta["regions"]),
         "climatology_median": climatology,
         "latest": {"month": latest["month"], "value": latest["value"], "status": latest["status"],
                    "median": climatology[int(latest["month"][5:])], "z": latest.get("z"),

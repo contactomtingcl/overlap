@@ -133,7 +133,7 @@
   .ico.modis { background:repeating-conic-gradient(#4d6b85 0 25%, #22384a 0 50%) 0 0/8px 8px; }
   .ico.viirs { background:radial-gradient(circle, #4db8ff 1.1px, transparent 1.4px) 0 0/4px 4px #0d2a52; }
   /* jump chart */
-  #jump svg { display:block; width:100%; height:auto; }
+  #jump svg, #season svg { display:block; width:100%; height:auto; }
   .bigfig { display:flex; flex-wrap:wrap; gap:10px 28px; margin:4px 0 10px; }
   .bigfig div { font-size:13px; color:var(--quiet); }
   .bigfig b { display:block; font-family:var(--head); font-size:28px; color:var(--ink); }
@@ -210,6 +210,14 @@
     <p class="headline" id="headline"></p>
     <p class="sub" id="status-sub"></p>
     <div class="status" id="status"></div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="season_h"></h2>
+    <p class="sub" id="season-sub"></p>
+    <div class="bigfig" id="season-figs"></div>
+    <div id="season"></div>
+    <div class="legend" id="season-legend"></div>
   </section>
 
   <section class="card">
