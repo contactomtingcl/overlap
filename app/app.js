@@ -44,7 +44,7 @@ const I18N = {
     read_h: "How to read this",
     read_nodetect: "<b>No detection is not the same as no fire.</b> Each polar satellite sees a place only about twice a day, and clouds, smoke and satellite gaps hide fires. Hatched cells mean the record could not be built for that month, not zero fire.",
     read_notfire: "<b>Hotspots are not fires.</b> One large fire produces many hotspots; small agricultural or short-lived burns may produce none.",
-    read_wip: "Work in progress (NASA Space Apps Challenge 2026). Harmonization v1: quantile mapping validated against CONAF in Maule, Ñuble, Biobío and La Araucanía; a pooled quantile map, tested on hidden years, in nine other regions; a simple ratio in Los Ríos, Los Lagos and Aysén.",
+    read_wip: "Work in progress (NASA Space Apps Challenge 2026). Harmonization v1: own quantile maps in Maule, Ñuble, Biobío and La Araucanía; a pooled quantile map in nine other regions; a simple ratio in Los Ríos, Los Lagos and Aysén. All tested on hidden years and against CONAF fire records.",
     footer: "Data: NASA FIRMS (MODIS Collection 6.1, VIIRS Collection 2); CONAF fire records (CC BY 4.0); BCN commune boundaries. We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (<a href=\"https://earthdata.nasa.gov/firms\">earthdata.nasa.gov/firms</a>), part of NASA's Earth Science Data and Information System (ESDIS). Code: <a href=\"https://github.com/contactomtingcl/overlap\">github.com/contactomtingcl/overlap</a>.",
     aoi: { chile: "Chile (whole country)", biobio_hist: "Biobío + Ñuble (historical Biobío region, CONAF validation area)" },
     aoiShort: { chile: "Chile", biobio_hist: "Biobío + Ñuble" },
@@ -65,7 +65,7 @@ const I18N = {
     tipNoData: "No satellite record for this month (not zero fire).",
     tipValue: (v) => `${v} hotspots, harmonized (Suomi NPP-equivalent)`,
     tipRaw: (sen, v) => `Raw ${sen}: ${v}`, tipRange: (a, b) => `80% range: ${a}–${b}`,
-    tipMethod: "Method", methodName: { qmap: "quantile mapping, validated against CONAF", qmap_pooled: "pooled quantile map, tested on hidden years", ratio: "simple ratio, tested on hidden years", mixed: "mixed (summed regions)" },
+    tipMethod: "Method", methodName: { qmap: "own quantile map", qmap_pooled: "pooled quantile map", ratio: "simple ratio", mixed: "mixed (summed regions)" },
     tipProv: "Provisional: near real-time Suomi NPP data, final values arrive later",
     tipPartial: (d) => `Partial month: data through ${d}, from NOAA-20 (Suomi NPP stopped on Nov 2, 2026)`,
     tipObs: "Observed by VIIRS Suomi NPP", tipMedian: (mo, v) => `Median for ${mo}: ${v}`,
@@ -81,13 +81,16 @@ const I18N = {
     thRegion: "Region", thJump: "False jump at 2012 vs CONAF<br>(1 = no jump)", thAqua: "MODIS Aqua years<br>2002–2012", thTerra: "MODIS Terra years<br>2000–2002", thMethod: "Method",
     raw: "raw", ci: "95% CI",
     errLine: (f, b, c) => `typical monthly error ×${f}<br><small>total bias ${b}${c == null ? "" : ` · 80% band held ${c}% of months`}</small>`,
-    testedH: "Other regions: tested on hidden years 2020–2026, not checked against CONAF",
-    testedNote: "The pooled map was fitted on Maule, Ñuble, Biobío and La Araucanía together and tested in regions it never saw; where it lost to the region's own simple ratio, the ratio is used. Errors are larger than in the calibrated regions, so treat the years before 2012 as indicative.",
+    testedH: "Other regions: tested on hidden years 2020–2026 and against CONAF fire records",
+    testedNote: "The pooled map was fitted on Maule, Ñuble, Biobío and La Araucanía together and tested in regions it never saw; where it lost to the region's own simple ratio, the ratio is used. Against CONAF (109,947 fires in all regions), the false 2012 jump disappears in 9 of the 11 regions with enough fires. Valparaíso is overcorrected and Metropolitana keeps part of the jump; the north and Magallanes have too few CONAF fires to judge. Errors are larger than in the calibrated regions, so treat the years before 2012 there as indicative.",
+    thConaf: "False jump at 2012 vs CONAF<br>(1 = no jump)",
+    verdict: { removed: "jump removed", over: (p) => `overcorrected: the years before 2012 come out about ${p}% too high`, under: (p) => `undercorrected: the years before 2012 come out about ${p}% too low`, few_fires: (n) => `only ${n} CONAF fires: cannot judge` },
+    figConaf: (v) => `In this region: ${v}.`,
     trustNote: (f, cov) => `A typical error of ×${f} means the harmonized value is usually within a factor of ${f} of what Suomi NPP would have recorded. The 80% band on estimated months should contain 8 of 10 months; for MODIS Aqua on the hidden years it held ${cov}%, slightly fewer than promised.`,
     method: {
       unit: "All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Before Suomi NPP (2012), MODIS counts are mapped to that unit. ",
       qmap: (r) => `<b>${r}:</b> quantile mapping fitted where both sensors observed (2012–2026), tested on hidden years 2020–2026 and checked against CONAF fire records 2002–2020. Maule, Ñuble, Biobío and La Araucanía together: unharmonized, the series jumps ×4.7 at 2012 relative to real fire activity; harmonized, ×0.89 (95% interval includes 1, no jump). `,
-      pooled: (r) => `<b>${r}:</b> one quantile map fitted on Maule, Ñuble, Biobío and La Araucanía together, applied region by region (never to a national total) and tested on hidden years in each region. `,
+      pooled: (r) => `<b>${r}:</b> one quantile map fitted on Maule, Ñuble, Biobío and La Araucanía together, applied region by region (never to a national total), tested on hidden years in each region and checked against CONAF fire records where there are enough of them. `,
       ratio: (r, f) => `<b>${r}:</b> simple ratio between sensors (${f}), because the pooled map did worse there on hidden years. `,
       data: "Only science-quality FIRMS data, presumed vegetation fires (volcanoes, mining and industry removed), low-confidence detections removed. Regions use the BCN commune boundaries (referential, not official limits).",
     },
@@ -138,7 +141,7 @@ const I18N = {
     read_h: "Cómo leer esto",
     read_nodetect: "<b>Sin detección no es lo mismo que sin fuego.</b> Cada satélite polar ve un lugar solo unas dos veces al día, y las nubes, el humo y los vacíos de cobertura ocultan fuegos. Las celdas achuradas indican que no se pudo construir el registro de ese mes, no que no hubo fuego.",
     read_notfire: "<b>Un foco de calor no es un incendio.</b> Un incendio grande produce muchos focos; quemas agrícolas pequeñas o breves pueden no producir ninguno.",
-    read_wip: "Trabajo en curso (NASA Space Apps Challenge 2026). Armonización v1: mapeo de cuantiles validado contra CONAF en Maule, Ñuble, Biobío y La Araucanía; un mapa de cuantiles agrupado, probado en años reservados, en otras nueve regiones; una razón simple en Los Ríos, Los Lagos y Aysén.",
+    read_wip: "Trabajo en curso (NASA Space Apps Challenge 2026). Armonización v1: mapas de cuantiles propios en Maule, Ñuble, Biobío y La Araucanía; un mapa de cuantiles agrupado en otras nueve regiones; una razón simple en Los Ríos, Los Lagos y Aysén. Todo probado en años reservados y contra los registros de incendios de CONAF.",
     footer: "Datos: NASA FIRMS (MODIS Colección 6.1, VIIRS Colección 2); registros de incendios de CONAF (CC BY 4.0); límites comunales de la BCN. Agradecemos el uso de datos o imágenes del Fire Information for Resource Management System (FIRMS) de la NASA (<a href=\"https://earthdata.nasa.gov/firms\">earthdata.nasa.gov/firms</a>), parte del Earth Science Data and Information System (ESDIS) de la NASA. Código: <a href=\"https://github.com/contactomtingcl/overlap\">github.com/contactomtingcl/overlap</a>.",
     aoi: { chile: "Chile (todo el país)", biobio_hist: "Biobío + Ñuble (antigua Región del Biobío, área validada con CONAF)" },
     aoiShort: { chile: "Chile", biobio_hist: "Biobío + Ñuble" },
@@ -159,7 +162,7 @@ const I18N = {
     tipNoData: "Sin registro satelital para este mes (no significa cero fuego).",
     tipValue: (v) => `${v} focos de calor, armonizado (equivalente a Suomi NPP)`,
     tipRaw: (sen, v) => `${sen} crudo: ${v}`, tipRange: (a, b) => `Rango 80 %: ${a}–${b}`,
-    tipMethod: "Método", methodName: { qmap: "mapeo de cuantiles, validado contra CONAF", qmap_pooled: "mapa de cuantiles agrupado, probado en años reservados", ratio: "razón simple, probada en años reservados", mixed: "mixto (suma de regiones)" },
+    tipMethod: "Método", methodName: { qmap: "mapa de cuantiles propio", qmap_pooled: "mapa de cuantiles agrupado", ratio: "razón simple", mixed: "mixto (suma de regiones)" },
     tipProv: "Provisorio: datos Suomi NPP casi en tiempo real; los valores definitivos llegan después",
     tipPartial: (d) => `Mes parcial: datos hasta el ${d}, de NOAA-20 (Suomi NPP dejó de entregar datos el 2 de noviembre de 2026)`,
     tipObs: "Observado por VIIRS Suomi NPP", tipMedian: (mo, v) => `Mediana de ${mo}: ${v}`,
@@ -175,13 +178,16 @@ const I18N = {
     thRegion: "Región", thJump: "Salto falso en 2012 frente a CONAF<br>(1 = sin salto)", thAqua: "Años de MODIS Aqua<br>2002–2012", thTerra: "Años de MODIS Terra<br>2000–2002", thMethod: "Método",
     raw: "crudo", ci: "IC 95 %",
     errLine: (f, b, c) => `error mensual típico ×${f}<br><small>sesgo total ${b}${c == null ? "" : ` · la banda 80 % contuvo el ${c} % de los meses`}</small>`,
-    testedH: "Otras regiones: probadas en los años reservados 2020–2026, sin contraste con CONAF",
-    testedNote: "El mapa agrupado se ajustó con Maule, Ñuble, Biobío y La Araucanía juntas y se probó en regiones que nunca vio; donde perdió frente a la razón simple propia de la región, se usa la razón. Los errores son mayores que en las regiones calibradas, así que los años anteriores a 2012 son referenciales.",
+    testedH: "Otras regiones: probadas en los años reservados 2020–2026 y contra los registros de incendios de CONAF",
+    testedNote: "El mapa agrupado se ajustó con Maule, Ñuble, Biobío y La Araucanía juntas y se probó en regiones que nunca vio; donde perdió frente a la razón simple propia de la región, se usa la razón. Contra CONAF (109.947 incendios en todas las regiones), el salto falso de 2012 desaparece en 9 de las 11 regiones con suficientes incendios. Valparaíso queda sobrecorregida y la Metropolitana conserva parte del salto; el norte y Magallanes tienen muy pocos incendios de CONAF para evaluar. Los errores son mayores que en las regiones calibradas, así que allí los años anteriores a 2012 son referenciales.",
+    thConaf: "Salto falso en 2012 frente a CONAF<br>(1 = sin salto)",
+    verdict: { removed: "salto eliminado", over: (p) => `sobrecorregido: los años antes de 2012 quedan cerca de ${p} % más altos`, under: (p) => `subcorregido: los años antes de 2012 quedan cerca de ${p} % más bajos`, few_fires: (n) => `solo ${n} incendios de CONAF: no se puede evaluar` },
+    figConaf: (v) => `En esta región: ${v}.`,
     trustNote: (f, cov) => `Un error típico de ×${f} significa que el valor armonizado suele estar dentro de un factor ${f} de lo que habría registrado Suomi NPP. La banda 80 % de los meses estimados debería contener 8 de cada 10 meses; para MODIS Aqua en los años reservados contuvo el ${cov} %, algo menos de lo prometido.`,
     method: {
       unit: "Todos los valores se expresan como los focos de calor que registraría VIIRS Suomi NPP (un solo satélite, nunca una suma de satélites). Antes de Suomi NPP (2012), los conteos de MODIS se llevan a esa unidad. ",
       qmap: (r) => `<b>${r}:</b> mapeo de cuantiles ajustado donde ambos sensores observaron (2012–2026), probado en los años reservados 2020–2026 y contrastado con los registros de incendios de CONAF 2002–2020. Maule, Ñuble, Biobío y La Araucanía juntas: sin armonizar, la serie salta ×4,7 en 2012 respecto de la actividad real de fuego; armonizada, ×0,89 (el intervalo de 95 % incluye 1: sin salto). `,
-      pooled: (r) => `<b>${r}:</b> un solo mapa de cuantiles ajustado con Maule, Ñuble, Biobío y La Araucanía juntas, aplicado región por región (nunca a un total nacional) y probado en los años reservados de cada región. `,
+      pooled: (r) => `<b>${r}:</b> un solo mapa de cuantiles ajustado con Maule, Ñuble, Biobío y La Araucanía juntas, aplicado región por región (nunca a un total nacional), probado en los años reservados de cada región y contrastado con los registros de CONAF donde hay suficientes incendios. `,
       ratio: (r, f) => `<b>${r}:</b> razón simple entre sensores (${f}), porque allí el mapa agrupado tuvo peor desempeño en los años reservados. `,
       data: "Solo datos FIRMS de calidad científica, fuegos presuntos de vegetación (se excluyen volcanes, minería e industria) y sin detecciones de baja confianza. Las regiones usan los límites comunales de la BCN (referenciales, no oficiales).",
     },
@@ -714,10 +720,15 @@ function renderJump() {
   const T = L(), S = seasonTotals();
   const ok = state.data.trust.filter((t) => t.validated);
   const fig = (area, unh, h, lo, hi) => `<div>${T.figRaw(area)}${num(unh, 2, "×")}${T.figRawSub}</div>`
-    + `<div class="good">${T.figH}${num(h, 2, "×")}${T.figHSub(dec(lo), dec(hi))}</div>`;
+    + `<div class="${lo <= 1 && 1 <= hi ? "good" : ""}">${T.figH}${num(h, 2, "×")}${T.figHSub(dec(lo), dec(hi))}</div>`;
   if (ok.length === 1) { const t = ok[0]; $("jump-figs").innerHTML = fig(t.region, t.jump_unharmonized, ...t.jump_harmonized); }
   else if (ok.length > 1) $("jump-figs").innerHTML = fig(T.figAll, CONAF_ALL.unh, CONAF_ALL.h, CONAF_ALL.lo, CONAF_ALL.hi);
-  else $("jump-figs").innerHTML = `<div>${T.figNone}</div>`;
+  else {
+    const tc = state.data.trust.length === 1 && state.data.trust[0].conaf;
+    $("jump-figs").innerHTML = tc && tc.verdict !== "few_fires"
+      ? fig(state.data.trust[0].region, tc.unh, ...tc.h) + `<div>${T.figConaf(verdictText(tc))}</div>`
+      : `<div>${tc ? T.figConaf(verdictText(tc)) : T.figNone}</div>`;
+  }
   if (S.length < 4) { $("jump").innerHTML = ""; $("jump-legend").innerHTML = ""; return; }
   const W = Math.max(340, Math.min(1100, $("jump").clientWidth || 900)), H = W < 600 ? 230 : 290, l = W < 600 ? 46 : 58, r = 30, t = 18, b = 34;
   const ymax = Math.max(...S.map((d) => Math.max(d.h, d.raw))) * 1.08;
@@ -772,6 +783,14 @@ function renderMethod() {
   $("method").innerHTML = txt;
 }
 
+function verdictText(c) {
+  const V = L().verdict;
+  if (c.verdict === "removed") return `<span class="ok">${V.removed}</span>`;
+  if (c.verdict === "few_fires") return `<span style="color:var(--quiet)">${V.few_fires(fmt(c.fires))}</span>`;
+  const p = Math.round(c.verdict === "over" ? (1 / c.h[0] - 1) * 100 : (1 - 1 / c.h[0]) * 100);
+  return `<span style="color:var(--high)">${c.verdict === "over" ? V.over(p) : V.under(p)}</span>`;
+}
+
 function renderTrust() {
   const T = L(), TR = state.data.trust, ok = TR.filter((t) => t.validated), tested = TR.filter((t) => !t.validated);
   const err = (e) => T.errLine(dec(e.typical_factor), pct(e.bias_pct), e.coverage80_pct == null ? null : Math.round(e.coverage80_pct));
@@ -784,8 +803,8 @@ function renderTrust() {
     html += `<p class="sub" style="margin-top:10px">${T.trustNote(f, `${Math.min(...cov)}${cov.length > 1 ? `–${Math.max(...cov)}` : ""}`)}</p>`;
   }
   if (tested.length) {
-    html += `<h3 style="font-size:14.5px;margin:14px 0 6px">${T.testedH}</h3><div class="tablewrap"><table class="trust"><thead><tr><th>${T.thRegion}</th><th>${T.thMethod}</th><th>${T.thAqua}</th><th>${T.thTerra}</th></tr></thead><tbody>`
-      + tested.map((t) => `<tr><td><b>${t.region}</b></td><td>${T.methodName[t.Aqua.method]}</td><td>${err(t.Aqua)}</td><td>${err(t.Terra)}</td></tr>`).join("")
+    html += `<h3 style="font-size:14.5px;margin:14px 0 6px">${T.testedH}</h3><div class="tablewrap"><table class="trust"><thead><tr><th>${T.thRegion}</th><th>${T.thConaf}</th><th>${T.thAqua}</th><th>${T.thTerra}</th></tr></thead><tbody>`
+      + tested.map((t) => `<tr><td><b>${t.region}</b><br><small>${T.methodName[t.Aqua.method]}</small></td><td>${t.conaf ? `${T.raw} ×${dec(t.conaf.unh)} → <b>×${dec(t.conaf.h[0])}</b><br><small>${T.ci} ${dec(t.conaf.h[1])}–${dec(t.conaf.h[2])} · ${verdictText(t.conaf)}</small>` : "—"}</td><td>${err(t.Aqua)}</td><td>${err(t.Terra)}</td></tr>`).join("")
       + `</tbody></table></div><p class="sub" style="margin-top:10px">${T.testedNote}</p>`;
   }
   $("trust").innerHTML = html;

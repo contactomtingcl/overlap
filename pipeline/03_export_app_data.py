@@ -62,6 +62,18 @@ nrt_d = nrt.groupby(["codregion", "date", "satellite"]).size()
 qtab = pd.read_csv(qdir / "quantiles_all.csv")
 qmet = pd.read_csv(qdir / "metrics_all.csv").drop_duplicates()
 jump = pd.read_csv(qdir.parent / "validation_conaf" / "jump_at_2012_vs_conaf.csv")
+jall = pd.read_csv(qdir.parent / "validation_conaf" / "all_regions" / "jump_at_2012_all_regions.csv", encoding="utf-8")
+
+
+def conaf_check(r, series):
+    """CONAF jump test for one region (pipeline/15), for the series the app uses there."""
+    g = jall[jall.scope == f"region_{r:02d}"].set_index("series")
+    h, u = g.loc[series], g.loc["unharmonized"]
+    lo, hi = float(h.ci95_low), float(h.ci95_high)
+    verdict = ("few_fires" if not bool(h.enough_conaf_fires) else "removed" if lo <= 1 <= hi
+               else "over" if hi < 1 else "under")
+    return {"fires": int(h.conaf_fires), "unh": round(float(u.jump_factor_at_2012), 2),
+            "h": [round(float(h.jump_factor_at_2012), 2), round(lo, 2), round(hi, 2)], "verdict": verdict}
 ptab = pd.read_csv(qdir / "pooled" / "quantiles_pooled.csv")
 ptest = pd.read_csv(qdir / "pooled" / "test_other_regions.csv")
 POOLED_USE = set()  # (region, sensor) where the pooled map beat the region's own ratio on hidden years
@@ -81,6 +93,7 @@ def trust(r):
             out_[sen] = {"method": "qmap_pooled" if meth == "qmap_pooled" else "ratio",
                          "typical_factor": round(float(np.exp(row.mae_log1p)), 2),
                          "bias_pct": round(float(row.bias_total_pct), 1), "months": int(row.months)}
+        out_["conaf"] = conaf_check(r, "quantile map" if (r, "Aqua") in POOLED_USE else "own simple ratio")
         return out_
     out_ = {"region": REGIONS[r], "validated": True}
     for sen in ["Aqua", "Terra"]:

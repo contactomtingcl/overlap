@@ -119,8 +119,9 @@ for reg in sorted(geoms):
     method = "qmap" if reg in QM else (d["method"].get("pooled_regions") and "qmap_pooled") or "ratio"
     L = d["latest"]
     attrs[reg] = {"codregion": reg, "region": d["regions"] and monthly["regions"][str(reg)]["name"], "method": method,
-                  "conaf_checked": 1 if t.get("validated") else 0,
-                  "jump2012_raw": t.get("jump_unharmonized"), "jump2012_harm": (t.get("jump_harmonized") or [None])[0],
+                  "conaf_verdict": "removed" if t.get("validated") else t["conaf"]["verdict"],
+                  "jump2012_raw": t.get("jump_unharmonized") or t["conaf"]["unh"],
+                  "jump2012_harm": (t.get("jump_harmonized") or t["conaf"]["h"])[0],
                   "aqua_typical_error": t["Aqua"]["typical_factor"], "latest_month": L["month"] + "-01",
                   "latest_value": L["value"], "latest_status": L["status"], "latest_median": L["median"],
                   "latest_z": L["z"], "latest_anomaly": L["anomaly"]}
@@ -179,9 +180,9 @@ c.executemany("INSERT INTO gpkg_spatial_ref_sys VALUES (?,?,?,?,?,?)", [
     ("Undefined cartesian SRS", -1, "NONE", -1, "undefined", "undefined cartesian coordinate reference system"),
     ("Undefined geographic SRS", 0, "NONE", 0, "undefined", "undefined geographic coordinate reference system")])
 c.execute("""CREATE TABLE regions (fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, geom MULTIPOLYGON, codregion INTEGER,
-  region TEXT, method TEXT, conaf_checked INTEGER, jump2012_raw REAL, jump2012_harm REAL, aqua_typical_error REAL,
+  region TEXT, method TEXT, conaf_verdict TEXT, jump2012_raw REAL, jump2012_harm REAL, aqua_typical_error REAL,
   latest_month DATE, latest_value REAL, latest_status TEXT, latest_median REAL, latest_z REAL, latest_anomaly TEXT)""")
-cols = ["codregion", "region", "method", "conaf_checked", "jump2012_raw", "jump2012_harm", "aqua_typical_error",
+cols = ["codregion", "region", "method", "conaf_verdict", "jump2012_raw", "jump2012_harm", "aqua_typical_error",
         "latest_month", "latest_value", "latest_status", "latest_median", "latest_z", "latest_anomaly"]
 for reg in sorted(geoms):
     c.execute(f"INSERT INTO regions (geom, {', '.join(cols)}) VALUES (?{', ?' * len(cols)})",

@@ -1,0 +1,56 @@
+"scope","name","map","conaf_fires","enough_conaf_fires","series","jump_factor_at_2012","ci95_low","ci95_high","spearman_area_2002_2020","spearman_fires_2002_2020"
+"region_01","Tarapacá","pooled quantile map",10,FALSE,"unharmonized",4.623,4.063,5.221,0.202,0.203
+"region_01","Tarapacá","pooled quantile map",10,FALSE,"own simple ratio",2.253,1.776,2.785,0.094,0.095
+"region_01","Tarapacá","pooled quantile map",10,FALSE,"quantile map",2.199,1.737,2.748,0.072,0.073
+"region_02","Antofagasta","pooled quantile map",11,FALSE,"unharmonized",9.95,7.631,12.581,0.204,0.204
+"region_02","Antofagasta","pooled quantile map",11,FALSE,"own simple ratio",2.854,1.634,5.06,0.135,0.134
+"region_02","Antofagasta","pooled quantile map",11,FALSE,"quantile map",4.269,2.75,7.118,0.159,0.157
+"region_03","Atacama","pooled quantile map",122,FALSE,"unharmonized",8.407,6.899,10.163,0.581,0.584
+"region_03","Atacama","pooled quantile map",122,FALSE,"own simple ratio",3.847,2.655,5.622,0.484,0.49
+"region_03","Atacama","pooled quantile map",122,FALSE,"quantile map",3.248,2.202,4.773,0.432,0.436
+"region_04","Coquimbo","pooled quantile map",1151,TRUE,"unharmonized",4.655,3.865,5.586,0.289,0.292
+"region_04","Coquimbo","pooled quantile map",1151,TRUE,"own simple ratio",1.196,0.857,1.633,0.302,0.161
+"region_04","Coquimbo","pooled quantile map",1151,TRUE,"quantile map",1.101,0.819,1.482,0.278,0.118
+"region_05","Valparaíso","pooled quantile map",14861,TRUE,"unharmonized",4.05,3.439,4.69,0.586,0.477
+"region_05","Valparaíso","pooled quantile map",14861,TRUE,"own simple ratio",0.821,0.691,0.974,0.558,0.438
+"region_05","Valparaíso","pooled quantile map",14861,TRUE,"quantile map",0.745,0.613,0.877,0.528,0.408
+"region_06","O'Higgins","pooled quantile map",4366,TRUE,"unharmonized",4.279,3.39,5.331,0.29,0.232
+"region_06","O'Higgins","pooled quantile map",4366,TRUE,"own simple ratio",0.85,0.638,1.118,0.362,0.23
+"region_06","O'Higgins","pooled quantile map",4366,TRUE,"quantile map",0.787,0.605,1.015,0.361,0.227
+"region_07","Maule","own quantile map",10111,TRUE,"unharmonized",5.534,4.422,7.183,0.239,0.216
+"region_07","Maule","own quantile map",10111,TRUE,"quantile map",0.904,0.733,1.099,0.267,0.141
+"region_08","Biobío","own quantile map",38052,TRUE,"unharmonized",5.494,4.642,6.582,0.43,0.333
+"region_08","Biobío","own quantile map",38052,TRUE,"quantile map",1.008,0.853,1.204,0.509,0.412
+"region_09","Araucanía","own quantile map",19689,TRUE,"unharmonized",4.112,3.133,5.513,0.576,0.521
+"region_09","Araucanía","own quantile map",19689,TRUE,"quantile map",0.923,0.686,1.32,0.611,0.58
+"region_10","Los Lagos","pooled quantile map",2908,TRUE,"unharmonized",2.093,1.558,2.831,0.716,0.709
+"region_10","Los Lagos","pooled quantile map",2908,TRUE,"own simple ratio",0.745,0.508,1.085,0.695,0.675
+"region_10","Los Lagos","pooled quantile map",2908,TRUE,"quantile map",0.638,0.447,0.923,0.679,0.658
+"region_11","Aysén","pooled quantile map",281,TRUE,"unharmonized",1.292,0.923,1.777,0.552,0.503
+"region_11","Aysén","pooled quantile map",281,TRUE,"own simple ratio",0.672,0.433,1.031,0.494,0.437
+"region_11","Aysén","pooled quantile map",281,TRUE,"quantile map",0.641,0.409,1.02,0.485,0.427
+"region_12","Magallanes","pooled quantile map",196,FALSE,"unharmonized",5.847,4.335,8.3,0.312,0.301
+"region_12","Magallanes","pooled quantile map",196,FALSE,"own simple ratio",2.842,1.741,4.968,0.273,0.236
+"region_12","Magallanes","pooled quantile map",196,FALSE,"quantile map",3.535,2.323,5.893,0.29,0.255
+"region_13","Metropolitana","pooled quantile map",8197,TRUE,"unharmonized",6.738,5.558,8.042,0.665,0.556
+"region_13","Metropolitana","pooled quantile map",8197,TRUE,"own simple ratio",1.828,1.331,2.442,0.822,0.747
+"region_13","Metropolitana","pooled quantile map",8197,TRUE,"quantile map",1.759,1.327,2.391,0.825,0.75
+"region_14","Los Ríos","pooled quantile map",1816,TRUE,"unharmonized",2.498,1.923,3.245,0.505,0.455
+"region_14","Los Ríos","pooled quantile map",1816,TRUE,"own simple ratio",0.974,0.734,1.327,0.492,0.453
+"region_14","Los Ríos","pooled quantile map",1816,TRUE,"quantile map",0.765,0.566,1.092,0.475,0.443
+"region_15","Arica y Parinacota","pooled quantile map",26,FALSE,"unharmonized",2.852,2.383,3.323,0.252,0.247
+"region_15","Arica y Parinacota","pooled quantile map",26,FALSE,"own simple ratio",1.59,1.104,2.187,0.141,0.138
+"region_15","Arica y Parinacota","pooled quantile map",26,FALSE,"quantile map",1.602,1.127,2.232,0.136,0.133
+"region_16","Ñuble","own quantile map",8150,TRUE,"unharmonized",4.852,3.894,6.102,0.236,0.149
+"region_16","Ñuble","own quantile map",8150,TRUE,"quantile map",0.93,0.76,1.129,0.254,0.16
+"calibrated_4","calibrated_4","",76002,TRUE,"unharmonized",4.709,4.053,5.678,0.391,0.33
+"calibrated_4","calibrated_4","",76002,TRUE,"quantile map",0.891,0.77,1.057,0.438,0.364
+"other_12","other_12","",33945,TRUE,"unharmonized",4.167,3.805,4.475,0.566,0.551
+"other_12","other_12","",33945,TRUE,"own simple ratio",1.433,1.245,1.634,0.561,0.54
+"other_12","other_12","",33945,TRUE,"quantile map",1.401,1.23,1.594,0.583,0.563
+"other_12_with_200_fires_or_more","other_12_with_200_fires_or_more","",33580,TRUE,"unharmonized",3.374,2.946,3.905,0.603,0.569
+"other_12_with_200_fires_or_more","other_12_with_200_fires_or_more","",33580,TRUE,"own simple ratio",1.001,0.85,1.18,0.602,0.552
+"other_12_with_200_fires_or_more","other_12_with_200_fires_or_more","",33580,TRUE,"quantile map",0.903,0.777,1.061,0.589,0.542
+"all_16","all_16","",109947,TRUE,"unharmonized",4.409,4.066,4.838,0.6,0.588
+"all_16","all_16","",109947,TRUE,"own simple ratio",1.38,1.213,1.578,0.61,0.594
+"all_16","all_16","",109947,TRUE,"quantile map",1.289,1.143,1.438,0.627,0.613

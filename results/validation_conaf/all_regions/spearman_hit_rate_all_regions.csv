@@ -1,0 +1,17 @@
+"zone","name","conaf_fires","spearman_area_aqua_era","spearman_area_snpp_era","fires_200ha","hit_rate_200ha_aqua_2002_2012","hit_rate_200ha_snpp_2012_2020"
+"region_01","Tarapacá",10,NA,0.103,0,NA,NA
+"region_02","Antofagasta",11,NA,0.149,0,NA,NA
+"region_03","Atacama",122,NA,0.465,0,NA,NA
+"region_04","Coquimbo",1151,0.292,0.372,15,0.75,1
+"region_05","Valparaíso",14861,0.561,0.686,124,0.91,1
+"region_06","O'Higgins",4366,0.321,0.414,161,0.84,0.97
+"region_07","Maule",10111,0.181,0.365,107,0.897,0.985
+"region_08","Biobío",38052,0.365,0.674,144,0.982,1
+"region_09","Araucanía",19689,0.507,0.736,183,1,1
+"region_10","Los Lagos",2908,0.63,0.796,20,0.833,1
+"region_11","Aysén",281,0.459,0.589,12,0.667,1
+"region_12","Magallanes",196,0.253,0.22,3,1,1
+"region_13","Metropolitana",8197,0.804,0.855,108,0.953,0.985
+"region_14","Los Ríos",1816,0.346,0.706,4,0.5,1
+"region_15","Arica y Parinacota",26,NA,0.148,0,NA,NA
+"region_16","Ñuble",8150,0.266,0.244,61,0.812,1
