@@ -38,7 +38,10 @@ const I18N = {
     nav: ["Where", "Now", "Calendar", "Trust"], cta: "See the 25-year calendar", share_s: "Link", cvd_s: "Colour-blind", csv_s: "CSV",
     comH: (c, r) => `${c} <span class="muted">· ${r}</span>`,
     comNow: (mo, v, sh) => `${mo}: <b>${v}</b> hotspot detections${sh == null ? "" : `, ${sh} of the region`}.`,
-    comSeasons: "Hotspot detections per fire season, VIIRS Suomi NPP (2012–13 to 2025–26)",
+    comSeasons: "Detections per fire season (VIIRS Suomi NPP, 2012–13 to 2025–26)",
+    comMonthly: "Month by month since 2012 (VIIRS Suomi NPP) · the yellow line follows the map",
+    comMo: (mo) => `detections in ${mo}`, comShare: (p) => `${p} of the region's detections this month`,
+    comBefore: "Before 2012 another sensor counted (MODIS): not shown here",
     comBest: (mo, v) => `Busiest month on record: ${mo} (${v}).`,
     comNote: "Raw detections of one sensor, comparable between these seasons only. Not harmonized: before 2012 a different sensor counted, so those years are left out here.",
     comNone: "No hotspots detected in this commune since 2012.",
@@ -176,7 +179,10 @@ const I18N = {
     nav: ["Dónde", "Ahora", "Calendario", "Confianza"], cta: "Ver el calendario de 25 años", share_s: "Link", cvd_s: "Daltonismo", csv_s: "CSV",
     comH: (c, r) => `${c} <span class="muted">· ${r}</span>`,
     comNow: (mo, v, sh) => `${mo}: <b>${v}</b> detecciones de focos${sh == null ? "" : `, ${sh} de la región`}.`,
-    comSeasons: "Detecciones de focos por temporada, VIIRS Suomi NPP (2012–13 a 2025–26)",
+    comSeasons: "Detecciones por temporada (VIIRS Suomi NPP, 2012–13 a 2025–26)",
+    comMonthly: "Mes a mes desde 2012 (VIIRS Suomi NPP) · la línea amarilla sigue al mapa",
+    comMo: (mo) => `detecciones en ${mo}`, comShare: (p) => `${p} de las detecciones de la región este mes`,
+    comBefore: "Antes de 2012 contaba otro sensor (MODIS): no se muestra aquí",
     comBest: (mo, v) => `Mes con más focos registrado: ${mo} (${v}).`,
     comNote: "Detecciones crudas de un solo sensor, comparables solo entre estas temporadas. Sin armonizar: antes de 2012 contaba otro sensor, por eso esos años no se muestran aquí.",
     comNone: "No se detectaron focos en esta comuna desde 2012.",
@@ -645,7 +651,7 @@ function buildMap() {
     <defs><pattern id="mhatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="${NO_DATA}"/><line x1="0" y1="0" x2="0" y2="4" stroke="#2a3d63" stroke-width="1.5"/></pattern></defs>
     <g${map.vert ? "" : ` transform="translate(0,${w}) rotate(-90)"`}><g id="mregs">${Object.entries(map.geo.regions).map(([k, d]) => `<path class="reg" data-r="${k}" d="${d}" vector-effect="non-scaling-stroke"/>`).join("")}</g><g id="mcoms"></g></g></svg>
     <button type="button" id="map-back" class="mapback" hidden></button>`;
-  $("map-back").addEventListener("click", () => { if (map.com_sel && map.zoom) { map.com_sel = null; zoomTo(map.zoom); } else zoomOut(); });
+  $("map-back").addEventListener("click", () => { if (map.com_sel && map.zoom) { map.com_sel = null; map.panelKey = null; zoomTo(map.zoom); } else zoomOut(); });
   $("map").querySelectorAll(".reg").forEach((el) => {
     el.addEventListener("mousemove", (e) => mapTip(e, el.dataset.r));
     el.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
@@ -670,19 +676,28 @@ function flyTo(target, height, instant) {
   map.anim = requestAnimationFrame(step);
 }
 
+// Wide screens: when zoomed, the map moves to the left and the live panel takes the right half.
+const SPLIT_H = 500;
+function zoomFrame() {
+  const wrap = document.querySelector(".mapwrap"), split = innerWidth >= 900 && !map.vert;
+  wrap.classList.toggle("split", split);
+  const box = $("map").clientWidth || 1000; // read after the class change, so the narrower column counts
+  return split ? { box, aspect: box / SPLIT_H, h: SPLIT_H } : { box, aspect: box < 620 ? 1.15 : 2.1, h: Math.min(560, box / (box < 620 ? 1.15 : 2.1)) };
+}
+
 async function zoomTo(r, instant) {
-  map.com_sel = null;
-  const w = map.geo.width, box = $("map").clientWidth || 1000;
+  map.com_sel = null; map.panelKey = null;
+  const w = map.geo.width, F = zoomFrame();
   const el = $("map").querySelector(`.reg[data-r="${r}"]`);
   if (!el) return;
   map.zoom = r;
   const bb = el.getBBox(); // in map units; on wide screens the map is drawn rotated (north to the left)
   const [x1, x2, y1, y2] = map.vert ? [bb.x, bb.x + bb.width, bb.y, bb.y + bb.height] : [bb.y, bb.y + bb.height, w - (bb.x + bb.width), w - bb.x];
-  const aspect = box < 620 ? 1.15 : 2.1, pad = 0.08;
+  const aspect = F.aspect, pad = 0.08;
   let bw = (x2 - x1) * (1 + 2 * pad), bh = (y2 - y1) * (1 + 2 * pad);
   if (bw / bh > aspect) bh = bw / aspect; else bw = bh * aspect;
   const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
-  flyTo([cx - bw / 2, cy - bh / 2, bw, bh], Math.min(560, box / aspect), instant);
+  flyTo([cx - bw / 2, cy - bh / 2, bw, bh], F.h, instant);
   // the communes cover the selected region; its coarser outline would show through at this zoom
   $("map").querySelectorAll(".reg").forEach((p) => { p.classList.toggle("dim", p.dataset.r !== r); p.classList.toggle("under", p.dataset.r === r); });
   $("map-back").hidden = false; $("map-back").textContent = L().back;
@@ -718,15 +733,16 @@ function zoomToCommune(r, cod, instant) {
   if (!el) return;
   if (state.aoi !== `r${r}`) { state.aoi = `r${r}`; $("aoi").value = state.aoi; $("day-panel").hidden = true; load(); }
   map.com_sel = cod;
-  const box = $("map").clientWidth || 1000, aspect = box < 620 ? 1.15 : 2.1;
-  flyTo(boxFor(el, aspect), Math.min(560, box / aspect), instant);
+  const F = zoomFrame();
+  flyTo(boxFor(el, F.aspect), F.h, instant);
   $("mcoms").querySelectorAll(".com").forEach((p) => { p.classList.remove("draw"); p.classList.toggle("csel", p.dataset.c === cod); p.classList.toggle("cdim", p.dataset.c !== cod); });
   $("map-back").textContent = L().backTo(map.reg.regions[r].name);
   paintComunas();
 }
 
 function zoomOut() {
-  map.zoom = null; map.com_sel = null;
+  map.zoom = null; map.com_sel = null; map.panelKey = null;
+  document.querySelector(".mapwrap").classList.remove("split");
   $("mcoms").innerHTML = "";
   $("map").querySelectorAll(".reg").forEach((p) => p.classList.remove("dim", "under"));
   $("map-back").hidden = true;
@@ -768,33 +784,76 @@ function paintComunas() {
     const top = vals.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 6), max = top.length ? top[0][1] : 1;
     body = top.length ? `<div class="bars">${top.map(([cod, v]) => `<div class="bar"><span>${C.geo.names[cod]}</span><i style="width:${Math.max(4, (100 * v) / max)}%;background:${colour(v, C.cmax)}"></i><b>${fmt(v)}</b></div>`).join("")}</div>` : `<p class="sub">${T.whereNone}</p>`;
   }
-  if (map.com_sel) { $("map-side").innerHTML = communePanel(r, map.com_sel); return; }
+  if (map.com_sel) {
+    const key = `${r}:${map.com_sel}:${state.lang}:${state.cvd}`;
+    if (map.panelKey !== key) { buildCommunePanel(r, map.com_sel); map.panelKey = key; }
+    updateCommunePanel();
+    return;
+  }
+  map.panel = null; map.panelKey = null;
   $("map-side").innerHTML = `<h3>${T.whereH(name)}</h3>${body}<p class="sub" style="margin:8px 0 0">${T.whereNote(sen)} ${T.comHint}</p>`;
 }
 
-function communePanel(r, cod) {
-  const T = L(), C = map.com[r], M = C.data.months, v = C.data.v[cod] || {};
-  const mo = M[map.i], [y, m] = mo.split("-"), here = comValue(r, cod);
-  const tot = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(r, c) || 0), 0);
+// The commune panel is built once per commune and then updated in place on every month change (slider, ▶),
+// so the cursor, the numbers and the bars move smoothly instead of being redrawn.
+function communeSeries(r, cod) {
+  const C = map.com[r], M = C.data.months, v = C.data.v[cod] || {};
+  const idx = M.map((m, i) => i).filter((i) => C.data.sensor[i] === "SNPP" && M[i] <= "2026-10" && !C.data.withheld.includes(i));
   const seasons = [];
-  for (let s = 2012; s <= 2025; s++) {
-    let n = 0;
-    M.forEach((mm, i) => { const [yy, mn] = mm.split("-").map(Number); if ((mn >= 7 ? yy : yy - 1) === s && C.data.sensor[i] === "SNPP" && mm <= "2026-07") n += v[i] || 0; });
-    seasons.push([s, n]);
-  }
+  for (let s = 2012; s <= 2025; s++) seasons.push([s, idx.filter((i) => { const [y, m] = M[i].split("-").map(Number); return (m >= 7 ? y : y - 1) === s && M[i] <= "2026-07"; }).reduce((a, i) => a + (v[i] || 0), 0)]);
   let best = [0, null];
-  Object.entries(v).forEach(([i, n]) => { if (C.data.sensor[i] === "SNPP" && n > best[0]) best = [n, M[i]]; });
-  const mx = Math.max(1, ...seasons.map((x) => x[1])), W = 520, H = 120, bw = W / seasons.length;
-  const curS = (+m >= 7 ? +y : +y - 1);
-  const bars = seasons.map(([s, n], i) => `<rect x="${i * bw + 2}" y="${H - 18 - (n / mx) * (H - 34)}" width="${bw - 4}" height="${Math.max(1, (n / mx) * (H - 34))}" rx="3" fill="${n ? colour(n, mx) : "#10203d"}" ${s === curS ? 'stroke="#eaff28" stroke-width="2"' : ""}><title>${s}–${String(s + 1).slice(2)}: ${fmt(n)}</title></rect>`
-    + (i % 3 === 0 || i === seasons.length - 1 ? `<text x="${i * bw + bw / 2}" y="${H - 4}" text-anchor="middle" font-size="10" fill="#8fa6cc">${String(s).slice(2)}–${String(s + 1).slice(2)}</text>` : "")
-    + (n === mx && n > 0 ? `<text x="${i * bw + bw / 2}" y="${H - 22 - (n / mx) * (H - 34)}" text-anchor="middle" font-size="10.5" fill="#eaf1ff">${fmt(n)}</text>` : "")).join("");
-  const [by, bm] = best[1] ? best[1].split("-") : [];
-  return `<h3>${T.comH(C.geo.names[cod], map.reg.regions[r].name)}</h3>`
-    + `<p class="sub" style="margin:0 0 8px">${here === undefined ? T.whereWithheld : T.comNow(`${T.monthsLong[+m - 1]} ${y}`, fmt(here), tot ? `${Math.round((100 * here) / tot)}${state.lang === "es" ? " %" : "%"}` : null)}</p>`
-    + (mx > 1 || seasons.some((x) => x[1]) ? `<p class="sub" style="margin:0 0 4px">${T.comSeasons}</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block">${bars}</svg>`
-      + (best[1] ? `<p class="sub" style="margin:6px 0 0">${T.comBest(`${T.monthsLong[+bm - 1]} ${by}`, fmt(best[0]))}</p>` : "") : `<p class="sub">${T.comNone}</p>`)
-    + `<p class="sub" style="margin:8px 0 0"><small>${T.comNote}</small></p>`;
+  idx.forEach((i) => { if ((v[i] || 0) > best[0]) best = [v[i], M[i]]; });
+  return { M, v, idx, seasons, best };
+}
+
+function buildCommunePanel(r, cod) {
+  const T = L(), C = map.com[r], S = communeSeries(r, cod);
+  const W = 560, H = 150, l = 34, rr = 8, t = 12, b = 22, vmax = Math.max(1, ...S.idx.map((i) => S.v[i] || 0));
+  const x = (k) => l + (k / (S.idx.length - 1)) * (W - l - rr), y = (v) => t + (1 - Math.sqrt(v / vmax)) * (H - t - b);
+  const pts = S.idx.map((i, k) => `${x(k).toFixed(1)},${y(S.v[i] || 0).toFixed(1)}`);
+  const area = `M${x(0)},${y(0)}L${pts.join("L")}L${x(S.idx.length - 1)},${y(0)}Z`;
+  const years = S.idx.map((i, k) => [S.M[i], k]).filter(([m]) => m.endsWith("-01") && +m.slice(0, 4) % 2 === 0)
+    .map(([m, k]) => `<text x="${x(k)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#8fa6cc">${m.slice(0, 4)}</text><line x1="${x(k)}" x2="${x(k)}" y1="${t}" y2="${H - b}" stroke="rgba(140,180,255,.08)"/>`).join("");
+  const gl = [vmax, vmax / 4].map((v) => `<text x="${l - 5}" y="${y(v) + 3}" text-anchor="end" font-size="9.5" fill="#8fa6cc">${fmt(v)}</text><line x1="${l}" x2="${W - rr}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(140,180,255,.10)"/>`).join("");
+  const smax = Math.max(1, ...S.seasons.map((x) => x[1])), SW = 560, SH = 92, bw = SW / S.seasons.length;
+  const bars = S.seasons.map(([s, n], i) => `<rect class="cp-sbar" data-s="${s}" x="${i * bw + 2}" y="${SH - 16 - (n / smax) * (SH - 30)}" width="${bw - 4}" height="${Math.max(1.5, (n / smax) * (SH - 30))}" rx="3" fill="${n ? colour(n, smax) : "#10203d"}"><title>${s}–${String(s + 1).slice(2)}: ${fmt(n)}</title></rect>`
+    + (i % 3 === 0 || i === S.seasons.length - 1 ? `<text x="${i * bw + bw / 2}" y="${SH - 3}" text-anchor="middle" font-size="9.5" fill="#8fa6cc">${String(s).slice(2)}–${String(s + 1).slice(2)}</text>` : "")).join("");
+  const [by, bm] = S.best[1] ? S.best[1].split("-") : [];
+  map.panel = { r, cod, S, x, y, vmax };
+  $("map-side").innerHTML = `<div class="cp">
+    <div class="cp-head"><div><div class="cp-kicker">${map.reg.regions[r].name}</div><h3 class="cp-name">${C.geo.names[cod]}</h3></div><span class="cp-chip" id="cp-sensor"></span></div>
+    <div class="cp-now"><div><b id="cp-val">0</b><span id="cp-mo"></span></div>
+      <div class="cp-share"><div class="cp-track"><i id="cp-share-fill"></i></div><span id="cp-share-txt"></span></div></div>
+    <p class="cp-label">${T.comMonthly}</p>
+    <svg class="cp-spark" viewBox="0 0 ${W} ${H}">
+      <defs><linearGradient id="cpg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${RAMP[0]}" stop-opacity=".35"/><stop offset=".6" stop-color="${RAMP[Math.floor(RAMP.length * .6)]}" stop-opacity=".75"/><stop offset="1" stop-color="${RAMP.at(-1)}" stop-opacity=".95"/></linearGradient></defs>
+      ${gl}${years}<path d="${area}" fill="url(#cpg)"/><polyline points="${pts.join(" ")}" fill="none" stroke="#fca50a" stroke-width="1.2" opacity=".9"/>
+      <g id="cp-cursor" class="cp-cursor"><line x1="0" x2="0" y1="${t}" y2="${H - b}" stroke="#eaff28" stroke-width="1.6"/><circle id="cp-dot" cx="0" cy="${H - b}" r="5" fill="#eaff28" stroke="#071536" stroke-width="2"/></g>
+      <text id="cp-before" x="${l + 6}" y="${t + 14}" font-size="11" fill="#c9d6ea" display="none">${T.comBefore}</text>
+    </svg>
+    <p class="cp-label">${T.comSeasons}</p>
+    <svg class="cp-seasons" viewBox="0 0 ${SW} ${SH}">${bars}</svg>
+    <p class="sub cp-best">${S.best[1] ? T.comBest(`${T.monthsLong[+bm - 1]} ${by}`, fmt(S.best[0])) : T.comNone}</p>
+    <p class="sub"><small>${T.comNote}</small></p></div>`;
+}
+
+function updateCommunePanel() {
+  const P = map.panel; if (!P) return;
+  const T = L(), C = map.com[P.r], i = map.i, mo = C.data.months[i], [y, m] = mo.split("-");
+  const here = comValue(P.r, P.cod), tot = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(P.r, c) || 0), 0);
+  $("cp-val").textContent = here === undefined ? "—" : fmt(here);
+  $("cp-mo").textContent = here === undefined ? T.whereWithheld : T.comMo(`${T.monthsLong[+m - 1]} ${y}`);
+  $("cp-sensor").textContent = SENSOR_NAME[C.data.sensor[i]];
+  const sh = here && tot ? (100 * here) / tot : 0;
+  $("cp-share-fill").style.width = `${Math.max(0, Math.min(100, sh))}%`;
+  $("cp-share-txt").textContent = here === undefined ? "" : T.comShare(`${Math.round(sh)}${state.lang === "es" ? " %" : "%"}`);
+  const k = P.S.idx.indexOf(i), cur = $("cp-cursor");
+  if (k >= 0) {
+    cur.style.transform = `translateX(${P.x(k).toFixed(1)}px)`; cur.style.opacity = 1;
+    $("cp-dot").setAttribute("cy", P.y(P.S.v[i] || 0).toFixed(1)); $("cp-before").setAttribute("display", "none");
+  } else { cur.style.opacity = 0; $("cp-before").setAttribute("display", mo < "2012-02" ? "inline" : "none"); }
+  const s = +m >= 7 ? +y : +y - 1;
+  document.querySelectorAll(".cp-sbar").forEach((b) => b.classList.toggle("on", +b.dataset.s === s));
 }
 
 function paintMap() {
@@ -1237,5 +1296,5 @@ $("mode-r").addEventListener("click", () => setMode("raw"));
 $("csv").addEventListener("click", downloadCSV);
 document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.lang)));
 let rz;
-addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderClock(); renderJump(); renderK(); if (map.geo) { const z = map.zoom; if (map.vert !== ($("map").clientWidth < 620)) buildMap(); if (z) zoomTo(z, true); else flyTo(mapHome(), mapHomeHeight(), true); } } }, 150); });
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (state.data && Math.abs($("calendar").clientWidth - state.lastWidth) > 30) { renderCalendar(false); renderSeason(); renderClock(); renderJump(); renderK(); if (map.geo) { const z = map.zoom, c = map.com_sel; if (map.vert !== ($("map").clientWidth < 620)) buildMap(); if (z) { zoomTo(z, true).then(() => { if (c) zoomToCommune(z, c, true); }); } else flyTo(mapHome(), mapHomeHeight(), true); } } }, 150); });
 init();
