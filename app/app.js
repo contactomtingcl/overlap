@@ -32,6 +32,7 @@ const I18N = {
     mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
     season_h: "This season so far vs every past season",
     seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, in Suomi NPP-equivalent units, on a log scale. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
+    seasonWarn: " A quiet or busy start is not a forecast: from Valparaíso to La Araucanía, July–October activity did not anticipate November–June in the last 25 seasons.",
     seasonExcl: (l) => ` Atacama desert regions (${l}) are left out of both sides, because their recent near real-time data are withheld.`,
     sThrough: (mo) => `Through ${mo}`, sThroughSub: "hotspots so far this season",
     sVs: "Compared with the median past season", sVsSub: (b, n) => `higher than ${b} of ${n} past seasons at this point`,
@@ -129,6 +130,7 @@ const I18N = {
     mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
     season_h: "Esta temporada hasta ahora frente a todas las anteriores",
     seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en unidades equivalentes a Suomi NPP, en escala logarítmica. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
+    seasonWarn: " Un inicio tranquilo o activo no es un pronóstico: de Valparaíso a La Araucanía, la actividad de julio a octubre no anticipó la de noviembre a junio en las últimas 25 temporadas.",
     seasonExcl: (l) => ` Las regiones del desierto de Atacama (${l}) quedan fuera de ambos lados, porque sus datos recientes casi en tiempo real están retenidos.`,
     sThrough: (mo) => `Hasta ${mo}`, sThroughSub: "focos de calor acumulados en la temporada",
     sVs: "Frente a la temporada mediana", sVsSub: (b, n) => `mayor que ${b} de ${n} temporadas anteriores a esta altura`,
@@ -693,7 +695,7 @@ function renderSeason() {
   if (!S || !S.current.length) { card.hidden = true; return; }
   card.hidden = false;
   const seasonMonths = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
-  $("season-sub").textContent = T.seasonSub(shortName()) + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
+  $("season-sub").textContent = T.seasonSub(shortName()) + T.seasonWarn + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
   if (S.compare_index != null) {
     const k = S.compare_index, r = S.ratio_to_median, b = S.below, n = S.n_seasons;
     const col = b <= 2 ? "var(--low)" : b >= n - 2 ? "var(--high)" : "var(--ink)";

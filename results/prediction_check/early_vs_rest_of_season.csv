@@ -1,0 +1,18 @@
+aoi,name,seasons,spearman_jul_oct_vs_nov_jun,p_value
+chile,Chile (whole country),25,0.26,0.218
+r15,"Arica y Parinacota region, Chile",25,0.36,0.074
+r1,"Tarapacá region, Chile",25,0.38,0.059
+r2,"Antofagasta region, Chile",25,0.85,0.0
+r3,"Atacama region, Chile",25,0.79,0.0
+r4,"Coquimbo region, Chile",25,0.22,0.301
+r5,"Valparaíso region, Chile",25,0.2,0.341
+r13,"Metropolitana de Santiago region, Chile",25,0.0,0.991
+r6,"O'Higgins region, Chile",25,0.34,0.1
+r7,"Maule region, Chile",25,0.27,0.187
+r16,"Ñuble region, Chile",25,0.34,0.093
+r8,"Biobío region, Chile",25,-0.41,0.043
+r9,"La Araucanía region, Chile",25,-0.04,0.858
+r14,"Los Ríos region, Chile",25,0.4,0.048
+r10,"Los Lagos region, Chile",25,0.27,0.184
+r11,"Aysén region, Chile",25,0.55,0.004
+r12,"Magallanes region, Chile",25,0.12,0.568
