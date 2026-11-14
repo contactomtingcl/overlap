@@ -27,3 +27,9 @@ Raw files are not committed (76 MB). To reproduce, download the requests above a
 - Suomi NPP new observations ceased on November 2, 2026 (historical data remains available).
 - The `type` column exists only in standard files, for both MODIS and VIIRS.
 - Biobío is currently an approximate bounding box (lat −38.50 to −36.45, lon −73.95 to −70.95); it will be replaced by the official regional boundary.
+
+## CONAF fire records (validation)
+
+Corporación Nacional Forestal (2024). *Registro histórico de incendios forestales*, V1. Datos para Resiliencia. https://doi.org/10.71578/UXAUN5
+
+File used: historical Biobío region (including the former Ñuble province), seasons 2002–03 to 2019–20, 45,757 fire records with coordinates (WGS84), start date and time, burned area by vegetation type and cause. Two records with coordinates outside the region were dropped. The raw file is not committed until its licence is confirmed; only derived results are in `results/validation/`.
