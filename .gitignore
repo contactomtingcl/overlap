@@ -224,3 +224,4 @@ data/raw/
 *.zip
 *.csv.gz
 .env
+!results/**/*.csv.gz
