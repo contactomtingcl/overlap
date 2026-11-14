@@ -277,7 +277,7 @@ def anomaly(value, history):
     lh = np.log1p(history)
     med = np.median(lh)
     mad = 1.4826 * np.median(np.abs(lh - med))
-    z = (np.log1p(value) - med) / mad if mad > 0 else 0.0
+    z = (np.log1p(value) - med) / max(mad, 0.05)  # same floor as pipeline/09
     return round(float(z), 2), ("unusually high" if z >= 2 else "unusually low" if z <= -2 else "within normal")
 
 
@@ -330,10 +330,23 @@ for key, meta in AOIS.items():
     cal["m"] = cal["month"].str[5:].astype(int)
     hist = cal[cal.status.isin(["observed", "estimated"]) & (cal.month <= "2026-06")]
     climatology = {int(k): round(float(v), 1) for k, v in hist.groupby("m")["value"].median().items()}
+    # Months where the desert regions are withheld are compared like for like: against the history of the same
+    # (non-desert) regions, not against the full-area history.
+    kept = [r for r in meta["regions"] if r not in DESERT]
+    hist_like = None
+    if kept and len(kept) < len(meta["regions"]):
+        cl = pd.DataFrame(combine(kept))
+        cl["m"] = cl["month"].str[5:].astype(int)
+        hist_like = cl[cl.status.isin(["observed", "estimated"]) & (cl.month <= "2026-06")]
     for rec in rows:
         if rec["value"] is not None and rec["status"] != "partial":
-            h = hist[(hist.m == int(rec["month"][5:])) & (hist.month != rec["month"])]["value"].values
+            hh = hist_like if (rec.get("note") and hist_like is not None) else hist
+            h = hh[hh.m == int(rec["month"][5:])]["value"].values  # all seasons, as in pipeline/09
             rec["z"], rec["anomaly"] = anomaly(rec["value"], h)
+            others = hh[(hh.m == int(rec["month"][5:])) & (hh.month != rec["month"])]["value"].values
+            rec["below"], rec["n"] = int((others < rec["value"]).sum()), int(len(others))
+            if hh is hist_like:
+                rec["median_like"] = round(float(np.median(h)), 1)
     latest = next(r for r in reversed(rows) if r["status"] in ("observed", "estimated", "provisional"))
     qm_regs = [r for r in meta["regions"] if r in QM_REGIONS]
     pooled_regs = [r for r in meta["regions"] if r not in QM_REGIONS and REGION_QM[r]]
@@ -349,8 +362,9 @@ for key, meta in AOIS.items():
         "season_to_date": season_block(meta["regions"]),
         "climatology_median": climatology,
         "latest": {"month": latest["month"], "value": latest["value"], "status": latest["status"],
-                   "median": climatology[int(latest["month"][5:])], "z": latest.get("z"),
-                   "anomaly": latest.get("anomaly")},
+                   "median": latest.get("median_like", climatology[int(latest["month"][5:])]), "z": latest.get("z"),
+                   "anomaly": latest.get("anomaly"), "below": latest.get("below"), "n": latest.get("n"),
+                   "excluded": [REGIONS[r] for r in meta["regions"] if r in DESERT] if "median_like" in latest else []},
         "months": rows,
     }
     (out / f"{key}.json").write_text(json.dumps(payload, ensure_ascii=False))
@@ -374,7 +388,7 @@ for r in REGIONS:
         if rec["value"] is None or rec["status"] == "partial":
             z.append(None)
         else:
-            h = hist[(hist.m == int(rec["month"][5:])) & (hist.month != rec["month"])]["value"].values
+            h = hist[hist.m == int(rec["month"][5:])]["value"].values
             z.append(anomaly(rec["value"], h)[0])
     reg_out["regions"][str(r)] = {"name": REGIONS[r], "v": v, "z": z, "s": [rec["status"][0] for rec in rows]}
 (out / "regions_monthly.json").write_text(json.dumps(reg_out, ensure_ascii=False, separators=(",", ":")))

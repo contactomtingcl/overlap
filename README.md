@@ -8,23 +8,24 @@ NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS H
 
 > **Design principle:** nothing is shown without its uncertainty, and no detection is not the same as no fire.
 
-> Work in progress during the hackathon (November 14–15, 2026).
+> Built during the hackathon (November 14–15, 2026). Licence: MIT.
 
 ## In two minutes
 
 | | |
 | --- | --- |
 | **Problem** | Satellites have tracked active fires for 25 years, but the record is split between MODIS (since 2000) and VIIRS (since 2012). VIIRS sees smaller fires: in Biobío, Chile, it records about 4.8 times more hotspots than MODIS Aqua for the same months. Joining both series without treatment creates a false jump in 2012. MODIS ends in 2027 and Suomi NPP stopped delivering new data on November 2, 2026. |
-| **For whom** | Early warning and emergency responders, firefighters, scientists and land managers. |
-| **Solution** | A harmonization engine calibrated on the MODIS–VIIRS overlap, and a web app with a month × year calendar, the current month against the historical median, anomalies and a CSV download for any area. |
-| **Measured result** | Checked against 76,002 CONAF fire records (2002–2020, Maule, Ñuble, Biobío, Araucanía): joining MODIS and VIIRS without treatment creates a false ×4.7 jump at 2012 relative to real fire activity; after harmonization it is ×0.89 (95 % CI 0.77–1.07: no jump). On hidden years 2020–2026, quantile mapping reconstructs Suomi NPP from MODIS Aqua better than a simple ratio in all four regions (typical monthly error about ×1.5). In the other regions with enough CONAF fires (Coquimbo to Los Lagos), the false jump also disappears in 6 of 8 as used in the app; Valparaíso is overcorrected and Metropolitana keeps part of the jump ([all regions](results/validation_conaf/all_regions/README.md)). Large fires (≥ 200 ha) in Biobío: 88 % detected by MODIS Aqua and 97 % by VIIRS (hotspot within 3 km and 3 days). Details: [results/harmonization_qmap](results/harmonization_qmap/README.md), [results/validation_conaf](results/validation_conaf/README.md). |
+| **For whom** | First, the fire-prevention analyst preparing the season (for example at CONAF, Chile's forest service), who needs to know whether this month and this season are unusual. Also researchers and emergency planners who need a comparable 25-year record. |
+| **Solution** | A harmonization engine calibrated on the MODIS–VIIRS overlap, and a bilingual web app in four steps: **Where** (animated map of Chile, down to communes), **Now** (this month and this season against history), **History** (month × year calendar, season clock) and **Trust** (the 2012 jump before and after, measured error per region). Downloads as CSV, GeoPackage and GeoJSON. |
+| **Measured result** | Checked against 76,002 CONAF fire records (2002–2020, Maule, Ñuble, Biobío, Araucanía): joining MODIS and VIIRS without treatment creates a false ×4.7 jump at 2012 relative to real fire activity; after harmonization it is ×0.89 (95 % CI 0.77–1.07: no jump). On hidden years 2020–2026, quantile mapping reconstructs Suomi NPP from MODIS Aqua better than a simple ratio in all four regions (typical monthly error about ×1.5). In the seven other regions with enough CONAF fires, the false jump also disappears in five as used in the app (9 of 11 in total); Valparaíso is overcorrected and Metropolitana keeps part of the jump ([all regions](results/validation_conaf/all_regions/README.md)). Large fires (≥ 200 ha) in Biobío: 88 % detected by MODIS Aqua and 97 % by VIIRS (a hotspot within 3 km, from 1 day before to 2 days after the start). Details: [results/harmonization_qmap](results/harmonization_qmap/README.md), [results/validation_conaf](results/validation_conaf/README.md). |
 | **Try it** | https://contactomtingcl.github.io/overlap/ (no login) |
 
 ## Repository
 
 | Folder | Content |
 | --- | --- |
-| `pipeline/` | Python scripts, run in order (`01_…`, `02_…`) |
+| `pipeline/` | Python and R scripts, run in order (`01_…`, `02_…`); `run_app_exports.sh` rebuilds everything the app reads |
+| `tests/` | Consistency checks on the app data (`check_app_data.py`): regions add up to Chile, bands contain their values, values and anomalies reproduce the R results |
 | `results/` | Tables and figures produced by the pipeline; every number in our submission comes from here |
 | `app/` | Static web app (no server, no login) |
 | `docs/` | Data sources, method and AI use |
@@ -42,6 +43,10 @@ Same fires, different counts: both sensors rise and fall together, but VIIRS rec
 - **Nine other regions:** one quantile map fitted on Maule, Ñuble, Biobío and La Araucanía together, applied region by region (never to a national total). Tested on hidden years 2020–2026 in the 12 regions it never saw, it beats each region's own simple ratio in 9 of 12 (MODIS Aqua median error ×2.1 against ×3.0) (`pipeline/11`, `results/harmonization_qmap/pooled`).
 - **Los Ríos, Los Lagos, Aysén:** the pooled map did worse there (few or different fires), so they keep a simple ratio on the overlap. All 12 were also checked against CONAF (`pipeline/15`, `results/validation_conaf/all_regions`): the jump disappears in Coquimbo, O'Higgins, Los Ríos, Los Lagos and Aysén; Valparaíso is overcorrected (years before 2012 about 35 % too high) and Metropolitana undercorrected (about 43 % too low); the north and Magallanes have too few CONAF fires to judge. The app shows this per region.
 - **Sensitivity analysis (candidate for v2):** a daily quantile map with day and night overpasses separated (`pipeline/06`, `results/harmonization`) lowers the error further in Biobío (mean error 176 hotspots per month against 326 for the simple ratio).
+
+## What "normal" and "unusual" mean
+
+Normal is the median of the same calendar month over the seasons 2000–01 to 2025–26. A month is unusual when its robust z on the log scale, (log(1 + x) − median) / MAD, is beyond ±2 (`pipeline/09`, reproduced by `pipeline/03`). When recent months of the Atacama desert regions are withheld, national figures are compared like for like, against the history of the remaining regions.
 
 ## Data processing rules
 
@@ -61,7 +66,7 @@ Same fires, different counts: both sensors rise and fall together, but VIIRS rec
 1. **Polar satellites see each place only about twice a day** (one daytime and one night overpass per satellite). Fires that start and end between overpasses, or that burn under clouds or thick smoke, are missed. No detection is not the same as no fire.
 2. **Pixel size grows towards the edge of the swath** (MODIS: from 1 km at nadir to about 4 km), where only larger or hotter fires are detected. We do not correct for viewing angle yet.
 3. **Hotspots are thermal anomalies, not fires:** one large fire produces many hotspots; small agricultural, waste or short-lived fires may produce none. Autumn (April–May) holds about 31 % of hotspots but about 2 % of CONAF burned area; agricultural burning is the likely explanation (hypothesis, not yet verified).
-4. **Harmonization uncertainty:** the MODIS Aqua map underestimates monthly totals by 10–17 % on hidden years; months with very few hotspots and the Terra-only months (2000–2002) are the least certain. Outside Maule–Araucanía errors are larger (typical monthly error about ×1.8–3.0); against CONAF, Valparaíso is overcorrected, Metropolitana undercorrected, and the north and Magallanes cannot be judged.
+4. **Harmonization uncertainty:** the MODIS Aqua map underestimates monthly totals by 10–17 % on hidden years; months with very few hotspots and the Terra-only months (2000–2002) are the least certain. Outside Maule–Araucanía errors are larger (typical monthly error about ×1.8–3.0); against CONAF, Valparaíso is overcorrected, Metropolitana undercorrected, and the north and Magallanes cannot be judged. For areas made of several regions (Chile), the 80 % band is the sum of the regional bands, which is wider than the true band (conservative).
 5. **Recent months are provisional** (near real-time data), and are withheld over the Atacama desert, where near real-time data hold many daytime false detections.
 
 ## Roadmap

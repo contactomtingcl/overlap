@@ -99,9 +99,15 @@
   select, button { font:inherit; font-size:14px; padding:8px 12px; border:1px solid var(--line); border-radius:10px;
     background:#0d1f45; color:var(--ink); }
   select { max-width:100%; min-width:0; }
-  #aoi { width:250px; }
+  #aoi { width:300px; }
   button { cursor:pointer; transition:border-color .2s, background .2s, color .2s; }
   button:hover, select:hover { border-color:rgba(234,255,40,.5); }
+  .ibtn { display:inline-flex; align-items:center; gap:7px; }
+  .ibtn svg { flex:none; }
+  .calctl { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; }
+  .err { border-color:var(--high); color:var(--high); margin:0; }
+  .err[hidden] { display:none; }
+  button:focus-visible, select:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible { outline:2px solid var(--lime); outline-offset:2px; }
   .seg { display:inline-flex; background:#0d1f45; border:1px solid var(--line); border-radius:12px; padding:3px; }
   .seg button { border:0; background:transparent; padding:6px 12px; border-radius:9px; color:var(--quiet); }
   .seg button[aria-pressed="true"] { background:var(--lime); color:#0a1430; font-weight:600; box-shadow:0 0 16px rgba(234,255,40,.35); }
@@ -220,6 +226,9 @@
     .card { padding:14px; border-radius:14px; }
     .controls { position:static; }
     .field { width:100%; }
+    .controls { gap:8px; }
+    .ibtn { flex:1; justify-content:center; padding:8px 6px; font-size:12.5px; }
+    .maphead { align-items:flex-start; }
     .field select, #aoi { flex:1; width:auto; }
     .spacer { display:none; }
     .kpi b { font-size:22px; }
@@ -231,6 +240,7 @@
 </style>
 </head>
 <body>
+<noscript><p style="padding:24px;color:#eaf1ff;font-family:sans-serif">Overlap needs JavaScript to draw the calendar and the maps. Please enable it and reload. / Overlap necesita JavaScript para dibujar el calendario y los mapas.</p></noscript>
 <header>
   <div class="bands" aria-hidden="true"><i class="viirs"></i><i class="modis"></i><b></b></div>
   <div class="wrap">
@@ -245,17 +255,13 @@
   </div>
 </header>
 <main class="wrap">
+  <p id="err" class="card err" role="alert" hidden></p>
   <section class="card controls" data-i18n-label="controls">
     <label class="field"><span data-i18n="area"></span> <select id="aoi"></select></label>
-    <label class="field"><span data-i18n="rows"></span> <select id="rows"><option value="season" data-i18n="opt_season"></option><option value="year" data-i18n="opt_year"></option></select></label>
-    <div class="seg" role="group">
-      <button type="button" id="mode-h" aria-pressed="true" data-i18n="mode_h"></button>
-      <button type="button" id="mode-r" class="raw" aria-pressed="false" data-i18n="mode_r"></button>
-    </div>
     <span class="spacer"></span>
-    <button id="share" type="button" data-i18n="share"></button>
-    <button id="cvd" type="button" aria-pressed="false" data-i18n="cvd"></button>
-    <button id="csv" type="button" data-i18n="csv"></button>
+    <button id="share" type="button" class="ibtn" data-i18n-title="share"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span id="share-t" data-i18n="share"></span></button>
+    <button id="cvd" type="button" class="ibtn" aria-pressed="false" data-i18n-title="cvd"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg><span data-i18n="cvd"></span></button>
+    <button id="csv" type="button" class="ibtn" data-i18n-title="csv"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg><span data-i18n="csv"></span></button>
   </section>
 
   <h2 class="chapter"><span>1</span> <span data-i18n="ch_where"></span></h2>
@@ -264,7 +270,7 @@
     <div class="maphead"><h2 data-i18n="map_h"></h2>
       <div class="seg" role="group"><button type="button" data-mm="z" aria-pressed="true" data-i18n="mm_z"></button><button type="button" data-mm="v" aria-pressed="false" data-i18n="mm_v"></button></div></div>
     <p class="sub"><span data-i18n="map_sub"></span> <span data-i18n="map_hint"></span></p>
-    <div class="player"><button type="button" id="play" class="playbtn" aria-label="Play">▶</button>
+    <div class="player"><button type="button" id="play" class="playbtn" data-i18n-title="play">▶</button>
       <div class="mlabel" id="map-month"></div>
       <input type="range" id="map-slider" min="0" max="0" value="0" aria-label="Month"></div>
     <div class="mapwrap"><div id="map"></div><div id="map-side"></div></div>
@@ -298,7 +304,14 @@
   <h2 class="chapter"><span>3</span> <span data-i18n="ch_history"></span></h2>
 
   <section class="card">
-    <h2 data-i18n="cal_h"></h2>
+    <div class="maphead"><h2 data-i18n="cal_h"></h2>
+      <div class="calctl">
+        <div class="seg" role="group">
+          <button type="button" id="mode-h" aria-pressed="true" data-i18n="mode_h"></button>
+          <button type="button" id="mode-r" class="raw" aria-pressed="false" data-i18n="mode_r"></button>
+        </div>
+        <select id="rows" data-i18n-title="rows"><option value="season" data-i18n="opt_season"></option><option value="year" data-i18n="opt_year"></option></select>
+      </div></div>
     <p class="sub" id="cal-sub"></p>
     <div id="calendar"></div>
     <div class="legend" id="legend"></div>
@@ -350,6 +363,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261114-1925"></script>
+<script src="app.js?v=20261114-2010"></script>
 </body>
 </html>
