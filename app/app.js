@@ -181,6 +181,28 @@ const pct = (v) => `${v > 0 ? "+" : ""}${dec(v, 1)}${state.lang === "es" ? " %" 
 const aoiName = (key, json) => L().aoi[key] || json.replace(" region, Chile", "");
 const shortName = () => L().aoiShort[state.aoi] || state.data.name.replace(" region, Chile", "");
 
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Count a number up from zero (KPIs, big figures). Elements carry data-count, data-dec, data-pre.
+function countUp(root) {
+  root.querySelectorAll("[data-count]").forEach((el) => {
+    const to = +el.dataset.count, d = +(el.dataset.dec || 0), pre = el.dataset.pre || "";
+    const out = (v) => pre + (d ? dec(v, d) : fmt(v));
+    if (REDUCED) { el.textContent = out(to); return; }
+    const t0 = performance.now(), dur = 1100;
+    const step = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = out(to * e); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+const num = (v, d = 0, pre = "") => `<b data-count="${v}" data-dec="${d}" data-pre="${pre}">${pre}${d ? dec(v, d) : fmt(v)}</b>`;
+
+// A satellite swath sweeping down the calendar (on load and when switching raw / harmonized).
+function sweep(svg) {
+  if (REDUCED || !svg) return;
+  const a = svg.querySelector("#swath");
+  a && a.querySelectorAll("animate, animateTransform").forEach((x) => x.beginElement());
+}
+
 function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
 const RAMP_RGB = RAMP.map(hex2rgb);
 function lev(v, max) { return Math.max(0, Math.min(1, Math.log10(v + 1) / Math.log10(max + 1))); }
@@ -272,7 +294,7 @@ function renderCalendar(animate) {
     row.cells.forEach((c, ci) => {
       const x = left + ci * cw, r = c.rec;
       const cls = animate ? ` class="cell pop" style="fill:${cellFill(r)};animation-delay:${ri * 28 + ci * 6}ms"` : ` class="cell" style="fill:${cellFill(r)}"`;
-      body += `<rect${cls} data-key="${c.key}" x="${x + 1.5}" y="${y + 1.5}" width="${cw - 3}" height="${ch - 3}" rx="${narrow ? 3 : 4}"/>`;
+      body += `<rect${cls} data-key="${c.key}" data-ri="${ri}" x="${x + 1.5}" y="${y + 1.5}" width="${cw - 3}" height="${ch - 3}" rx="${narrow ? 3 : 4}"/>`;
       if (r && (r.status === "provisional" || r.status === "partial")) {
         body += `<rect x="${x + 2.5}" y="${y + 2.5}" width="${cw - 5}" height="${ch - 5}" rx="3" fill="none" stroke="#eaff28" stroke-width="1.2" stroke-dasharray="3 2" pointer-events="none"/>`;
       }
@@ -287,6 +309,9 @@ function renderCalendar(animate) {
       body += `<text x="${ix + 32}" y="${y + ch / 2 + 4}" font-size="11.5" fill="#8fa6cc">${note}</text>`;
     }
   });
+  const swath = `<g id="swath" opacity="0" pointer-events="none"><rect x="${left - 4}" y="-46" width="${12 * cw + 6}" height="44" fill="url(#swg)"/><rect x="${left - 4}" y="-3" width="${12 * cw + 6}" height="2.5" fill="#eaff28" filter="url(#glow)"/>`
+    + `<animateTransform attributeName="transform" type="translate" from="0 ${top}" to="0 ${H}" dur="1.25s" begin="indefinite" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".4 0 .2 1"/>`
+    + `<animate attributeName="opacity" values="1;1;0" keyTimes="0;.85;1" dur="1.25s" begin="indefinite" fill="freeze"/></g>`;
   const era = eraY == null ? "" : `<line x1="${left - 4}" x2="${left + 12 * cw + 2}" y1="${eraY}" y2="${eraY}" stroke="#eaff28" stroke-width="2" filter="url(#glow)"/>`;
   $("calendar").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.cal_h}, ${shortName()}">
     <defs>
@@ -296,10 +321,12 @@ function renderCalendar(animate) {
         <rect width="6" height="6" fill="#22384a"/><rect width="3" height="3" fill="#4d6b85"/><rect x="3" y="3" width="3" height="3" fill="#4d6b85"/></pattern>
       <pattern id="pviirs" width="3" height="3" patternUnits="userSpaceOnUse">
         <rect width="3" height="3" fill="#0d2a52"/><circle cx="1.5" cy="1.5" r=".8" fill="#4db8ff"/></pattern>
+      <linearGradient id="swg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaff28" stop-opacity="0"/><stop offset="1" stop-color="#eaff28" stop-opacity=".22"/></linearGradient>
       <filter id="glow" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="2.2" result="b"/>
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
-    ${head}${body}${era}</svg>`;
+    ${head}${body}${era}${swath}</svg>`;
+  if (animate) sweep($("calendar").querySelector("svg"));
   $("calendar").querySelectorAll(".cell").forEach((el) => {
     el.addEventListener("mousemove", (e) => tip(e, el.dataset.key));
     el.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
@@ -323,8 +350,11 @@ function setMode(mode) {
   $("mode-r").setAttribute("aria-pressed", mode === "raw");
   const byMonth = new Map(state.data.months.map((r) => [r.month, r]));
   $("calendar").querySelectorAll(".cell").forEach((el) => {
-    el.classList.remove("pop"); el.style.fill = cellFill(byMonth.get(el.dataset.key) || null);
+    el.classList.remove("pop"); el.style.animationDelay = "";
+    el.style.transitionDelay = REDUCED ? "0ms" : `${+el.dataset.ri * 42}ms`;
+    el.style.fill = cellFill(byMonth.get(el.dataset.key) || null);
   });
+  sweep($("calendar").querySelector("svg"));
   calSub();
   renderJump();
 }
@@ -382,24 +412,28 @@ function renderStatus() {
   const below = same.filter((v) => v < Lt.value).length;
   const an = Lt.anomaly || "within normal";
   const prov = Lt.status === "provisional";
-  $("status-kicker").textContent = T.kicker(prov);
+  $("status-kicker").innerHTML = `<span class="live"></span>${T.kicker(prov)}`;
   $("headline").innerHTML = T.headline(mo, y, shortName(), `<span class="lvl" style="color:${LEVEL_COLOUR[an]}">${T.level[an]}</span>`);
   $("status-sub").textContent = T.statusSub(prov, mo);
   const top = seasonTotals().sort((a, b) => b.h - a.h)[0];
   const pos = Math.max(0, Math.min(100, 50 + (Lt.z / 4) * 50));
   $("status").innerHTML = `
-    <div class="kpi"><small>${T.kThis}</small><b>${fmt(Lt.value)}</b><small>${T.kThisSub}</small></div>
-    <div class="kpi"><small>${T.kNormal(mo)}</small><b>${fmt(Lt.median)}</b><small>${T.kNormalSub}</small></div>
-    <div class="kpi"><small>${T.kAgainst(same.length, mo)}</small><div class="gauge"><i style="left:${pos}%"></i></div><small>${T.kAgainstSub(below, same.length, dec(Lt.z))}</small></div>
+    <div class="kpi"><small>${T.kThis}</small>${num(Lt.value)}<small>${T.kThisSub}</small></div>
+    <div class="kpi"><small>${T.kNormal(mo)}</small>${num(Lt.median)}<small>${T.kNormalSub}</small></div>
+    <div class="kpi"><small>${T.kAgainst(same.length, mo)}</small><div class="gauge"><i style="left:${state.animNext ? 50 : pos}%" data-pos="${pos}"></i></div><small>${T.kAgainstSub(below, same.length, dec(Lt.z))}</small></div>
     ${top ? `<div class="kpi"><small>${T.kTop}</small><b>${top.s}–${String(top.s + 1).slice(2)}</b><small>${T.kTopSub(fmt(top.h))}</small></div>` : ""}`;
+  if (state.animNext) {
+    countUp($("status"));
+    requestAnimationFrame(() => requestAnimationFrame(() => { const g = $("status").querySelector(".gauge i"); if (g) g.style.left = g.dataset.pos + "%"; }));
+  }
 }
 
 // ---------- 2012 jump ----------
 function renderJump() {
   const T = L(), S = seasonTotals();
   const ok = state.data.trust.filter((t) => t.validated);
-  const fig = (area, unh, h, lo, hi) => `<div>${T.figRaw(area)}<b>×${dec(unh)}</b>${T.figRawSub}</div>`
-    + `<div class="good">${T.figH}<b>×${dec(h)}</b>${T.figHSub(dec(lo), dec(hi))}</div>`;
+  const fig = (area, unh, h, lo, hi) => `<div>${T.figRaw(area)}${num(unh, 2, "×")}${T.figRawSub}</div>`
+    + `<div class="good">${T.figH}${num(h, 2, "×")}${T.figHSub(dec(lo), dec(hi))}</div>`;
   if (ok.length === 1) { const t = ok[0]; $("jump-figs").innerHTML = fig(t.region, t.jump_unharmonized, ...t.jump_harmonized); }
   else if (ok.length > 1) $("jump-figs").innerHTML = fig(T.figAll, CONAF_ALL.unh, CONAF_ALL.h, CONAF_ALL.lo, CONAF_ALL.hi);
   else $("jump-figs").innerHTML = `<div>${T.figNone}</div>`;
@@ -417,18 +451,34 @@ function renderJump() {
   const x12 = x(2011.6), rawOn = state.mode === "raw";
   $("jump").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.jump_h}">
     <defs><filter id="lglow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <clipPath id="wipe"><rect x="0" y="0" width="${state.chartAnim && !REDUCED ? 0 : W}" height="${H}"><animate attributeName="width" from="0" to="${W}" dur="2.2s" begin="indefinite" fill="freeze" calcMode="spline" keySplines=".65 0 .35 1" keyTimes="0;1"/></rect></clipPath>
       <linearGradient id="ov" x1="0" x2="1"><stop offset="0" stop-color="#0197f8" stop-opacity=".18"/><stop offset="1" stop-color="#0197f8" stop-opacity=".04"/></linearGradient></defs>
     <rect x="${x12}" y="${t}" width="${W - r - x12}" height="${H - t - b}" fill="url(#ov)"/>
     ${gridl}${ticks}
     <line x1="${x12}" x2="${x12}" y1="${t}" y2="${H - b}" stroke="#eaff28" stroke-width="1.5" stroke-dasharray="4 3"/>
     <text x="${x12 + 6}" y="${t + 12}" font-size="11.5" fill="#eaff28" font-weight="600">${W < 600 ? T.chVIIRSshort : T.chVIIRS}</text>
+    <g clip-path="url(#wipe)">
     <path d="${path("h")}" fill="none" stroke="#eaff28" stroke-width="${rawOn ? 2.2 : 3}" opacity="${rawOn ? .55 : 1}" filter="url(#lglow)"/>
     <path d="${path("raw")}" fill="none" stroke="${rawOn ? "#c9d6ea" : "#7d93b8"}" stroke-width="${rawOn ? 3 : 2.2}" stroke-dasharray="6 4"/>
-    ${S.map((d) => `<circle cx="${x(d.s)}" cy="${y(d.h)}" r="3.2" fill="#eaff28"><title>${T.chTitle(`${d.s}–${String(d.s + 1).slice(2)}`, fmt(d.h), fmt(d.raw))}</title></circle>`).join("")}
+    ${S.map((d) => `<circle cx="${x(d.s)}" cy="${y(d.h)}" r="3.2" fill="#eaff28"><title>${T.chTitle(`${d.s}–${String(d.s + 1).slice(2)}`, fmt(d.h), fmt(d.raw))}</title></circle>`).join("")}</g>
   </svg>`;
+  if (state.chartAnim) armChart();
   $("jump-legend").innerHTML = `<span><i class="sw" style="background:#eaff28;border:0"></i>${T.chLgH}</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#7d93b8 0 6px,transparent 6px 9px);border:0"></i>${T.chLgR}</span>`
     + `<span>${T.chLgNote}</span>`;
+}
+
+// Draw the chart (and count its figures) the first time it scrolls into view after an area loads.
+function armChart() {
+  const card = $("jump").closest(".card");
+  const go = () => {
+    state.chartAnim = false;
+    countUp($("jump-figs"));
+    const a = $("jump").querySelector("#wipe animate");
+    if (a && !REDUCED) a.beginElement();
+  };
+  if (card.classList.contains("in")) { go(); return; }
+  state.pendingChart = go;
 }
 
 // ---------- method & trust ----------
@@ -506,7 +556,25 @@ function downloadCSV() {
   URL.revokeObjectURL(a.href);
 }
 
-function render(animate) { renderStatus(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust(); }
+function render(animate) {
+  state.animNext = animate; state.chartAnim = animate;
+  renderStatus(); renderCalendar(animate); renderJump(); renderMethod(); renderTrust();
+  state.animNext = false;
+}
+
+// Cards rise into view as you scroll; the cursor lights the card under it.
+const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("in"); io.unobserve(e.target);
+  if (e.target.contains($("jump")) && state.pendingChart) { const f = state.pendingChart; state.pendingChart = null; f(); }
+}), { threshold: 0.12 });
+document.querySelectorAll("main > .card:not(.controls)").forEach((c, i) => { c.classList.add("reveal"); c.style.transitionDelay = `${Math.min(i, 2) * 90}ms`; io.observe(c); });
+document.addEventListener("pointermove", (e) => {
+  const c = e.target.closest && e.target.closest(".card");
+  if (!c) return;
+  const r = c.getBoundingClientRect();
+  c.style.setProperty("--mx", `${e.clientX - r.left}px`); c.style.setProperty("--my", `${e.clientY - r.top}px`);
+});
 
 async function init() {
   applyStatic();
