@@ -9,7 +9,7 @@ const SOURCE_NAME = { SNPP: "VIIRS Suomi NPP (observed)", NOAA20: "VIIRS NOAA-20
 const RAMP = ["#fdf3dc", "#fdd49e", "#fdbb84", "#fc8d59", "#ef6548", "#d7301f", "#b30000", "#7f0000"];
 const NO_DATA = "#e9ecef";
 
-const state = { aoi: "biobio", rows: "season", data: null, daily: {}, month: null };
+const state = { aoi: "r8", rows: "season", data: null, daily: {}, month: null };
 const $ = (id) => document.getElementById(id);
 const fmt = (v) => v == null ? "—" : Math.round(v).toLocaleString("en-US");
 
@@ -100,7 +100,8 @@ function tip(e, key) {
   const r = state.data.months.find((m) => m.month === key);
   const [y, m] = key.split("-");
   let html = `<b>${MONTHS[+m - 1]} ${y}</b><br>`;
-  if (!r || r.value == null) html += "No satellite record for this month (not zero fire).";
+  if (r && r.withheld) html += "Withheld: near real-time data over the Atacama desert holds many daytime false detections. Shown when science-quality data arrives.";
+  else if (!r || r.value == null) html += "No satellite record for this month (not zero fire).";
   else {
     html += `${fmt(r.value)} hotspots (Suomi NPP-equivalent)<br>`;
     if (r.status === "estimated") html += `80% range: ${fmt(r.low)}–${fmt(r.high)}<br>Source: ${SOURCE_NAME[r.source]}<br>`;
@@ -137,7 +138,8 @@ function renderStatus() {
 
 function renderMethod() {
   const f = state.data.factors;
-  $("method").innerHTML = `All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Where Suomi NPP did not exist, other sensors are scaled by ratios learned where both observed: MODIS Aqua × ${f.Aqua.k} (80% range ${f.Aqua.low}–${f.Aqua.high}), MODIS Terra × ${f.Terra.k} (${f.Terra.low}–${f.Terra.high}; morning orbit, less comparable), NOAA-20 × ${f.NOAA20.k}. Only science-quality FIRMS data, presumed vegetation fires (volcanoes, mining and industry removed), low-confidence detections removed.`;
+  const nat = Object.values(f).some((x) => x.scope && x.scope !== "local") ? " For sensors with too few local hotspots in this area, the national ratio is used." : "";
+  $("method").innerHTML = `All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Where Suomi NPP did not exist, other sensors are scaled by ratios learned where both observed: MODIS Aqua × ${f.Aqua.k} (80% range ${f.Aqua.low}–${f.Aqua.high}), MODIS Terra × ${f.Terra.k} (${f.Terra.low}–${f.Terra.high}; morning orbit, less comparable), NOAA-20 × ${f.NOAA20.k}. Only science-quality FIRMS data, presumed vegetation fires (volcanoes, mining and industry removed), low-confidence detections removed.${nat} Regions use the BCN commune boundaries (referential, not official limits).`;
 }
 
 function downloadCSV() {
@@ -189,7 +191,13 @@ async function showMonth(key) {
 
 function render() { renderStatus(); renderCalendar(); renderMethod(); }
 
+async function init() {
+  const aois = await (await fetch("data/aois.json")).json();
+  $("aoi").innerHTML = aois.map((a) => `<option value="${a.key}"${a.key === state.aoi ? " selected" : ""}>${a.name.replace(" region, Chile", "")}</option>`).join("");
+  load();
+}
+
 $("aoi").addEventListener("change", (e) => { state.aoi = e.target.value; $("day-panel").hidden = true; load(); });
 $("rows").addEventListener("change", (e) => { state.rows = e.target.value; renderCalendar(); });
 $("csv").addEventListener("click", downloadCSV);
-load();
+init();

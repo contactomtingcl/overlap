@@ -10,7 +10,8 @@ v0 is a placeholder to get real data on screen. Every month is expressed in
 - months with no standard data are "no_data", never zero
 Recent months (Aug-Oct 2026) come from near real-time data and are flagged "provisional";
 November 2026 is "partial" (data to Nov 7) and is not compared with history.
-Usage: python3 pipeline/03_export_app_data.py <detections_clean_chile.csv.gz> <detections_nrt_clean_chile.csv.gz> app/data
+Areas: Chile, each of the 16 regions, and the historical Biobío region (Biobío + Ñuble).
+Usage: python3 pipeline/03_export_app_data.py <detections_clean_chile_admin.csv.gz> <detections_nrt_clean_chile_admin.csv.gz> app/data
 """
 import json
 import sys
@@ -22,28 +23,33 @@ import pandas as pd
 src, nrt_src, out = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
 out.mkdir(parents=True, exist_ok=True)
 
-AOIS = {
-    "biobio": {"name": "Biobío, Chile (approximate box)",
-               "bbox": [-73.95, -38.50, -70.95, -36.45]},
-    "chile": {"name": "Chile (whole country)", "bbox": None},
-}
+REGIONS = {15: "Arica y Parinacota", 1: "Tarapacá", 2: "Antofagasta", 3: "Atacama", 4: "Coquimbo",
+           5: "Valparaíso", 13: "Metropolitana de Santiago", 6: "O'Higgins", 7: "Maule", 16: "Ñuble",
+           8: "Biobío", 9: "La Araucanía", 14: "Los Ríos", 10: "Los Lagos", 11: "Aysén", 12: "Magallanes"}
+AOIS = {"chile": {"name": "Chile (whole country)", "regions": None},
+        "biobio_hist": {"name": "Biobío + Ñuble (historical Biobío region, CONAF validation area)",
+                        "regions": [8, 16]}}
+AOIS.update({f"r{c}": {"name": f"{n} region, Chile", "regions": [c]} for c, n in REGIONS.items()})
+MIN_OVERLAP = {"Aqua": 300, "Terra": 150, "NOAA20": 300}  # below this, national factors are used
 PRIORITY = ["NOAA20", "Aqua", "Terra"]  # after Suomi NPP (the reference)
 END = "2026-07"  # last month with standard data for every satellite
 
-d = pd.read_csv(src, usecols=["latitude", "longitude", "date", "satellite"])
+d = pd.read_csv(src, usecols=["latitude", "longitude", "date", "satellite", "codregion"])
 d["month"] = d["date"].str[:7]
 d = d[d["month"] <= END]
-nrt = pd.read_csv(nrt_src, usecols=["latitude", "longitude", "date", "satellite"])
+nrt = pd.read_csv(nrt_src, usecols=["latitude", "longitude", "date", "satellite", "codregion"])
 nrt["month"] = nrt["date"].str[:7]
 RECENT = ["2026-08", "2026-09", "2026-10"]
+# Near real-time data over the Atacama desert (regions 15, 1, 2, 3) holds many daytime, low-FRP detections
+# that are not in the science-quality record (e.g. Oct 2026: about 10x the historical median). Recent
+# months there are withheld, and they are left out of the national total, until standard data arrives.
+DESERT = [15, 1, 2, 3]
+nrt = nrt[~nrt.codregion.isin(DESERT)]
 PARTIAL = "2026-11"
 
 
 def export(key, meta):
-    sub = d
-    if meta["bbox"]:
-        w, s, e, n = meta["bbox"]
-        sub = d[d.longitude.between(w, e) & d.latitude.between(s, n)]
+    sub = d if meta["regions"] is None else d[d.codregion.isin(meta["regions"])]
     m = sub.groupby(["month", "satellite"]).size().unstack(fill_value=0)
     months = pd.period_range("2000-11", END, freq="M").astype(str)
     m = m.reindex(months)
@@ -61,11 +67,14 @@ def export(key, meta):
         both = m[m["SNPP"].notna() & m[sat].notna()]
         yearly = both.groupby(both.index.str[:4])[["SNPP", sat]].sum()
         yearly = yearly[yearly[sat] > 0]
+        if both[sat].sum() < MIN_OVERLAP[sat] and NATIONAL:
+            factors[sat] = dict(NATIONAL[sat], scope="national (too few local hotspots)")
+            continue
         k = both["SNPP"].sum() / both[sat].sum()
         r = yearly["SNPP"] / yearly[sat]
         factors[sat] = {"k": round(float(k), 3), "low": round(float(r.quantile(.1)), 3),
                         "high": round(float(r.quantile(.9)), 3),
-                        "years": f"{yearly.index.min()}-{yearly.index.max()}"}
+                        "years": f"{yearly.index.min()}-{yearly.index.max()}", "scope": "local"}
 
     rows = []
     for month, row in m.iterrows():
@@ -89,11 +98,14 @@ def export(key, meta):
                 rec[k] = round(rec[k], 1)
         rows.append(rec)
 
-    nsub = nrt
-    if meta["bbox"]:
-        nsub = nrt[nrt.longitude.between(w, e) & nrt.latitude.between(s, n)]
+    nsub = nrt if meta["regions"] is None else nrt[nrt.codregion.isin(meta["regions"])]
     nm = nsub.groupby(["month", "satellite"]).size().unstack(fill_value=0)
+    withheld = meta["regions"] is not None and set(meta["regions"]) <= set(DESERT)
     for month in RECENT + [PARTIAL]:
+        if withheld:
+            rows.append({"month": month, "raw": {}, "value": None, "low": None, "high": None,
+                         "status": "no_data", "source": None, "withheld": True})
+            continue
         r = nm.loc[month] if month in nm.index else pd.Series(dtype=float)
         raw = {s_: int(r.get(s_, 0)) for s_ in ["Terra", "Aqua", "SNPP", "NOAA20", "NOAA21"]}
         if month in RECENT:  # Suomi NPP NRT covers Aug 1 - Nov 1, 2026
@@ -117,6 +129,8 @@ def export(key, meta):
     days = {}
     for day in pd.date_range("2000-11-01", "2026-11-07", freq="D").strftime("%Y-%m-%d"):
         mo = day[:7]
+        if mo >= "2026-08" and withheld:
+            continue
         src_tab = nd if mo >= "2026-08" else dsub
         row = src_tab.loc[day] if day in src_tab.index else None
         get = (lambda sat: 0 if row is None else int(row.get(sat, 0)))
@@ -132,7 +146,7 @@ def export(key, meta):
     (out / f"{key}_daily.json").write_text(json.dumps(days, separators=(",", ":")))
 
     payload = {
-        "aoi": key, "name": meta["name"], "bbox": meta["bbox"],
+        "aoi": key, "name": meta["name"], "regions": meta["regions"],
         "unit": "Suomi NPP-equivalent hotspots per month",
         "method": "v0 simple ratio (to be replaced by the validated model)",
         "factors": factors, "climatology_median": climatology,
@@ -141,8 +155,14 @@ def export(key, meta):
         "months": rows,
     }
     (out / f"{key}.json").write_text(json.dumps(payload, ensure_ascii=False))
-    print(key, "factors", factors, "latest", payload["latest"])
+    print(key, {k: (v["k"], v["scope"][:5]) for k, v in factors.items()}, "latest", payload["latest"])
+    return factors
 
 
+NATIONAL = {}
+NATIONAL = export("chile", AOIS["chile"])
 for key, meta in AOIS.items():
-    export(key, meta)
+    if key != "chile":
+        export(key, meta)
+(out / "aois.json").write_text(json.dumps(
+    [{"key": k, "name": m["name"]} for k, m in AOIS.items()], ensure_ascii=False))

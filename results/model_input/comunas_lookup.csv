@@ -1,0 +1,347 @@
+cod_comuna,codregion,Comuna,Provincia,Region
+6204,6,Marchigüe,Cardenal Caro,Región del Libertador Bernardo O'Higgins
+6102,6,Codegua,Cachapoal,Región del Libertador Bernardo O'Higgins
+6103,6,Coinco,Cachapoal,Región del Libertador Bernardo O'Higgins
+6104,6,Coltauco,Cachapoal,Región del Libertador Bernardo O'Higgins
+9121,9,Cholchol,Cautín,Región de La Araucanía
+9103,9,Cunco,Cautín,Región de La Araucanía
+9105,9,Freire,Cautín,Región de La Araucanía
+9106,9,Galvarino,Cautín,Región de La Araucanía
+6106,6,Graneros,Cachapoal,Región del Libertador Bernardo O'Higgins
+6109,6,Malloa,Cachapoal,Región del Libertador Bernardo O'Higgins
+9111,9,Nueva Imperial,Cautín,Región de La Araucanía
+9113,9,Perquenco,Cautín,Región de La Araucanía
+9114,9,Pitrufquén,Cautín,Región de La Araucanía
+9101,9,Temuco,Cautín,Región de La Araucanía
+9117,9,Teodoro Schmidt,Cautín,Región de La Araucanía
+9119,9,Vilcún,Cautín,Región de La Araucanía
+9201,9,Angol,Malleco,Región de La Araucanía
+9202,9,Collipulli,Malleco,Región de La Araucanía
+9203,9,Curacautín,Malleco,Región de La Araucanía
+9204,9,Ercilla,Malleco,Región de La Araucanía
+9206,9,Los Sauces,Malleco,Región de La Araucanía
+9207,9,Lumaco,Malleco,Región de La Araucanía
+9208,9,Purén,Malleco,Región de La Araucanía
+9209,9,Renaico,Malleco,Región de La Araucanía
+9210,9,Traiguén,Malleco,Región de La Araucanía
+9211,9,Victoria,Malleco,Región de La Araucanía
+13129,13,San Joaquín,Santiago,Región Metropolitana de Santiago
+6112,6,Peumo,Cachapoal,Región del Libertador Bernardo O'Higgins
+6113,6,Pichidegua,Cachapoal,Región del Libertador Bernardo O'Higgins
+10307,10,San Pablo,Osorno,Región de Los Lagos
+14201,14,La Unión,Ranco,Región de Los Ríos
+14104,14,Los Lagos,Valdivia,Región de Los Ríos
+14105,14,Máfil,Valdivia,Región de Los Ríos
+14107,14,Paillaco,Valdivia,Región de Los Ríos
+7103,7,Curepto,Talca,Región del Maule
+7104,7,Empedrado,Talca,Región del Maule
+13130,13,San Miguel,Santiago,Región Metropolitana de Santiago
+7107,7,Pencahue,Talca,Región del Maule
+6101,6,Rancagua,Cachapoal,Región del Libertador Bernardo O'Higgins
+6116,6,Requínoa,Cachapoal,Región del Libertador Bernardo O'Higgins
+6110,6,Mostazal,Cachapoal,Región del Libertador Bernardo O'Higgins
+6117,6,San Vicente,Cachapoal,Región del Libertador Bernardo O'Higgins
+6305,6,Nancagua,Colchagua,Región del Libertador Bernardo O'Higgins
+6307,6,Peralillo,Colchagua,Región del Libertador Bernardo O'Higgins
+6308,6,Placilla,Colchagua,Región del Libertador Bernardo O'Higgins
+6309,6,Pumanque,Colchagua,Región del Libertador Bernardo O'Higgins
+4103,4,Andacollo,Elqui,Región de Coquimbo
+13131,13,San Ramón,Santiago,Región Metropolitana de Santiago
+9107,9,Gorbea,Cautín,Región de La Araucanía
+9108,9,Lautaro,Cautín,Región de La Araucanía
+10206,10,Puqueldón,Chiloe,Región de Los Lagos
+10104,10,Fresia,Llanquihue,Región de Los Lagos
+10107,10,Llanquihue,Llanquihue,Región de Los Lagos
+10301,10,Osorno,Osorno,Región de Los Lagos
+10303,10,Purranque,Osorno,Región de Los Lagos
+12102,12,Laguna Blanca,Magallanes,Región de Magallanes y Antártica Chilena
+0,0,Zona sin demarcar,Zona sin demarcar,Zona sin demarcar
+13108,13,Independencia,Santiago,Región Metropolitana de Santiago
+5303,5,Rinconada,Los Andes,Región de Valparaíso
+5402,5,Cabildo,Petorca,Región de Valparaíso
+5404,5,Petorca,Petorca,Región de Valparaíso
+13109,13,La Cisterna,Santiago,Región Metropolitana de Santiago
+5704,5,Panquehue,San Felipe,Región de Valparaíso
+8203,8,Cañete,Arauco,Región del Bío-Bío
+8204,8,Contulmo,Arauco,Región del Bío-Bío
+8205,8,Curanilahue,Arauco,Región del Bío-Bío
+8201,8,Lebu,Arauco,Región del Bío-Bío
+8206,8,Los Alamos,Arauco,Región del Bío-Bío
+13122,13,Peñalolén,Santiago,Región Metropolitana de Santiago
+5803,5,Olmué,Marga Marga,Región de Valparaíso
+5603,5,Cartagena,San Antonio,Región de Valparaíso
+5702,5,Catemu,San Felipe,Región de Valparaíso
+5703,5,Llaillay,San Felipe,Región de Valparaíso
+5701,5,San Felipe,San Felipe,Región de Valparaíso
+5706,5,Santa María,San Felipe,Región de Valparaíso
+5804,5,Villa Alemana,Marga Marga,Región de Valparaíso
+8304,8,Laja,Bío-Bío,Región del Bío-Bío
+8301,8,Los Angeles,Bío-Bío,Región del Bío-Bío
+8305,8,Mulchén,Bío-Bío,Región del Bío-Bío
+8306,8,Nacimiento,Bío-Bío,Región del Bío-Bío
+7401,7,Linares,Linares,Región del Maule
+7403,7,Longaví,Linares,Región del Maule
+13123,13,Providencia,Santiago,Región Metropolitana de Santiago
+8307,8,Negrete,Bío-Bío,Región del Bío-Bío
+8308,8,Quilaco,Bío-Bío,Región del Bío-Bío
+8309,8,Quilleco,Bío-Bío,Región del Bío-Bío
+13113,13,La Reina,Santiago,Región Metropolitana de Santiago
+11402,11,Río Ibáñez,General Carrera,Región de Aysén del Gral.Ibañez del Campo
+8310,8,San Rosendo,Bío-Bío,Región del Bío-Bío
+8312,8,Tucapel,Bío-Bío,Región del Bío-Bío
+13403,13,Calera de Tango,Maipo,Región Metropolitana de Santiago
+11401,11,Chile Chico,General Carrera,Región de Aysén del Gral.Ibañez del Campo
+12402,12,Torres del Paine,Ultima Esperanza,Región de Magallanes y Antártica Chilena
+12302,12,Primavera,Tierra del Fuego,Región de Magallanes y Antártica Chilena
+8103,8,Chiguayante,Concepción,Región del Bío-Bío
+8101,8,Concepción,Concepción,Región del Bío-Bío
+8102,8,Coronel,Concepción,Región del Bío-Bío
+8104,8,Florida,Concepción,Región del Bío-Bío
+8105,8,Hualqui,Concepción,Región del Bío-Bío
+8106,8,Lota,Concepción,Región del Bío-Bío
+8108,8,San Pedro de la Paz,Concepción,Región del Bío-Bío
+8109,8,Santa Juana,Concepción,Región del Bío-Bío
+12104,12,San Gregorio,Magallanes,Región de Magallanes y Antártica Chilena
+12301,12,Porvenir,Tierra del Fuego,Región de Magallanes y Antártica Chilena
+1402,1,Camiña,Iquique,Región de Tarapacá
+1403,1,Colchane,Iquique,Región de Tarapacá
+15201,15,Putre,Parinacota,Región de Arica y Parinacota
+2302,2,María Elena,Tocopilla,Región de Antofagasta
+7101,7,Talca,Talca,Región del Maule
+13301,13,Colina,Chacabuco,Región Metropolitana de Santiago
+13101,13,Santiago,Santiago,Región Metropolitana de Santiago
+2201,2,Calama,El Loa,Región de Antofagasta
+13302,13,Lampa,Chacabuco,Región Metropolitana de Santiago
+13202,13,Pirque,Cordillera,Región Metropolitana de Santiago
+16102,16,Bulnes,Ñuble,Región de Ñuble
+16103,16,Chillán Viejo,Ñuble,Región de Ñuble
+16101,16,Chillán,Ñuble,Región de Ñuble
+8313,8,Yumbel,Bío-Bío,Región del Bío-Bío
+9205,9,Lonquimay,Malleco,Región de La Araucanía
+13201,13,Puente Alto,Cordillera,Región Metropolitana de Santiago
+13107,13,Huechuraba,Santiago,Región Metropolitana de Santiago
+16109,16,Yungay,Ñuble,Región de Ñuble
+8303,8,Cabrero,Bío-Bío,Región del Bío-Bío
+8302,8,Antuco,Bío-Bío,Región del Bío-Bío
+16107,16,Quillón,Ñuble,Región de Ñuble
+8314,8,Alto Biobío,Bío-Bío,Región del Bío-Bío
+13401,13,San Bernardo,Maipo,Región Metropolitana de Santiago
+13503,13,Curacaví,Melipilla,Región Metropolitana de Santiago
+13504,13,María Pinto,Melipilla,Región Metropolitana de Santiago
+13102,13,Cerrillos,Santiago,Región Metropolitana de Santiago
+9102,9,Carahue,Cautín,Región de La Araucanía
+9118,9,Toltén,Cautín,Región de La Araucanía
+9109,9,Loncoche,Cautín,Región de La Araucanía
+14103,14,Lanco,Valdivia,Región de Los Ríos
+13103,13,Cerro Navia,Santiago,Región Metropolitana de Santiago
+13132,13,Vitacura,Santiago,Región Metropolitana de Santiago
+13104,13,Conchalí,Santiago,Región Metropolitana de Santiago
+13105,13,El Bosque,Santiago,Región Metropolitana de Santiago
+12103,12,Río Verde,Magallanes,Región de Magallanes y Antártica Chilena
+12101,12,Punta Arenas,Magallanes,Región de Magallanes y Antártica Chilena
+13106,13,Estación Central,Santiago,Región Metropolitana de Santiago
+9104,9,Curarrehue,Cautín,Región de La Araucanía
+14108,14,Panguipulli,Valdivia,Región de Los Ríos
+10304,10,Puyehue,Osorno,Región de Los Lagos
+14204,14,Río Bueno,Ranco,Región de Los Ríos
+13110,13,La Florida,Santiago,Región Metropolitana de Santiago
+13111,13,La Granja,Santiago,Región Metropolitana de Santiago
+13112,13,La Pintana,Santiago,Región Metropolitana de Santiago
+10103,10,Cochamó,Llanquihue,Región de Los Lagos
+11102,11,Lago Verde,Coyhaique,Región de Aysén del Gral.Ibañez del Campo
+11101,11,Coyhaique,Coyhaique,Región de Aysén del Gral.Ibañez del Campo
+11202,11,Cisnes,Aysén,Región de Aysén del Gral.Ibañez del Campo
+11303,11,Tortel,Capitán Prat,Región de Aysén del Gral.Ibañez del Campo
+12401,12,Natales,Ultima Esperanza,Región de Magallanes y Antártica Chilena
+11302,11,O'Higgins,Capitán Prat,Región de Aysén del Gral.Ibañez del Campo
+11301,11,Cochrane,Capitán Prat,Región de Aysén del Gral.Ibañez del Campo
+13114,13,Las Condes,Santiago,Región Metropolitana de Santiago
+13115,13,Lo Barnechea,Santiago,Región Metropolitana de Santiago
+13116,13,Lo Espejo,Santiago,Región Metropolitana de Santiago
+13117,13,Lo Prado,Santiago,Región Metropolitana de Santiago
+13118,13,Macul,Santiago,Región Metropolitana de Santiago
+10202,10,Ancud,Chiloe,Región de Los Lagos
+10208,10,Quellón,Chiloe,Región de Los Lagos
+10207,10,Queilén,Chiloe,Región de Los Lagos
+10203,10,Chonchi,Chiloe,Región de Los Lagos
+10101,10,Puerto Montt,Llanquihue,Región de Los Lagos
+10305,10,Río Negro,Osorno,Región de Los Lagos
+10201,10,Castro,Chiloe,Región de Los Lagos
+10205,10,Dalcahue,Chiloe,Región de Los Lagos
+10209,10,Quemchi,Chiloe,Región de Los Lagos
+9116,9,Saavedra,Cautín,Región de La Araucanía
+13119,13,Maipú,Santiago,Región Metropolitana de Santiago
+13120,13,Ñuñoa,Santiago,Región Metropolitana de Santiago
+13121,13,Pedro Aguirre Cerda,Santiago,Región Metropolitana de Santiago
+8207,8,Tirúa,Arauco,Región del Bío-Bío
+8112,8,Hualpén,Concepción,Región del Bío-Bío
+8110,8,Talcahuano,Concepción,Región del Bío-Bío
+8107,8,Penco,Concepción,Región del Bío-Bío
+7202,7,Chanco,Cauquenes,Región del Maule
+7203,7,Pelluhue,Cauquenes,Región del Maule
+7102,7,Constitución,Talca,Región del Maule
+7303,7,Licantén,Curicó,Región del Maule
+7309,7,Vichuquén,Curicó,Región del Maule
+6206,6,Paredones,Cardenal Caro,Región del Libertador Bernardo O'Higgins
+13124,13,Pudahuel,Santiago,Región Metropolitana de Santiago
+13125,13,Quilicura,Santiago,Región Metropolitana de Santiago
+6201,6,Pichilemu,Cardenal Caro,Región del Libertador Bernardo O'Higgins
+6203,6,Litueche,Cardenal Caro,Región del Libertador Bernardo O'Higgins
+6205,6,Navidad,Cardenal Caro,Región del Libertador Bernardo O'Higgins
+13126,13,Quinta Normal,Santiago,Región Metropolitana de Santiago
+13127,13,Recoleta,Santiago,Región Metropolitana de Santiago
+5606,5,Santo Domingo,San Antonio,Región de Valparaíso
+5601,5,San Antonio,San Antonio,Región de Valparaíso
+5605,5,El Tabo,San Antonio,Región de Valparaíso
+5604,5,El Quisco,San Antonio,Región de Valparaíso
+1401,1,Pozo Almonte,Iquique,Región de Tarapacá
+3302,3,Alto del Carmen,Huasco,Región de Atacama
+16301,16,San Carlos,Punilla,Región de Ñuble
+8111,8,Tomé,Concepción,Región del Bío-Bío
+5602,5,Algarrobo,San Antonio,Región de Valparaíso
+5102,5,Casablanca,Valparaíso,Región de Valparaíso
+5101,5,Valparaíso,Valparaíso,Región de Valparaíso
+13128,13,Renca,Santiago,Región Metropolitana de Santiago
+5109,5,Viña del Mar,Valparaíso,Región de Valparaíso
+5103,5,Concón,Valparaíso,Región de Valparaíso
+5107,5,Quintero,Valparaíso,Región de Valparaíso
+5105,5,Puchuncaví,Valparaíso,Región de Valparaíso
+13602,13,El Monte,Talagante,Región Metropolitana de Santiago
+5405,5,Zapallar,Petorca,Región de Valparaíso
+5403,5,Papudo,Petorca,Región de Valparaíso
+5401,5,La Ligua,Petorca,Región de Valparaíso
+4203,4,Los Vilos,Choapa,Región de Coquimbo
+4202,4,Canela,Choapa,Región de Coquimbo
+4301,4,Ovalle,Limarí,Región de Coquimbo
+4102,4,Coquimbo,Elqui,Región de Coquimbo
+4101,4,La Serena,Elqui,Región de Coquimbo
+3303,3,Freirina,Huasco,Región de Atacama
+3304,3,Huasco,Huasco,Región de Atacama
+3101,3,Copiapó,Copiapó,Región de Atacama
+3102,3,Caldera,Copiapó,Región de Atacama
+1404,1,Huara,Iquique,Región de Tarapacá
+15102,15,Camarones,Arica,Región de Arica y Parinacota
+10306,10,San Juan de la Costa,Osorno,Región de Los Lagos
+15101,15,Arica,Arica,Región de Arica y Parinacota
+14106,14,Mariquina,Valdivia,Región de Los Ríos
+8202,8,Arauco,Arauco,Región del Bío-Bío
+2301,2,Tocopilla,Tocopilla,Región de Antofagasta
+13604,13,Padre Hurtado,Talagante,Región Metropolitana de Santiago
+13605,13,Peñaflor,Talagante,Región Metropolitana de Santiago
+2101,2,Antofagasta,Antofagasta,Región de Antofagasta
+2102,2,Mejillones,Antofagasta,Región de Antofagasta
+2104,2,Taltal,Antofagasta,Región de Antofagasta
+3201,3,Chañaral,Chañaral,Región de Atacama
+7201,7,Cauquenes,Cauquenes,Región del Maule
+5104,5,Juan Fernández,Valparaíso,Región de Valparaíso
+5201,5,Isla de Pascua,Isla de Pascua,Región de Valparaíso
+12201,12,Cabo de Hornos,Antártica Chilena,Región de Magallanes y Antártica Chilena
+13601,13,Talagante,Talagante,Región Metropolitana de Santiago
+12303,12,Timaukel,Tierra del Fuego,Región de Magallanes y Antártica Chilena
+11203,11,Guaitecas,Aysén,Región de Aysén del Gral.Ibañez del Campo
+1107,1,Alto Hospicio,Iquique,Región de Tarapacá
+2103,2,Sierra Gorda,Antofagasta,Región de Antofagasta
+4302,4,Combarbalá,Limarí,Región de Coquimbo
+4304,4,Punitaqui,Limarí,Región de Coquimbo
+4105,4,Paihuano,Elqui,Región de Coquimbo
+4201,4,Illapel,Choapa,Región de Coquimbo
+5802,5,Limache,Marga Marga,Región de Valparaíso
+5501,5,Quillota,Quillota,Región de Valparaíso
+11201,11,Aysén,Aysén,Región de Aysén del Gral.Ibañez del Campo
+5502,5,Calera,Quillota,Región de Valparaíso
+5506,5,Nogales,Quillota,Región de Valparaíso
+5302,5,Calle Larga,Los Andes,Región de Valparaíso
+6202,6,La Estrella,Cardenal Caro,Región del Libertador Bernardo O'Higgins
+13404,13,Paine,Maipo,Región Metropolitana de Santiago
+10102,10,Calbuco,Llanquihue,Región de Los Lagos
+10401,10,Chaitén,Palena,Región de Los Lagos
+14102,14,Corral,Valdivia,Región de Los Ríos
+14101,14,Valdivia,Valdivia,Región de Los Ríos
+1101,1,Iquique,Iquique,Región de Tarapacá
+4104,4,La Higuera,Elqui,Región de Coquimbo
+10106,10,Los Muermos,Llanquihue,Región de Los Lagos
+10108,10,Maullín,Llanquihue,Región de Los Lagos
+10210,10,Quinchao,Chiloe,Región de Los Lagos
+10204,10,Curaco de Vélez,Chiloe,Región de Los Lagos
+16207,16,Treguaco,Itata,Región de Ñuble
+16206,16,Ranquil,Itata,Región de Ñuble
+16205,16,Portezuelo,Itata,Región de Ñuble
+16202,16,Cobquecura,Itata,Región de Ñuble
+16201,16,Quirihue,Itata,Región de Ñuble
+16203,16,Coelemu,Itata,Región de Ñuble
+16204,16,Ninhue,Itata,Región de Ñuble
+6105,6,Doñihue,Cachapoal,Región del Libertador Bernardo O'Higgins
+6111,6,Olivar,Cachapoal,Región del Libertador Bernardo O'Higgins
+13603,13,Isla de Maipo,Talagante,Región Metropolitana de Santiago
+13402,13,Buin,Maipo,Región Metropolitana de Santiago
+6115,6,Rengo,Cachapoal,Región del Libertador Bernardo O'Higgins
+6310,6,Santa Cruz,Colchagua,Región del Libertador Bernardo O'Higgins
+6306,6,Palmilla,Colchagua,Región del Libertador Bernardo O'Higgins
+7108,7,Río Claro,Talca,Región del Maule
+7106,7,Pelarco,Talca,Región del Maule
+7406,7,San Javier,Linares,Región del Maule
+7407,7,Villa Alegre,Linares,Región del Maule
+7408,7,Yerbas Buenas,Linares,Región del Maule
+7105,7,Maule,Talca,Región del Maule
+7110,7,San Rafael,Talca,Región del Maule
+8311,8,Santa Bárbara,Bío-Bío,Región del Bío-Bío
+9120,9,Villarrica,Cautín,Región de La Araucanía
+9115,9,Pucón,Cautín,Región de La Araucanía
+9112,9,Padre Las Casas,Cautín,Región de La Araucanía
+10302,10,Puerto Octay,Osorno,Región de Los Lagos
+10105,10,Frutillar,Llanquihue,Región de Los Lagos
+5504,5,La Cruz,Quillota,Región de Valparaíso
+7307,7,Sagrada Familia,Curicó,Región del Maule
+7405,7,Retiro,Linares,Región del Maule
+6114,6,Quinta de Tilcoco,Cachapoal,Región del Libertador Bernardo O'Higgins
+15202,15,General Lagos,Parinacota,Región de Arica y Parinacota
+2203,2,San Pedro de Atacama,El Loa,Región de Antofagasta
+3103,3,Tierra Amarilla,Copiapó,Región de Atacama
+5705,5,Putaendo,San Felipe,Región de Valparaíso
+4303,4,Monte Patria,Limarí,Región de Coquimbo
+4305,4,Río Hurtado,Limarí,Región de Coquimbo
+4204,4,Salamanca,Choapa,Región de Coquimbo
+5304,5,San Esteban,Los Andes,Región de Valparaíso
+5301,5,Los Andes,Los Andes,Región de Valparaíso
+13203,13,San José de Maipo,Cordillera,Región Metropolitana de Santiago
+7301,7,Curicó,Curicó,Región del Maule
+6108,6,Machalí,Cachapoal,Región del Libertador Bernardo O'Higgins
+7304,7,Molina,Curicó,Región del Maule
+7402,7,Colbún,Linares,Región del Maule
+7109,7,San Clemente,Talca,Región del Maule
+9110,9,Melipeuco,Cautín,Región de La Araucanía
+14203,14,Lago Ranco,Ranco,Región de Los Ríos
+14202,14,Futrono,Ranco,Región de Los Ríos
+10109,10,Puerto Varas,Llanquihue,Región de Los Lagos
+10403,10,Hualaihué,Palena,Región de Los Lagos
+10404,10,Palena,Palena,Región de Los Lagos
+10402,10,Futaleufú,Palena,Región de Los Lagos
+2202,2,Ollagüe,El Loa,Región de Antofagasta
+1405,1,Pica,Iquique,Región de Tarapacá
+3202,3,Diego de Almagro,Chañaral,Región de Atacama
+3301,3,Vallenar,Huasco,Región de Atacama
+4106,4,Vicuña,Elqui,Región de Coquimbo
+13303,13,Tiltil,Chacabuco,Región Metropolitana de Santiago
+5503,5,Hijuelas,Quillota,Región de Valparaíso
+5801,5,Quilpué,Marga Marga,Región de Valparaíso
+13501,13,Melipilla,Melipilla,Región Metropolitana de Santiago
+6107,6,Las Cabras,Cachapoal,Región del Libertador Bernardo O'Higgins
+13505,13,San Pedro,Melipilla,Región Metropolitana de Santiago
+13502,13,Alhué,Melipilla,Región Metropolitana de Santiago
+6303,6,Chimbarongo,Colchagua,Región del Libertador Bernardo O'Higgins
+6304,6,Lolol,Colchagua,Región del Libertador Bernardo O'Higgins
+7302,7,Hualañé,Curicó,Región del Maule
+7305,7,Rauco,Curicó,Región del Maule
+6302,6,Chépica,Colchagua,Región del Libertador Bernardo O'Higgins
+7308,7,Teno,Curicó,Región del Maule
+7306,7,Romeral,Curicó,Región del Maule
+6301,6,San Fernando,Colchagua,Región del Libertador Bernardo O'Higgins
+7404,7,Parral,Linares,Región del Maule
+16106,16,Pinto,Ñuble,Región de Ñuble
+16108,16,San Ignacio,Ñuble,Región de Ñuble
+16105,16,Pemuco,Ñuble,Región de Ñuble
+16305,16,San Nicolás,Punilla,Región de Ñuble
+16304,16,San Fabián,Punilla,Región de Ñuble
+16303,16,Ñiquén,Punilla,Región de Ñuble
+16104,16,El Carmen,Ñuble,Región de Ñuble
+16302,16,Coihueco,Punilla,Región de Ñuble
