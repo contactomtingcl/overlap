@@ -104,12 +104,14 @@ function tip(e, key) {
   else if (!r || r.value == null) html += "No satellite record for this month (not zero fire).";
   else {
     html += `${fmt(r.value)} hotspots (Suomi NPP-equivalent)<br>`;
-    if (r.status === "estimated") html += `80% range: ${fmt(r.low)}–${fmt(r.high)}<br>Source: ${SOURCE_NAME[r.source]}<br>`;
+    if (r.status === "estimated") html += `80% range: ${fmt(r.low)}–${fmt(r.high)}<br>Source: ${SOURCE_NAME[r.source]}<br>Method: ${r.methods.includes("qmap") ? (r.methods.includes("ratio") ? "quantile mapping + simple ratio (mixed regions)" : "quantile mapping, validated") : "simple ratio, not validated here"}<br>`;
     else if (r.status === "provisional") html += "Provisional: near real-time Suomi NPP data, final values arrive about 5 months later<br>";
     else if (r.status === "partial") html += `Partial month: data through ${r.through}, from NOAA-20 (Suomi NPP stopped on Nov 2, 2026)<br>`;
     else html += "Observed by VIIRS Suomi NPP<br>";
     const med = state.data.climatology_median[+m];
     html += `Median for ${MONTHS[+m - 1]}: ${fmt(med)}`;
+    if (r.anomaly) html += `<br>${r.anomaly === "within normal" ? "Within normal" : r.anomaly[0].toUpperCase() + r.anomaly.slice(1)} (robust z = ${r.z})`;
+    if (r.note) html += `<br>${r.note}`;
   }
   const t = $("tip");
   t.innerHTML = html; t.style.display = "block";
@@ -120,31 +122,34 @@ function renderStatus() {
   const d = state.data, L = d.latest, [y, m] = L.month.split("-");
   const same = d.months.filter((r) => r.month.endsWith(`-${m}`) && r.month !== L.month && r.value != null && (r.status === "observed" || r.status === "estimated")).map((r) => r.value);
   const below = same.filter((v) => v < L.value).length;
-  const pct = Math.round(100 * below / same.length);
-  const level = pct >= 90 ? ["Critical", "#b30000"] : pct >= 75 ? ["Elevated", "#ef6548"] : ["Normal or below", "#2b8a3e"];
+  const level = L.anomaly === "unusually high" ? ["Unusually high", "#b30000"] : L.anomaly === "unusually low" ? ["Unusually low", "#1c64a8"] : ["Within normal", "#2b8a3e"];
   const prov = L.status === "provisional";
   $("status-title").textContent = `${MONTHS[+m - 1]} ${y}${prov ? " (provisional)" : ""} vs every previous ${MONTHS[+m - 1]}`;
-  $("status-sub").textContent = prov ? "Latest complete month, from near real-time data: it may change slightly when science-quality data arrives. November 2026 is still in progress." : "Latest month with science-quality data.";
+  $("status-sub").textContent = (prov ? "Latest complete month, from near real-time data: it may change slightly when science-quality data arrives. November 2026 is still in progress. " : "Latest month with science-quality data. ")
+    + "Unusual = more than 2 robust deviations from the median on a log scale.";
   const seasons = {};
-  d.months.forEach((r) => { if (r.value == null) return; const [yy, mm] = r.month.split("-").map(Number); const s = mm >= 7 ? yy : yy - 1; seasons[s] = (seasons[s] || 0) + r.value; });
-  const full = Object.entries(seasons).filter(([s]) => +s >= 2001 && +s <= 2024);
+  d.months.forEach((r) => { if (r.value == null || !["observed", "estimated"].includes(r.status)) return; const [yy, mm] = r.month.split("-").map(Number); const s = mm >= 7 ? yy : yy - 1; seasons[s] = (seasons[s] || 0) + r.value; });
+  const full = Object.entries(seasons).filter(([s]) => +s >= 2001 && +s <= 2025);
   const top = full.sort((a, b) => b[1] - a[1])[0];
   $("status").innerHTML = `
-    <div class="kpi" style="border-color:${level[1]}"><small>Status</small><b style="color:${level[1]}">${level[0]}</b><small>Higher than ${below} of ${same.length} previous ${MONTHS[+m - 1]}s (${pct}%)</small></div>
+    <div class="kpi" style="border-color:${level[1]}"><small>Status</small><b style="color:${level[1]}">${level[0]}</b><small>robust z = ${L.z}; higher than ${below} of ${same.length} previous ${MONTHS[+m - 1]}s</small></div>
     <div class="kpi"><small>This month</small><b>${fmt(L.value)}</b><small>hotspots, Suomi NPP-equivalent</small></div>
-    <div class="kpi"><small>Historical median</small><b>${fmt(L.median)}</b><small>for ${MONTHS[+m - 1]}, 2000–2026</small></div>
+    <div class="kpi"><small>Historical median</small><b>${fmt(L.median)}</b><small>for ${MONTHS[+m - 1]}, seasons 2000–01 to 2025–26</small></div>
     <div class="kpi"><small>Most active season</small><b>${top[0]}–${String(+top[0] + 1).slice(2)}</b><small>${fmt(top[1])} hotspots (Jul–Jun)</small></div>`;
 }
 
 function renderMethod() {
-  const f = state.data.factors;
-  const nat = Object.values(f).some((x) => x.scope && x.scope !== "local") ? " For sensors with too few local hotspots in this area, the national ratio is used." : "";
-  $("method").innerHTML = `All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Where Suomi NPP did not exist, other sensors are scaled by ratios learned where both observed: MODIS Aqua × ${f.Aqua.k} (80% range ${f.Aqua.low}–${f.Aqua.high}), MODIS Terra × ${f.Terra.k} (${f.Terra.low}–${f.Terra.high}; morning orbit, less comparable), NOAA-20 × ${f.NOAA20.k}. Only science-quality FIRMS data, presumed vegetation fires (volcanoes, mining and industry removed), low-confidence detections removed.${nat} Regions use the BCN commune boundaries (referential, not official limits).`;
+  const M = state.data.method;
+  let txt = "All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Before Suomi NPP (2012), MODIS counts are mapped to that unit. ";
+  if (M.qmap_regions.length) txt += `<b>${M.qmap_regions.join(", ")}:</b> quantile mapping fitted where both sensors observed (2012–2026), tested on hidden years 2020–2026 and checked against CONAF fire records 2002–2020: unharmonized, the series jumps ×4.7 at 2012 relative to real fire activity; harmonized, ×0.89 (95% interval includes 1, no jump). `;
+  if (M.ratio_regions.length) txt += `<b>${M.ratio_regions.length > 3 ? "Other regions" : M.ratio_regions.join(", ")}:</b> simple ratio (` + Object.entries(M.factors).slice(0, 3).map(([n, f]) => `${n}: Aqua × ${f.Aqua.k}`).join("; ") + `${Object.keys(M.factors).length > 3 ? "; …" : ""}), not yet validated. `;
+  txt += "Only science-quality FIRMS data, presumed vegetation fires (volcanoes, mining and industry removed), low-confidence detections removed. Regions use the BCN commune boundaries (referential, not official limits).";
+  $("method").innerHTML = txt;
 }
 
 function downloadCSV() {
-  const head = "month,value_snpp_equivalent,low_80,high_80,status,source,terra_raw,aqua_raw,snpp_raw,noaa20_raw,noaa21_raw";
-  const lines = state.data.months.map((r) => [r.month, r.value ?? "", r.low ?? "", r.high ?? "", r.status, r.source ?? "",
+  const head = "month,value_snpp_equivalent,low_80,high_80,status,source,anomaly,robust_z,terra_raw,aqua_raw,snpp_raw,noaa20_raw,noaa21_raw";
+  const lines = state.data.months.map((r) => [r.month, r.value ?? "", r.low ?? "", r.high ?? "", r.status, r.source ?? "", r.anomaly ?? "", r.z ?? "",
     r.raw.Terra ?? "", r.raw.Aqua ?? "", r.raw.SNPP ?? "", r.raw.NOAA20 ?? "", r.raw.NOAA21 ?? ""].join(","));
   const blob = new Blob([[head, ...lines].join("\n")], { type: "text/csv" });
   const a = document.createElement("a");
@@ -180,7 +185,8 @@ async function showMonth(key) {
   $("day-title").textContent = `${MONTHS[m - 1]} ${y}, day by day`;
   const status = r.status === "estimated" ? `estimated from ${SOURCE_NAME[r.source]}` : r.status === "provisional" ? "provisional, near real-time data" : r.status === "partial" ? "partial month" : r.status === "no_data" ? "no record" : "observed by VIIRS Suomi NPP";
   $("day-sub").textContent = r.value == null ? "No satellite record for this month." :
-    `${fmt(r.value)} hotspots this month (${status}). Hotspots on ${fireDays} of ${n} days${top[1] ? `; busiest day: ${MONTHS[m - 1]} ${top[1]} with ${fmt(top[0])}` : ""}.`;
+    `${fmt(r.value)} hotspots this month (${status}). Hotspots on ${fireDays} of ${n} days${top[1] ? `; busiest day: ${MONTHS[m - 1]} ${top[1]} with ${fmt(top[0])}` : ""}.`
+    + (r.status === "estimated" ? ` Daily values are raw ${r.source === "Terra" ? "MODIS Terra" : "MODIS Aqua"} detections; only the monthly total is harmonized.` : "");
   $("day-legend").innerHTML = `<span><i class="sw" style="background:${colour(10, max)}"></i>hotspots detected (darker = more)</span>`
     + `<span><i class="sw" style="background:#f6f8f4"></i>observed, no hotspots</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#adb5bd 3px 5px)"></i>no satellite record</span>`

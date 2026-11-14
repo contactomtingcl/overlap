@@ -17,8 +17,8 @@ NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS H
 | **Problem** | Satellites have tracked active fires for 25 years, but the record is split between MODIS (since 2000) and VIIRS (since 2012). VIIRS sees smaller fires: in Biobío, Chile, it records about 4.8 times more hotspots than MODIS Aqua for the same months. Joining both series without treatment creates a false jump in 2012. MODIS ends in 2027 and Suomi NPP stopped delivering new data on November 2, 2026. |
 | **For whom** | Early warning and emergency responders, firefighters, scientists and land managers. |
 | **Solution** | A harmonization engine calibrated on the MODIS–VIIRS overlap, and a web app with a month × year calendar, the current month against the historical median, anomalies and a CSV download for any area. |
-| **Measured result** | Biobío, fitted on 2012–2019 and tested on hidden years 2020–2026: reconstructing monthly Suomi NPP counts from MODIS Aqua, the mean error falls from 890 hotspots (no harmonization) and 326 (simple ratio) to 176 with quantile mapping; from MODIS Terra, from 994 and 649 to 407. Details and limitations in [results/harmonization](results/harmonization/README.md). |
-| **Try it** | *Link to the published app, coming soon.* |
+| **Measured result** | Checked against 75,718 CONAF fire records (2002–2020, Maule, Ñuble, Biobío, Araucanía): joining MODIS and VIIRS without treatment creates a false ×4.7 jump at 2012 relative to real fire activity; after harmonization it is ×0.89 (95 % CI 0.77–1.07: no jump). On hidden years 2020–2026, quantile mapping reconstructs Suomi NPP from MODIS Aqua better than a simple ratio in all four regions (typical monthly error about ×1.5). Large fires (≥ 200 ha) in Biobío: 88 % detected by MODIS Aqua and 97 % by VIIRS (hotspot within 3 km and 3 days). Details: [results/harmonization_qmap](results/harmonization_qmap/README.md), [results/validation_conaf](results/validation_conaf/README.md). |
+| **Try it** | https://contactomtingcl.github.io/overlap/ (no login) |
 
 ## Repository
 
@@ -34,7 +34,13 @@ NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS H
 
 ![Biobío: MODIS Aqua vs VIIRS Suomi NPP monthly hotspots, 2012–2026](results/fig01_biobio_aqua_vs_snpp.png)
 
-Same fires, different counts: both sensors rise and fall together, but VIIRS records about 4.8 times more hotspots. The ratio is not constant: it is larger in quiet months and smaller in big fire months, so a single fixed factor is not enough.
+Same fires, different counts: both sensors rise and fall together, but VIIRS records about 4.8 times more hotspots. The ratio is not constant: it is larger in quiet months and smaller in big fire months, so a single fixed factor is not enough. That is why we use quantile mapping.
+
+## Harmonization used in the app (v1)
+
+- **Maule, Ñuble, Biobío, La Araucanía:** quantile mapping on log(1 + monthly hotspots) with the R package `qmap`, one map per region and sensor, fitted on the overlap 2012–2026 (`pipeline/07`, `09`), validated on hidden years (`pipeline/07`, `08`) and against CONAF (`pipeline/10`). The app reproduces these values exactly (`pipeline/03`).
+- **Other regions:** simple ratio on the overlap, flagged in the app as not yet validated.
+- **Sensitivity analysis (candidate for v2):** a daily quantile map with day and night overpasses separated (`pipeline/06`, `results/harmonization`) lowers the error further in Biobío (mean error 176 hotspots per month against 326 for the simple ratio).
 
 ## Data processing rules
 
