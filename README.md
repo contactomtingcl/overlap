@@ -50,10 +50,26 @@ Same fires, different counts: both sensors rise and fall together, but VIIRS rec
 4. Dates and times in UTC.
 5. Raw counts from different sensors are never added together, and VIIRS satellites are never summed with each other.
 
+## Known limitations
+
+1. **Polar satellites see each place only about twice a day** (one daytime and one night overpass per satellite). Fires that start and end between overpasses, or that burn under clouds or thick smoke, are missed. No detection is not the same as no fire.
+2. **Pixel size grows towards the edge of the swath** (MODIS: from 1 km at nadir to about 4 km), where only larger or hotter fires are detected. We do not correct for viewing angle yet.
+3. **Hotspots are thermal anomalies, not fires:** one large fire produces many hotspots; small agricultural, waste or short-lived fires may produce none. Agricultural burning explains much of the autumn hotspot peak that CONAF does not record as forest fire.
+4. **Harmonization uncertainty:** the MODIS Aqua map underestimates monthly totals by 10–17 % on hidden years; months with very few hotspots and the Terra-only months (2000–2002) are the least certain. Regions outside Maule–Araucanía use an unvalidated simple ratio.
+5. **Recent months are provisional** (near real-time data), and are withheld over the Atacama desert, where near real-time data hold many daytime false detections.
+
+## Roadmap
+
+- Harmonized quantile maps for every region (pooled map, already shown to transfer between regions) and a daily day/night model (v2, see `results/harmonization`).
+- Geostationary detections (GOES ABI, every few minutes over South America, available in FIRMS) to fill the hours between polar overpasses and the morning orbit that Terra leaves in 2027.
+- Independent check of large events with MODIS/VIIRS burned-area products and Sentinel-2/Landsat scars.
+- Pre-fire context for anticipating critical periods: vegetation (NDVI), soil moisture and precipitation anomalies.
+- Alerts to the responsible agency when an area's current month becomes unusual.
+
 ## Team
 
 Overlap: Matías Navarro, Karla Palomino, Benjamín Arriagada.
 
 ## Data and acknowledgments
 
-We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). Details in [docs/DATA.md](docs/DATA.md). AI use is declared in [docs/AI_USE.md](docs/AI_USE.md).
+We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS). Details in [docs/DATA.md](docs/DATA.md). Background on satellite fire detection from NASA ARSET training "Satellite Observations and Tools for Fire Risk, Detection, and Analysis" (Spanish edition). AI use is declared in [docs/AI_USE.md](docs/AI_USE.md).
