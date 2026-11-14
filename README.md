@@ -54,7 +54,7 @@ Same fires, different counts: both sensors rise and fall together, but VIIRS rec
 
 1. **Polar satellites see each place only about twice a day** (one daytime and one night overpass per satellite). Fires that start and end between overpasses, or that burn under clouds or thick smoke, are missed. No detection is not the same as no fire.
 2. **Pixel size grows towards the edge of the swath** (MODIS: from 1 km at nadir to about 4 km), where only larger or hotter fires are detected. We do not correct for viewing angle yet.
-3. **Hotspots are thermal anomalies, not fires:** one large fire produces many hotspots; small agricultural, waste or short-lived fires may produce none. Agricultural burning explains much of the autumn hotspot peak that CONAF does not record as forest fire.
+3. **Hotspots are thermal anomalies, not fires:** one large fire produces many hotspots; small agricultural, waste or short-lived fires may produce none. Autumn (April–May) holds about 31 % of hotspots but about 2 % of CONAF burned area; agricultural burning is the likely explanation (hypothesis, not yet verified).
 4. **Harmonization uncertainty:** the MODIS Aqua map underestimates monthly totals by 10–17 % on hidden years; months with very few hotspots and the Terra-only months (2000–2002) are the least certain. Regions outside Maule–Araucanía use an unvalidated simple ratio.
 5. **Recent months are provisional** (near real-time data), and are withheld over the Atacama desert, where near real-time data hold many daytime false detections.
 
