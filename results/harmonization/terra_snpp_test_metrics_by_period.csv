@@ -1,0 +1,22 @@
+period,method,selected,months,MAE,RMSE,total_bias_pct,mean_abs_log_error,typical_factor_error,months_within_factor_1.5_pct,spearman,band80_coverage_pct
+2020-2026,raw,False,79,994.418,2689.938,-90.413,2.622,11.294,0.0,0.882,74.684
+2020-2026,ratio,False,79,648.985,2638.054,27.827,0.706,1.603,35.443,0.882,78.481
+2020-2026,qm_daily,False,79,416.827,1003.092,12.146,0.616,1.664,37.975,0.881,72.152
+2020-2026,qm_daynight,False,79,403.344,911.341,8.124,0.652,1.545,45.57,0.863,69.62
+2020-2026,qm_monthly,False,79,555.348,1414.549,26.592,0.608,1.605,48.101,0.882,73.418
+2020-2026,qm_season,False,79,378.238,759.565,7.671,0.606,1.651,43.038,0.879,70.886
+2020-2026,qm_season_daynight,True,79,406.504,1036.933,8.509,0.608,1.548,45.57,0.873,69.62
+2020-2022 (Terra near-nominal orbit),raw,False,36,717.361,1051.416,-91.248,2.507,9.797,0.0,0.933,77.778
+2020-2022 (Terra near-nominal orbit),ratio,False,36,349.654,562.846,16.695,0.6,1.576,33.333,0.933,80.556
+2020-2022 (Terra near-nominal orbit),qm_daily,False,36,310.791,413.31,18.197,0.594,1.631,36.111,0.937,83.333
+2020-2022 (Terra near-nominal orbit),qm_daynight,False,36,293.742,384.477,15.467,0.61,1.538,44.444,0.922,80.556
+2020-2022 (Terra near-nominal orbit),qm_monthly,False,36,421.302,651.9,34.338,0.57,1.539,50.0,0.933,77.778
+2020-2022 (Terra near-nominal orbit),qm_season,False,36,294.727,399.963,15.263,0.568,1.511,47.222,0.933,80.556
+2020-2022 (Terra near-nominal orbit),qm_season_daynight,True,36,276.144,389.053,13.117,0.556,1.46,52.778,0.922,80.556
+2023-2026 (Terra drifted orbit),raw,False,43,1226.372,3516.831,-90.01,2.719,13.058,0.0,0.848,72.093
+2023-2026 (Terra drifted orbit),ratio,False,43,899.587,3538.435,33.205,0.794,1.669,37.209,0.85,76.744
+2023-2026 (Terra drifted orbit),qm_daily,False,43,505.601,1305.976,9.223,0.636,1.72,39.535,0.842,62.791
+2023-2026 (Terra drifted orbit),qm_daynight,False,43,495.104,1184.112,4.577,0.686,1.849,46.512,0.823,60.465
+2023-2026 (Terra drifted orbit),qm_monthly,False,43,667.572,1822.188,22.85,0.64,1.652,46.512,0.848,69.767
+2023-2026 (Terra drifted orbit),qm_season,False,43,448.155,962.304,4.004,0.637,1.933,39.535,0.854,62.791
+2023-2026 (Terra drifted orbit),qm_season_daynight,True,43,515.643,1359.669,6.283,0.651,1.896,39.535,0.85,60.465

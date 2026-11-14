@@ -17,7 +17,7 @@ NASA Space Apps Challenge 2026 · Challenge: *Harmonization of MODIS and VIIRS H
 | **Problem** | Satellites have tracked active fires for 25 years, but the record is split between MODIS (since 2000) and VIIRS (since 2012). VIIRS sees smaller fires: in Biobío, Chile, it records about 4.8 times more hotspots than MODIS Aqua for the same months. Joining both series without treatment creates a false jump in 2012. MODIS ends in 2027 and Suomi NPP stopped delivering new data on November 2, 2026. |
 | **For whom** | Early warning and emergency responders, firefighters, scientists and land managers. |
 | **Solution** | A harmonization engine calibrated on the MODIS–VIIRS overlap, and a web app with a month × year calendar, the current month against the historical median, anomalies and a CSV download for any area. |
-| **Measured result** | *In progress.* Baseline (no harmonization) vs simple ratio vs model, tested on hidden years. |
+| **Measured result** | Biobío, fitted on 2012–2019 and tested on hidden years 2020–2026: reconstructing monthly Suomi NPP counts from MODIS Aqua, the mean error falls from 890 hotspots (no harmonization) and 326 (simple ratio) to 176 with quantile mapping; from MODIS Terra, from 994 and 649 to 407. Details and limitations in [results/harmonization](results/harmonization/README.md). |
 | **Try it** | *Link to the published app, coming soon.* |
 
 ## Repository

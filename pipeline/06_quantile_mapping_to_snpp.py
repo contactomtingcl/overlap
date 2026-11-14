@@ -1,23 +1,24 @@
 # Written with AI assistance (Claude, Anthropic); reviewed and run by the Overlap team. See docs/AI_USE.md.
-"""Harmonization v1: quantile mapping MODIS Aqua -> VIIRS Suomi NPP in Biobío, with a hidden-years test.
+"""Harmonization v1: quantile mapping MODIS (Aqua or Terra) -> VIIRS Suomi NPP in Biobío, with a hidden-years test.
 
-Question: if we only had Aqua, how well could we reconstruct the Suomi NPP monthly hotspot count?
+Question: if we only had the MODIS sensor, how well could we reconstruct the Suomi NPP monthly hotspot count?
+The source sensor is the 3rd argument (Aqua or Terra); "X" below is that sensor.
 
 Design (fixed before looking at the test years):
 - unit: daily regional totals of each sensor, mapped day by day, then summed to months
-  (a month of Aqua -> a month in "Suomi NPP-equivalent hotspots", the unit of the calendar)
+  (a month of X -> a month in "Suomi NPP-equivalent hotspots", the unit of the calendar)
 - fit on 2012-01-20 to 2019-12-31, test on 2020-01-01 to 2026-07-30 (never seen when fitting)
-- compared against: (0) no harmonization (raw Aqua) and (1) simple ratio k = sum(SNPP) / sum(Aqua)
+- compared against: (0) no harmonization (raw X) and (1) simple ratio k = sum(SNPP) / sum(X)
 - candidates: QM on daily totals; QM separately for day and night overpasses; QM on monthly totals;
   QM by season (Nov-Apr / May-Oct), with and without the day/night split.
 - model selection uses the training years only: the candidate with the lowest leave-one-year-out MAE
   inside 2012-2019 is the selected model. The hidden years are then scored once for every candidate,
   so the test result of the selected model is not tuned on the test.
 
-Quantile mapping with ties: most days have 0 or few hotspots, so the empirical CDF of Aqua has
-big jumps. Each distinct Aqua value v occupies the probability band (F(v-), F(v)] and is mapped to the
+Quantile mapping with ties: most days have 0 or few hotspots, so the empirical CDF of X has
+big jumps. Each distinct X value v occupies the probability band (F(v-), F(v)] and is mapped to the
 mean of the Suomi NPP quantile function over that same band. This keeps the fitted total equal to the
-Suomi NPP total in the training years and lets a zero-Aqua day carry the small fires Aqua cannot see.
+Suomi NPP total in the training years and lets a zero-X day carry the small fires X cannot see.
 Above the 99th percentile of the training values the map continues as a straight line with the ratio
 observed in the top 1 % of days (rank matching there rests on a handful of extreme days).
 
@@ -25,7 +26,13 @@ Uncertainty: leave-one-year-out inside the training years gives out-of-sample mo
 log scale; the 10th-90th percentiles of those errors give an 80 % band, whose coverage is then
 checked on the hidden years.
 
-Usage: python3 pipeline/06_quantile_mapping_aqua_snpp.py results/model_input/daily_cell_counts_chile.csv.gz results/harmonization
+Terra: its orbit drifts to an earlier morning crossing since February 2020 (10:15 in October 2022, about
+9:00 by December 2025), so the hidden years are also scored for 2020-2022 (near-nominal orbit) and 2023-2026
+(drifted orbit). Terra is used for Nov 2000 - Jun 2002, when its orbit was nominal, so the 2020-2022 score
+is the relevant one for that use.
+
+Usage: python3 pipeline/06_quantile_mapping_to_snpp.py results/model_input/daily_cell_counts_chile.csv.gz results/harmonization Aqua
+       python3 pipeline/06_quantile_mapping_to_snpp.py results/model_input/daily_cell_counts_chile.csv.gz results/harmonization Terra
 """
 import sys
 from pathlib import Path
@@ -37,6 +44,10 @@ import numpy as np
 import pandas as pd
 
 src, out = Path(sys.argv[1]), Path(sys.argv[2])
+SRC = sys.argv[3] if len(sys.argv) > 3 else "Aqua"
+assert SRC in ("Aqua", "Terra"), SRC
+PFX = f"{SRC.lower()}_snpp"
+FIG = {"Aqua": "fig02", "Terra": "fig03"}[SRC]
 out.mkdir(parents=True, exist_ok=True)
 
 BIOBIO = dict(lat_min=-38.50, lat_max=-36.45, lon_min=-73.95, lon_max=-70.95)  # same box as 02
@@ -47,16 +58,17 @@ RNG = np.random.default_rng(2026)
 c = pd.read_csv(src)
 c = c[c.cell_lat.between(BIOBIO["lat_min"], BIOBIO["lat_max"])
       & c.cell_lon.between(BIOBIO["lon_min"], BIOBIO["lon_max"])
-      & c.satellite.isin(["Aqua", "SNPP"])]
+      & c.satellite.isin([SRC, "SNPP"])]
+c = c.assign(satellite=c.satellite.replace({SRC: "X"}))
 days = pd.date_range(START, END, freq="D").strftime("%Y-%m-%d")
 daily = (c.pivot_table(index="date", columns=["satellite", "daynight"], values="n_hotspots",
                        aggfunc="sum", fill_value=0)
          .reindex(days, fill_value=0))
 daily.columns = [f"{s}_{dn}" for s, dn in daily.columns]
-for col in ["Aqua_D", "Aqua_N", "SNPP_D", "SNPP_N"]:
+for col in ["X_D", "X_N", "SNPP_D", "SNPP_N"]:
     if col not in daily:
         daily[col] = 0
-daily["Aqua"] = daily.Aqua_D + daily.Aqua_N
+daily["X"] = daily.X_D + daily.X_N
 daily["SNPP"] = daily.SNPP_D + daily.SNPP_N
 daily.index.name = "date"
 daily["month"] = daily.index.str[:7]
@@ -107,17 +119,17 @@ def apply_qm(model, x):
 def predict(train, target, method):
     """Daily Suomi NPP-equivalent values for the rows of `target`, fitted only on `train`."""
     if method == "raw":
-        return target.Aqua.values.astype(float)
+        return target.X.values.astype(float)
     if method == "ratio":
-        return target.Aqua.values * train.SNPP.sum() / train.Aqua.sum()
+        return target.X.values * train.SNPP.sum() / train.X.sum()
     if method == "qm_daily":
-        return apply_qm(fit_qm(train.Aqua, train.SNPP), target.Aqua)
+        return apply_qm(fit_qm(train.X, train.SNPP), target.X)
     if method == "qm_daynight":
-        return (apply_qm(fit_qm(train.Aqua_D, train.SNPP_D), target.Aqua_D)
-                + apply_qm(fit_qm(train.Aqua_N, train.SNPP_N), target.Aqua_N))
+        return (apply_qm(fit_qm(train.X_D, train.SNPP_D), target.X_D)
+                + apply_qm(fit_qm(train.X_N, train.SNPP_N), target.X_N))
     if method in ("qm_season", "qm_season_daynight"):
         out_ = np.zeros(len(target))
-        cols = [("Aqua", "SNPP")] if method == "qm_season" else [("Aqua_D", "SNPP_D"), ("Aqua_N", "SNPP_N")]
+        cols = [("X", "SNPP")] if method == "qm_season" else [("X_D", "SNPP_D"), ("X_N", "SNPP_N")]
         for season in (True, False):
             f, t = train[train.fire_season == season], target.fire_season.values == season
             for a, v in cols:
@@ -129,14 +141,14 @@ def predict(train, target, method):
 
 def monthly(train, target, method):
     if method == "qm_monthly":
-        tm = train.groupby("month")[["Aqua", "SNPP"]].sum()
-        gm = target.groupby("month")[["Aqua", "SNPP"]].sum()
-        return pd.Series(apply_qm(fit_qm(tm.Aqua, tm.SNPP, tail=0.05), gm.Aqua), index=gm.index)
+        tm = train.groupby("month")[["X", "SNPP"]].sum()
+        gm = target.groupby("month")[["X", "SNPP"]].sum()
+        return pd.Series(apply_qm(fit_qm(tm.X, tm.SNPP, tail=0.05), gm.X), index=gm.index)
     p = pd.Series(predict(train, target, method), index=target.index)
     return p.groupby(target.month).sum()
 
 
-METHODS = {"raw": "No harmonization (raw Aqua)", "ratio": "Simple ratio",
+METHODS = {"raw": f"No harmonization (raw {SRC})", "ratio": "Simple ratio",
            "qm_daily": "Quantile mapping, daily",
            "qm_daynight": "Quantile mapping, daily, day and night separately",
            "qm_monthly": "Quantile mapping, monthly totals",
@@ -163,8 +175,8 @@ band.columns = ["q10", "q90"]
 
 # ---------- hidden-years test ----------
 obs_test = test_days.groupby("month").SNPP.sum()
-aqua_test = test_days.groupby("month").Aqua.sum()
-pred = pd.DataFrame({"month": obs_test.index, "aqua": aqua_test.values, "snpp_observed": obs_test.values})
+src_test = test_days.groupby("month").X.sum()
+pred = pd.DataFrame({"month": obs_test.index, "source": src_test.values, "snpp_observed": obs_test.values})
 for m in METHODS:
     p = monthly(train_days, test_days, m).values
     pred[m] = p
@@ -198,6 +210,17 @@ for m, label in METHODS.items():
     rows.append(r)
 res = pd.DataFrame(rows)
 
+# the same metrics by sub-period of the hidden years (Terra orbit drift: near-nominal vs drifted)
+per_rows = []
+for per, (a, b) in {"2020-2026": ("2020", "2026"), "2020-2022 (Terra near-nominal orbit)": ("2020", "2022"),
+                    "2023-2026 (Terra drifted orbit)": ("2023", "2026")}.items():
+    sub = pred[(year >= a) & (year <= b)]
+    for m in METHODS:
+        r = {"period": per, "method": m, "selected": m == SEL, "months": len(sub)}
+        r.update(metrics(sub.snpp_observed, sub[m], sub[m + "_low"], sub[m + "_high"]))
+        per_rows.append(r)
+res_period = pd.DataFrame(per_rows)
+
 # block bootstrap by year: is the primary model better than the simple ratio?
 years = year.unique()
 d_mae, d_log = [], []
@@ -217,25 +240,32 @@ boot = pd.DataFrame({"comparison": [f"{SEL} minus ratio: MAE", f"{SEL} minus rat
                      "share_of_resamples_qm_better": [np.mean(np.array(d_mae) < 0), np.mean(np.array(d_log) < 0)]})
 
 # ---------- final maps for the app: refitted on the whole overlap (2012-2026) ----------
-# One table per overpass (D = day, N = night) and the daily-total table.
-# Above the last value in a table: last snpp_equivalent + (x - last value) * tail_ratio.
+# One table per overpass (D = day, N = night, all = daily total) and season (all year, Nov-Apr, May-Oct);
+# the selected model tells which tables to use. Above the last value in a table:
+# last snpp_equivalent + (x - last value) * tail_ratio.
 finals = []
-for part, (a, v) in {"D": ("Aqua_D", "SNPP_D"), "N": ("Aqua_N", "SNPP_N"), "all": ("Aqua", "SNPP")}.items():
-    tab, tail_ratio = fit_qm(daily[a], daily[v])
-    f = tab.rename("snpp_equivalent").rename_axis("aqua_daily_hotspots").reset_index()
-    f.insert(0, "overpass", part)
-    f["tail_ratio"] = tail_ratio
-    finals.append(f)
+for season, mask in {"all_year": slice(None), "nov_apr": daily.fire_season, "may_oct": ~daily.fire_season}.items():
+    dd = daily[mask]
+    for part, (a, v) in {"D": ("X_D", "SNPP_D"), "N": ("X_N", "SNPP_N"), "all": ("X", "SNPP")}.items():
+        tab, tail_ratio = fit_qm(dd[a], dd[v])
+        f = tab.rename("snpp_equivalent").rename_axis("source_daily_hotspots").reset_index()
+        f.insert(0, "overpass", part)
+        f.insert(0, "season", season)
+        f.insert(0, "source", SRC)
+        f["tail_ratio"] = tail_ratio
+        finals.append(f)
 final = pd.concat(finals)
+final["selected_model"] = SEL
 final["fitted_on"] = f"{START} to {END}"
 
 # ---------- save ----------
-res.round(3).to_csv(out / "aqua_snpp_test_metrics.csv", index=False)
-boot.round(3).to_csv(out / "aqua_snpp_bootstrap_qm_vs_ratio.csv", index=False)
-pred.round(1).to_csv(out / "aqua_snpp_test_monthly_predictions.csv", index=False)
-band.round(4).rename_axis("method").to_csv(out / "aqua_snpp_band_loyo.csv")
-loyo_summary.round(3).to_csv(out / "aqua_snpp_loyo_2012_2019_metrics.csv")
-final.round(3).to_csv(out / "aqua_snpp_qm_tables_final.csv", index=False)
+res.round(3).to_csv(out / f"{PFX}_test_metrics.csv", index=False)
+res_period.round(3).to_csv(out / f"{PFX}_test_metrics_by_period.csv", index=False)
+boot.round(3).to_csv(out / f"{PFX}_bootstrap_qm_vs_ratio.csv", index=False)
+pred.round(1).to_csv(out / f"{PFX}_test_monthly_predictions.csv", index=False)
+band.round(4).rename_axis("method").to_csv(out / f"{PFX}_band_loyo.csv")
+loyo_summary.round(3).to_csv(out / f"{PFX}_loyo_2012_2019_metrics.csv")
+final.round(3).to_csv(out / f"{PFX}_qm_tables_final.csv", index=False)
 
 # ---------- figure ----------
 fig = plt.figure(figsize=(14, 8.2))
@@ -245,12 +275,12 @@ t = pd.to_datetime(pred.month)
 ax.fill_between(t, pred[SEL + "_low"], pred[SEL + "_high"], color="#2f9e44", alpha=.18, lw=0,
                 label="Quantile mapping, 80 % band")
 ax.plot(t, pred.snpp_observed, color="#d9480f", lw=1.8, label="Suomi NPP observed (hidden)")
-ax.plot(t, pred[SEL], color="#2f9e44", lw=1.3, label="Quantile mapping from Aqua")
-ax.plot(t, pred.ratio, color="#7048e8", lw=1, ls="--", label="Simple ratio from Aqua")
-ax.plot(t, pred.raw, color="#1c7ed6", lw=1, alpha=.8, label="Raw Aqua (no harmonization)")
+ax.plot(t, pred[SEL], color="#2f9e44", lw=1.3, label=f"Quantile mapping from {SRC}")
+ax.plot(t, pred.ratio, color="#7048e8", lw=1, ls="--", label=f"Simple ratio from {SRC}")
+ax.plot(t, pred.raw, color="#1c7ed6", lw=1, alpha=.8, label=f"Raw {SRC} (no harmonization)")
 ax.set_yscale("symlog", linthresh=10)
 ax.set_ylabel("Hotspots per month (symlog)")
-ax.set_title("Biobío, hidden years 2020-2026: reconstructing Suomi NPP from MODIS Aqua (fitted on 2012-2019 only)")
+ax.set_title(f"Biobío, hidden years 2020-2026: reconstructing Suomi NPP from MODIS {SRC} (fitted on 2012-2019 only)")
 ax.legend(frameon=False, ncol=3, fontsize=9, loc="upper right")
 ax.grid(alpha=.3)
 
@@ -266,14 +296,14 @@ ax2.legend(frameon=False, fontsize=8); ax2.grid(alpha=.3, which="both")
 
 ax3 = fig.add_subplot(gs[1, 1])
 xs = np.arange(0, 121)
-k = train_days.SNPP.sum() / train_days.Aqua.sum()
-ax3.plot(xs, apply_qm(fit_qm(train_days.Aqua_D, train_days.SNPP_D), xs), color="#2f9e44", lw=1.6,
+k = train_days.SNPP.sum() / train_days.X.sum()
+ax3.plot(xs, apply_qm(fit_qm(train_days.X_D, train_days.SNPP_D), xs), color="#2f9e44", lw=1.6,
          label="Quantile map, day overpass")
-ax3.plot(xs, apply_qm(fit_qm(train_days.Aqua_N, train_days.SNPP_N), xs), color="#2f9e44", lw=1.6, ls=":",
+ax3.plot(xs, apply_qm(fit_qm(train_days.X_N, train_days.SNPP_N), xs), color="#2f9e44", lw=1.6, ls=":",
          label="Quantile map, night overpass")
 ax3.plot(xs, xs * k, color="#7048e8", lw=1, ls="--", label=f"Ratio k = {k:.2f}")
-ax3.set_xlabel("Aqua hotspots in one day"); ax3.set_ylabel("Suomi NPP-equivalent")
-ax3.set_title("The map learned on 2012-2019")
+ax3.set_xlabel(f"{SRC} hotspots in one day"); ax3.set_ylabel("Suomi NPP-equivalent")
+ax3.set_title("Day/night maps learned on 2012-2019 (all seasons)")
 ax3.legend(frameon=False, fontsize=8); ax3.grid(alpha=.3)
 
 ax4 = fig.add_subplot(gs[1, 2]); ax4.axis("off")
@@ -289,11 +319,12 @@ ax4.text(0, 1, txt, family="monospace", fontsize=9.5, va="top")
 fig.text(0.01, 0.005, "Standard FIRMS data, type 0, low confidence removed. Biobío = approximate box "
          "(0.1-degree cells). Data: NASA FIRMS.", fontsize=8, color="#666")
 fig.tight_layout(rect=(0, 0.02, 1, 1))
-fig.savefig(out / "fig02_biobio_qm_hidden_years.png", dpi=150)
+fig.savefig(out / f"{FIG}_biobio_qm_{SRC.lower()}_hidden_years.png", dpi=150)
 
 pd.set_option("display.width", 250)
 print(res.round(3).to_string(index=False))
 print(boot.round(3).to_string(index=False))
+print(res_period[res_period.method.isin(["raw", "ratio", SEL])].round(3).to_string(index=False))
 print(band.round(3))
 print("Leave-one-year-out inside 2012-2019:"); print(loyo_summary.round(3))
-print(f"selected on training years: {SEL}; ratio k (train) = {k:.3f}")
+print(f"{SRC}: selected on training years: {SEL}; ratio k (train) = {k:.3f}")

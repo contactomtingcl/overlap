@@ -1,4 +1,4 @@
-month,aqua,snpp_observed,raw,raw_low,raw_high,ratio,ratio_low,ratio_high,qm_daily,qm_daily_low,qm_daily_high,qm_daynight,qm_daynight_low,qm_daynight_high,qm_monthly,qm_monthly_low,qm_monthly_high,qm_season,qm_season_low,qm_season_high,qm_season_daynight,qm_season_daynight_low,qm_season_daynight_high
+month,source,snpp_observed,raw,raw_low,raw_high,ratio,ratio_low,ratio_high,qm_daily,qm_daily_low,qm_daily_high,qm_daynight,qm_daynight_low,qm_daynight_high,qm_monthly,qm_monthly_low,qm_monthly_high,qm_season,qm_season_low,qm_season_high,qm_season_daynight,qm_season_daynight_low,qm_season_daynight_high
 2020-01,285,1670,285.0,950.3,2276.0,1253.5,944.9,2461.7,1209.4,661.2,1635.0,1623.1,809.8,1957.9,1184.3,851.1,1924.2,1281.3,819.6,1757.6,1603.2,795.7,1944.8
 2020-02,240,1583,240.0,800.6,1917.7,1055.6,795.7,2073.2,1032.1,564.2,1395.4,1514.7,755.6,1827.2,925.0,664.7,1503.0,1102.4,705.1,1512.4,1466.5,727.8,1779.0
 2020-03,346,1882,346.0,1153.2,2761.6,1521.8,1147.2,2988.4,1453.5,794.7,1965.0,1664.1,830.2,2007.3,1343.0,965.1,2181.9,1531.4,979.6,2100.8,1641.3,814.6,1991.0

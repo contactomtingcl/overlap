@@ -1,0 +1,8 @@
+method,label,selected,months,MAE,RMSE,total_bias_pct,mean_abs_log_error,typical_factor_error,months_within_factor_1.5_pct,spearman,band80_coverage_pct,annual_mean_abs_pct_error,MAE_quiet_months(<100),MAE_busy_months(>=100)
+raw,No harmonization (raw Terra),False,79,994.418,2689.938,-90.413,2.622,11.294,0.0,0.882,74.684,91.524,31.125,1102.958
+ratio,Simple ratio,False,79,648.985,2638.054,27.827,0.706,1.603,35.443,0.882,78.481,23.259,15.167,720.401
+qm_daily,"Quantile mapping, daily",False,79,416.827,1003.092,12.146,0.616,1.664,37.975,0.881,72.152,21.61,71.772,455.706
+qm_daynight,"Quantile mapping, daily, day and night separately",False,79,403.344,911.341,8.124,0.652,1.545,45.57,0.863,69.62,20.058,89.762,438.677
+qm_monthly,"Quantile mapping, monthly totals",False,79,555.348,1414.549,26.592,0.608,1.605,48.101,0.882,73.418,28.822,32.808,614.226
+qm_season,"Quantile mapping, daily, by season (Nov-Apr / May-Oct)",False,79,378.238,759.565,7.671,0.606,1.651,43.038,0.879,70.886,19.116,50.419,415.176
+qm_season_daynight,"Quantile mapping, daily, by season and day/night",True,79,406.504,1036.933,8.509,0.608,1.548,45.57,0.873,69.62,18.712,55.328,446.073
