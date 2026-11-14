@@ -2,8 +2,8 @@
 """Clean the near real-time (NRT) FIRMS files for the most recent months (provisional data).
 
 NRT files have no `type` column, so volcanoes and static sources cannot be dropped directly.
-Instead we mask ~1 km cells (0.01 degree) where the standard archive flagged a volcano or a static
-land source (type 1 or 2) in at least 2 different years. Low confidence is dropped as in 02.
+Instead we mask ~1 km cells (0.01 degree) where the standard archive ever flagged a volcano or a
+static land source (type 1 or 2), plus their 8 neighbouring cells (geolocation can shift by ~1 km). Low confidence is dropped as in 02.
 Usage: python3 pipeline/02b_clean_nrt.py data/raw <out_dir>
 """
 import sys
@@ -25,9 +25,8 @@ std = pd.concat([pd.read_csv(f, usecols=["latitude", "longitude", "acq_date", "t
                  for f in sorted(raw_dir.glob("*/fire_archive_*.csv"))])
 static = std[std["type"].isin([1, 2])].copy()
 static["cell"] = cell(static.latitude, static.longitude)
-static["year"] = static.acq_date.str[:4]
-years = static.groupby("cell")["year"].nunique()
-mask = set(years[years >= 2].index)
+base = {tuple(map(int, c.split("_"))) for c in static["cell"].unique()}
+mask = {f"{i + di}_{j + dj}" for i, j in base for di in (-1, 0, 1) for dj in (-1, 0, 1)}
 print(f"Static/volcano mask: {len(mask):,} cells of ~1 km")
 
 nrt = pd.concat([pd.read_csv(f, dtype={"acq_time": str, "confidence": str, "version": str})

@@ -26,7 +26,8 @@ Raw files are not committed (76 MB). To reproduce, download the requests above a
 
 - Suomi NPP new observations ceased on November 2, 2026 (historical data remains available).
 - The `type` column exists only in standard files, for both MODIS and VIIRS.
-- Biobío is currently an approximate bounding box (lat −38.50 to −36.45, lon −73.95 to −70.95); it will be replaced by the official regional boundary.
+- Areas are the 16 regions from the BCN commune boundaries ("División comunal", Biblioteca del Congreso Nacional de Chile; free use citing BCN; referential limits, not official, DFL-83 of 1979), converted to WGS84 and simplified 3 % with mapshaper. The "historical Biobío" area (Biobío + Ñuble) matches the CONAF validation file.
+- Near real-time months over the Atacama desert (regions 15, 1, 2, 3) are withheld: they hold many daytime, low-FRP detections that are absent from the science-quality record.
 
 ## CONAF fire records (validation)
 
