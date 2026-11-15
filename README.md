@@ -58,7 +58,7 @@ Normal is the median of the same calendar month over the seasons 2000–01 to 20
 
 ## Beyond the calendar (what the harmonized record makes possible)
 
-- **Season clock** (`pipeline/17`): start (10 %), busiest month and end (90 %) of every fire season, with Theil-Sen trends and the Mann-Kendall test. A shift counts as confirmed only if it also appears in the VIIRS-only seasons. Example: in O'Higgins the busiest month moved from autumn to summer (about 59 days earlier per decade, confirmed in VIIRS-only years); the cause is not established (agricultural burning practices are one hypothesis).
+- **Season clock** (`pipeline/17`): start (10 %), busiest moment (centre of the busiest 31 days) and end (90 %) of every fire season, with Theil-Sen trends and the Mann-Kendall test. In the app every season bar can be hovered or tapped to read that season's story (dates, length against a typical season, rank, monthly bars) and open the days of its busiest month. A shift counts as confirmed only if it also appears in the VIIRS-only seasons. Example: in O'Higgins the busiest month moved from autumn to summer (about 59 days earlier per decade, confirmed in VIIRS-only years); the cause is not established (agricultural burning practices are one hypothesis).
 - **Scenarios, not forecasts**: the current season plus what each past season added afterwards gives a 10–90 % band for the end of the season. We checked whether the start of a season anticipates the rest (`pipeline/16`): in the fire regions it does not, so the app says so.
 
 ## Known limitations

@@ -74,13 +74,24 @@ const I18N = {
     dialLg: ["each wedge: share of the season's hotspots in that month", "now: seasons 2012–13 to 2025–26 (VIIRS)", "before: seasons 2001–02 to 2011–12 (estimated from MODIS)", "hand = busiest month"],
     clock_h: "Season clock: is the fire season shifting?",
     clockIntro: "When in the year do the hotspots happen, and has that changed? The dial is the year: January at 1 o'clock, December at 12. Climate cycles such as El Niño can create or hide an apparent shift over 25 seasons; trends are not adjusted for them yet.",
-    clockSub: "Each bar is one fire season: it starts when 10% of its hotspots have occurred, ends at 90%, and the dot marks the busiest month. Trends use Theil-Sen slopes and the Mann-Kendall test over 25 seasons; a shift counts as confirmed only if it also appears in the VIIRS-only seasons (2012–13 to 2025–26). Hotspot seasons include agricultural burning.",
+    clockSub: "Each bar is one fire season: it starts when 10% of its hotspots have occurred, ends at 90%, and the dot marks the centre of its busiest 31 days. Trends use Theil-Sen slopes and the Mann-Kendall test over 25 seasons; a shift counts as confirmed only if it also appears in the VIIRS-only seasons (2012–13 to 2025–26). Hotspot seasons include agricultural burning.",
     clockDesert: "Not shown for the Atacama desert regions: their hotspots include persistent false detections, so the season shape is not meaningful.",
-    clockMetric: { onset: "Start (10%)", peak: "Busiest month", end: "End (90%)", length: "Length" },
+    clockMetric: { onset: "Start (when 10% of hotspots have occurred)", peak: "Busiest moment", end: "End (when 90% have occurred)", length: "Length" },
+    clockRange: (k, lo, hi) => { const w = (v) => k === "length" ? `${Math.round(Math.abs(v))} days ${v < 0 ? "shorter" : "longer"}` : `${Math.round(Math.abs(v))} days ${v < 0 ? "earlier" : "later"}`;
+      return lo < 0 && hi > 0 ? `the trend could be anything from ${w(lo)} to ${w(hi)} per decade; since that includes zero, no change can be claimed` : `between ${w(lo)} and ${w(hi)} per decade`; },
+    clockP: (p) => `Mann-Kendall test: p = ${p}`,
+    clockHint: "Hover or tap a bar to see that season's story.",
+    cd: { title: (s) => `Season ${s}`, top: "the most active in 25 seasons", last: "the latest complete season",
+      body: (a, b, n, pk, tot) => `Most of its hotspots (from 10% to 90%) happened between <b>${a}</b> and <b>${b}</b>: <b>${n} days</b>. Its busiest 31 days were centred around <b>${pk}</b>. In total, <b>${tot}</b> hotspots on the VIIRS scale.`,
+      typical: (a, b, n) => `A typical season here runs from ${a} to ${b} (${n} days).`,
+      len: (d) => Math.abs(d) < 5 ? "Its length was close to typical." : `It was <b>${Math.abs(d)} days ${d < 0 ? "shorter" : "longer"}</b> than typical.`,
+      rank: (r, n) => `Rank ${r} of ${n} by total hotspots.`,
+      mini: "Hotspots per month in that season · band = from 10% to 90% of its hotspots",
+      go: "See the days of its busiest month", ann: ["start 10%", "busiest", "end 90%"] },
     clockVal: (k, v) => k === "length" ? `${Math.abs(v)} days ${v < 0 ? "shorter" : "longer"} per decade` : `${Math.abs(v)} days ${v < 0 ? "earlier" : "later"} per decade`,
     clockV: { robust: "confirmed in VIIRS-only years", possible: "possible, not confirmed in VIIRS-only years", none: "no clear change" },
     clockCI: (a, b, p) => `95% CI ${a} to ${b} · p = ${p}`,
-    clockLg: ["season, start to end (colour = total hotspots)", "busiest month", "trend of the busiest month"],
+    clockLg: ["season, from 10% to 90% of its hotspots (colour = total hotspots)", "centre of its busiest 31 days", "trend of the busiest moment"],
     clockMulti: "With 16 regions and 4 measures, a few apparent trends are expected by chance; the VIIRS-only check filters most of them.",
     scen: (v, a, b) => `If the rest of the season is like past seasons: about ${v} hotspots by June (${a}–${b}). A scenario, not a forecast.`,
     scenLg: "scenarios: the rest of the season like past seasons (10–90%)",
@@ -242,13 +253,24 @@ const I18N = {
     dialLg: ["cada sector: parte de los focos de la temporada en ese mes", "ahora: temporadas 2012–13 a 2025–26 (VIIRS)", "antes: temporadas 2001–02 a 2011–12 (estimado desde MODIS)", "aguja = mes con más focos"],
     clock_h: "Reloj de la temporada: ¿se está desplazando la temporada de incendios?",
     clockIntro: "¿En qué momento del año ocurren los focos, y ha cambiado eso? El reloj es el año: enero a la 1, diciembre a las 12. Ciclos climáticos como El Niño pueden crear u ocultar un desplazamiento aparente en 25 temporadas; las tendencias aún no se ajustan por ellos.",
-    clockSub: "Cada barra es una temporada: empieza cuando ocurrió el 10 % de sus focos, termina al 90 %, y el punto marca el mes con más focos. Las tendencias usan pendientes de Theil-Sen y la prueba de Mann-Kendall sobre 25 temporadas; un desplazamiento se considera confirmado solo si también aparece en las temporadas solo VIIRS (2012–13 a 2025–26). Las temporadas de focos incluyen las quemas agrícolas.",
+    clockSub: "Cada barra es una temporada: empieza cuando ya ocurrió el 10 % de sus focos, termina al 90 %, y el punto marca el centro de sus 31 días con más focos. Las tendencias usan pendientes de Theil-Sen y la prueba de Mann-Kendall sobre 25 temporadas; un desplazamiento se considera confirmado solo si también aparece en las temporadas solo VIIRS (2012–13 a 2025–26). Las temporadas de focos incluyen las quemas agrícolas.",
     clockDesert: "No se muestra para las regiones del desierto de Atacama: sus focos incluyen focos falsos persistentes, así que la forma de la temporada no tiene sentido.",
-    clockMetric: { onset: "Inicio (10 %)", peak: "Mes con más focos", end: "Fin (90 %)", length: "Duración" },
+    clockMetric: { onset: "Inicio (cuando ya ocurrió el 10 % de los focos)", peak: "Momento de más focos", end: "Fin (cuando ya ocurrió el 90 %)", length: "Duración" },
+    clockRange: (k, lo, hi) => { const w = (v) => k === "length" ? `${Math.round(Math.abs(v))} días ${v < 0 ? "más corta" : "más larga"}` : `${Math.round(Math.abs(v))} días ${v < 0 ? "antes" : "después"}`;
+      return lo < 0 && hi > 0 ? `la tendencia podría ir de ${w(lo)} a ${w(hi)} por década; como incluye el cero, no se puede afirmar un cambio` : `entre ${w(lo)} y ${w(hi)} por década`; },
+    clockP: (p) => `prueba de Mann-Kendall: p = ${p}`,
+    clockHint: "Pasa el cursor o toca una barra para ver la historia de esa temporada.",
+    cd: { title: (s) => `Temporada ${s}`, top: "la más activa en 25 temporadas", last: "la última temporada completa",
+      body: (a, b, n, pk, tot) => `La mayoría de sus focos (del 10 % al 90 %) ocurrió entre el <b>${a}</b> y el <b>${b}</b>: <b>${n} días</b>. Sus 31 días con más focos se centran alrededor del <b>${pk}</b>. En total, <b>${tot}</b> focos en escala VIIRS.`,
+      typical: (a, b, n) => `Una temporada típica aquí va del ${a} al ${b} (${n} días).`,
+      len: (d) => Math.abs(d) < 5 ? "Su duración fue cercana a lo típico." : `Duró <b>${Math.abs(d)} días ${d < 0 ? "menos" : "más"}</b> que lo típico.`,
+      rank: (r, n) => `Puesto ${r} de ${n} por total de focos.`,
+      mini: "Focos por mes en esa temporada · franja = del 10 % al 90 % de sus focos",
+      go: "Ver los días de su mes con más focos", ann: ["inicio 10 %", "más focos", "fin 90 %"] },
     clockVal: (k, v) => k === "length" ? `${dec(Math.abs(v), 1)} días ${v < 0 ? "más corta" : "más larga"} por década` : `${dec(Math.abs(v), 1)} días ${v < 0 ? "antes" : "después"} por década`,
     clockV: { robust: "confirmado en los años solo VIIRS", possible: "posible, no confirmado en los años solo VIIRS", none: "sin cambio claro" },
     clockCI: (a, b, p) => `IC 95 % ${a} a ${b} · p = ${p}`,
-    clockLg: ["temporada, de inicio a fin (color = total de focos)", "mes con más focos", "tendencia del mes con más focos"],
+    clockLg: ["temporada, del 10 % al 90 % de sus focos (color = total de focos)", "centro de sus 31 días con más focos", "tendencia del momento de más focos"],
     clockMulti: "Con 16 regiones y 4 medidas, se esperan algunas tendencias aparentes por azar; la prueba con los años solo VIIRS filtra la mayoría.",
     scen: (v, a, b) => `Si el resto de la temporada fuera como las anteriores: cerca de ${v} focos a junio (${a}–${b}). Es un escenario, no un pronóstico.`,
     scenLg: "escenarios: el resto de la temporada como las anteriores (10–90 %)",
@@ -1137,32 +1159,45 @@ function renderClock() {
   card.hidden = false;
   $("clock-sub").textContent = desert ? T.clockDesert : T.clockIntro;
   $("clock-tech").textContent = desert ? "" : T.clockSub;
-  if (desert) { $("clock-chips").innerHTML = $("clock").innerHTML = $("clock-legend").innerHTML = $("dial").innerHTML = $("clock-plain").innerHTML = $("dial-legend").innerHTML = ""; return; }
+  if (desert) { $("clock-chips").innerHTML = $("clock").innerHTML = $("clock-legend").innerHTML = $("dial").innerHTML = $("clock-plain").innerHTML = $("dial-legend").innerHTML = $("clock-detail").innerHTML = ""; return; }
   renderDial();
   const col = { robust: "var(--high)", possible: "var(--ink)", none: "var(--quiet)" };
   $("clock-chips").innerHTML = ["onset", "peak", "end", "length"].map((k) => {
     const t = C.trend[k], v = clockVerdict(t, C.trend_viirs[k]);
-    return `<div class="chip">${T.clockMetric[k]}<b style="color:${col[v]}">${v === "none" || !t ? T.clockV.none : T.clockVal(k, t.per_decade)}</b>${t ? `${v === "none" ? "" : T.clockV[v] + "<br>"}${T.clockCI(dec(t.lo, 1), dec(t.hi, 1), dec(t.p, 3))}` : ""}</div>`;
+    return `<div class="chip">${T.clockMetric[k]}<b style="color:${col[v]}">${v === "none" || !t ? T.clockV.none : T.clockVal(k, t.per_decade)}</b>${t ? `${v === "none" ? "" : T.clockV[v] + "<br>"}${T.clockRange(k, t.lo, t.hi)}<small class="pv">${T.clockP(dec(t.p, 3))}</small>` : ""}</div>`;
   }).join("");
-  const S = C.seasons, W = Math.max(340, Math.min(1100, $("clock").clientWidth || 900)), l = W < 600 ? 40 : 64, r = 14, top = 22, rh = W < 600 ? 10 : 12;
+  const S = C.seasons, W = Math.max(300, Math.min(1100, $("clock").clientWidth || 900)), l = W < 600 ? 40 : 64, r = 14, top = 30, rh = W < 600 ? 14 : 17;
   const H = top + S.length * rh + 8, x = (d) => l + (d / 365) * (W - l - r);
   const maxT = Math.max(...S.map((s) => s.total)), minT = Math.min(...S.map((s) => s.total)) * 0.8;
   const starts = [0, 31, 62, 92, 123, 153, 184, 215, 243, 274, 304, 335], mlab = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
   let g = starts.map((d, i) => `<line x1="${x(d)}" x2="${x(d)}" y1="${top - 4}" y2="${H - 6}" stroke="rgba(140,180,255,.10)"/><text x="${x(d + 15)}" y="12" text-anchor="middle" font-size="10.5" fill="#8fa6cc">${W < 600 ? T.months[mlab[i]][0].toUpperCase() : T.months[mlab[i]]}</text>`).join("");
   S.forEach((s, i) => {
-    const y = top + i * rh;
-    if (W >= 600 || s.season % 5 === 0) g += `<text x="${l - 6}" y="${y + rh / 2 + 3.5}" text-anchor="end" font-size="10" fill="#8fa6cc">${W < 600 ? String(s.season).slice(2) : `${s.season}–${String(s.season + 1).slice(2)}`}</text>`;
-    g += `<rect x="${x(s.onset)}" y="${y + 2}" width="${Math.max(2, x(s.end) - x(s.onset))}" height="${rh - 4}" rx="${(rh - 4) / 2}" fill="${colour(s.total, maxT, minT)}"><title>${s.season}–${String(s.season + 1).slice(2)}</title></rect>`
-      + `<circle cx="${x(s.peak)}" cy="${y + rh / 2}" r="${rh / 2 - 1.5}" fill="#eaff28" stroke="#071536" stroke-width="1"/>`;
+    const y = top + i * rh, bh = rh - 6;
+    g += `<g class="crow" data-i="${i}" tabindex="0" role="button" aria-label="${T.cd.title(`${s.season}–${String(s.season + 1).slice(2)}`)}">`
+      + `<rect class="chit" x="0" y="${y}" width="${W}" height="${rh}" rx="4"/>`
+      + `<text class="clab" x="${l - 6}" y="${y + rh / 2 + 3.5}" text-anchor="end" font-size="10.5">${W < 600 ? String(s.season).slice(2) : `${s.season}–${String(s.season + 1).slice(2)}`}</text>`
+      + `<rect class="cbar" x="${x(s.onset)}" y="${y + 3}" width="${Math.max(3, x(s.end) - x(s.onset))}" height="${bh}" rx="${bh / 2}" fill="${colour(s.total, maxT, minT)}"/>`
+      + `<circle cx="${x(s.peak)}" cy="${y + rh / 2}" r="${bh / 2 + 0.5}" fill="#eaff28" stroke="#071536" stroke-width="1.2"/></g>`;
   });
   const tp = C.trend.peak;
   if (tp && clockVerdict(tp, C.trend_viirs.peak) !== "none") {
     const s0 = S[0].season, s1 = S.at(-1).season, med = (arr) => { const a = [...arr].sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
     const b = med(S.map((s) => s.peak - (tp.per_decade / 10) * (s.season - s0)));
     const yAt = (ss) => top + (ss - s0) * rh + rh / 2;
-    g += `<line x1="${x(b)}" y1="${yAt(s0)}" x2="${x(b + (tp.per_decade / 10) * (s1 - s0))}" y2="${yAt(s1)}" stroke="#eaff28" stroke-width="2" stroke-dasharray="6 4" opacity=".9"/>`;
+    g += `<line x1="${x(b)}" y1="${yAt(s0)}" x2="${x(b + (tp.per_decade / 10) * (s1 - s0))}" y2="${yAt(s1)}" stroke="#eaff28" stroke-width="2" stroke-dasharray="6 4" opacity=".9" pointer-events="none"/>`;
   }
-  $("clock").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.clock_h}">${g}</svg>`;
+  $("clock").innerHTML = `<p class="chint"><span class="pulse"></span>${T.clockHint}</p><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-label="${T.clock_h}">${g}<g id="cann" pointer-events="none"></g></svg>`;
+  state.clockGeo = { S, x, top, rh, W, l };
+  if (state.clockSel == null || state.clockSel >= S.length || state.clockAoi !== state.aoi) { state.clockSel = S.length - 1; state.clockAoi = state.aoi; }
+  $("clock").querySelectorAll(".crow").forEach((el) => {
+    const i = +el.dataset.i;
+    el.addEventListener("mouseenter", () => focusSeason(i));
+    el.addEventListener("mouseleave", () => focusSeason(state.clockSel));
+    el.addEventListener("click", () => { state.clockSel = i; $("clock").classList.add("used"); focusSeason(i); });
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.dispatchEvent(new Event("click")); } });
+    el.addEventListener("focus", () => focusSeason(i));
+  });
+  focusSeason(state.clockSel);
   $("clock-legend").innerHTML = `<span><i class="sw" style="background:linear-gradient(90deg,${RAMP.join(",")});border:0;border-radius:6px;width:28px"></i>${T.clockLg[0]}</span>`
     + `<span><i class="sw" style="background:#eaff28;border-radius:50%;border:0"></i>${T.clockLg[1]}</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(90deg,#eaff28 0 6px,transparent 6px 10px);border:0;height:3px;vertical-align:3px"></i>${T.clockLg[2]}</span>`
@@ -1170,6 +1205,47 @@ function renderClock() {
 }
 
 // ---------- 2012 jump ----------
+// One season, explained: highlight its row, label its start, busiest moment and end, and tell its story beside the chart.
+const seasonDate = (season, d) => { const t = new Date(Date.UTC(season, 6, 1) + d * 864e5); return [t.getUTCDate(), t.getUTCMonth(), t.getUTCFullYear()]; };
+function focusSeason(i) {
+  const G = state.clockGeo; if (!G) return;
+  const T = L(), S = G.S, s = S[i]; if (!s) return;
+  $("clock").querySelectorAll(".crow").forEach((el) => { el.classList.toggle("act", +el.dataset.i === i); el.classList.toggle("sel", +el.dataset.i === state.clockSel); });
+  $("clock").querySelector("svg").classList.add("focus");
+  // labels over the active bar
+  // start and end above the bar, the busiest moment below it, so the three never overlap
+  const y = G.top + i * G.rh, lab = (px, txt, anchor, below) => { const w = txt.length * 5.6 + 10, x0 = Math.max(0, Math.min(G.W - w, anchor === "start" ? px : anchor === "end" ? px - w : px - w / 2)), yy = below ? y + G.rh + 1 : y - 15;
+    return `<g class="ann${below ? " pk" : ""}"><rect x="${x0}" y="${yy}" width="${w}" height="14" rx="7"/><text x="${x0 + w / 2}" y="${yy + 10}" text-anchor="middle">${txt}</text></g>`; };
+  const xs = G.x(s.onset), xe = G.x(s.end), xp = G.x(s.peak), A = T.cd.ann;
+  const tight = xe - xs < 150;
+  $("cann").innerHTML = lab(xs, A[0], tight ? "end" : "start") + lab(xe, A[2], tight ? "start" : "end") + lab(xp, A[1], "middle", true);
+  // the story
+  const fmtD = (d) => { const [dd, mm] = seasonDate(s.season, d); return T.dx.thru(dd, T.monthsLong[mm]); };
+  const med = (k) => { const a = S.map((q) => q[k]).sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
+  const typ = (d) => { const [dd, mm] = seasonDate(2001, d); return T.dx.thru(dd, T.monthsLong[mm]); };
+  const ranked = [...S].sort((a, b) => b.total - a.total), rank = ranked.indexOf(s) + 1;
+  const name = `${s.season}–${String(s.season + 1).slice(2)}`;
+  const tag = rank === 1 ? T.cd.top : i === S.length - 1 ? T.cd.last : "";
+  // monthly bars of that season, with the 10-90 % band
+  const by = new Map(state.data.months.map((r) => [r.month, r]));
+  const vals = Array.from({ length: 12 }, (_, k) => { const mm = ((6 + k) % 12) + 1, yy = k < 6 ? s.season : s.season + 1; const r = by.get(`${yy}-${String(mm).padStart(2, "0")}`); return r && r.value != null ? r.value : 0; });
+  const vmax = Math.max(1, ...vals), MW = 320, MH = 92, starts = [0, 31, 62, 92, 123, 153, 184, 215, 243, 274, 304, 335, 365];
+  const mx = (d) => 4 + (d / 365) * (MW - 8);
+  const bars = vals.map((v, k) => `<rect x="${mx(starts[k]) + 1.5}" y="${MH - 16 - (v / vmax) * (MH - 30)}" width="${mx(starts[k + 1]) - mx(starts[k]) - 3}" height="${Math.max(1.5, (v / vmax) * (MH - 30))}" rx="2.5" fill="${v ? colour(v, vmax) : "#10203d"}"><title>${T.months[(6 + k) % 12]}: ${fmt(v)}</title></rect>`
+    + `<text x="${(mx(starts[k]) + mx(starts[k + 1])) / 2}" y="${MH - 3}" text-anchor="middle" font-size="9.5" fill="#8fa6cc">${T.months[(6 + k) % 12][0].toUpperCase()}</text>`).join("");
+  const kMax = vals.indexOf(Math.max(...vals)), [, pm, py] = seasonDate(s.season, starts[kMax] + 5);
+  state.clockGo = `${py}-${String(pm + 1).padStart(2, "0")}`;
+  $("clock-detail").innerHTML = `<div class="cd-in">
+    <div class="cd-k">${tag ? `<span class="cd-tag">${tag}</span>` : ""}</div>
+    <h3>${T.cd.title(name)}</h3>
+    <p>${T.cd.body(fmtD(s.onset), fmtD(s.end), s.end - s.onset, fmtD(s.peak), fmt(s.total))}</p>
+    <p class="cd-q">${T.cd.typical(typ(med("onset")), typ(med("end")), med("end") - med("onset"))} ${T.cd.len((s.end - s.onset) - (med("end") - med("onset")))} ${T.cd.rank(rank, S.length)}</p>
+    <svg viewBox="0 0 ${MW} ${MH}" class="cd-mini" aria-hidden="true"><rect x="${mx(s.onset)}" y="4" width="${Math.max(2, mx(s.end) - mx(s.onset))}" height="${MH - 18}" rx="4" fill="rgba(234,255,40,.08)" stroke="rgba(234,255,40,.45)" stroke-dasharray="3 3"/>${bars}</svg>
+    <p class="cd-cap">${T.cd.mini}</p>
+    <button type="button" class="cd-go" id="cd-go">${T.cd.go} ↓</button></div>`;
+  $("cd-go").onclick = () => { if (state.data.months.some((r) => r.month === state.clockGo)) showMonth(state.clockGo); };
+}
+
 function renderJump() {
   const T = L(), S = seasonTotals();
   const ok = state.data.trust.filter((t) => t.validated);
@@ -1358,6 +1434,9 @@ function render(animate) {
   renderStatus(); paintMap(); renderSeason(); renderClock(); renderCalendar(animate); renderJump(); renderK(); renderMethod(); renderTrust();
   state.animNext = false; state.chartAnim = false;
 }
+
+// The season chart is measured when its section opens, so it is drawn at its real width.
+document.querySelector("#clock-card details").addEventListener("toggle", (e) => { if (e.target.open && state.data) renderClock(); });
 
 // The chapter menu marks the section you are reading.
 function spyNav() {
