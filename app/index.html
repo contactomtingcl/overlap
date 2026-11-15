@@ -241,6 +241,25 @@
   .bigfig b { display:block; font-family:var(--head); font-size:28px; color:var(--ink); }
   .bigfig .good b { color:var(--lime); text-shadow:0 0 14px rgba(234,255,40,.35); }
   /* day grid */
+  .conv { display:grid; grid-template-columns:minmax(0,1fr) minmax(120px,190px) minmax(0,1.15fr); gap:14px; align-items:stretch; margin:4px 0 18px; max-width:860px; }
+  .conv.one { grid-template-columns:minmax(0,440px); }
+  .cv { border-radius:14px; padding:14px 16px; border:1px solid var(--line); background:var(--card2); display:flex; flex-direction:column; gap:2px; animation:rise .7s cubic-bezier(.16,1,.3,1) both; }
+  .cv small { color:var(--quiet); font-size:12.5px; }
+  .cv b { font-family:var(--head); font-size:34px; line-height:1.1; letter-spacing:-.01em; }
+  .cv span { color:var(--quiet); font-size:13px; }
+  .cv.raw b { color:#c9d6ea; }
+  .cv.out { border-color:rgba(234,255,40,.45); background:linear-gradient(135deg, rgba(234,255,40,.10), rgba(18,38,80,.6)); box-shadow:0 0 34px rgba(234,255,40,.08); animation-delay:.25s; }
+  .cv.out b { color:var(--lime); }
+  .cv.arrow { background:none; border:0; padding:0 2px; justify-content:center; align-items:center; text-align:center; animation-delay:.12s; }
+  .cv.arrow span { font-size:12.5px; color:#c9d6ea; line-height:1.3; }
+  .cv.arrow small { font-size:12px; }
+  .cv.arrow i { position:relative; display:block; width:100%; height:3px; margin:9px 0; border-radius:3px; background:linear-gradient(90deg, rgba(140,180,255,.3), var(--lime)); }
+  .cv.arrow i::after { content:""; position:absolute; right:-3px; top:-5px; border-style:solid; border-width:6.5px 0 6.5px 10px; border-color:transparent transparent transparent var(--lime); }
+  .cv.arrow i::before { content:""; position:absolute; top:-2px; left:0; width:24px; height:7px; border-radius:4px; background:var(--lime); filter:blur(3px); animation:flow 1.9s linear infinite; }
+  @keyframes flow { 0% { left:0; opacity:0; } 20% { opacity:1; } 100% { left:calc(100% - 24px); opacity:0; } }
+  .daycap { margin:0 0 10px; font-size:13px; color:#c9d6ea; }
+  @media (max-width:640px) { .conv { grid-template-columns:minmax(0,1fr); } .cv.arrow i { width:3px; height:34px; margin:8px auto; background:linear-gradient(180deg, rgba(140,180,255,.3), var(--lime)); }
+    .cv.arrow i::after { right:auto; left:-5px; top:auto; bottom:-4px; border-width:10px 6.5px 0 6.5px; border-color:var(--lime) transparent transparent transparent; } .cv.arrow i::before { display:none; } }
   #day-grid { display:grid; grid-template-columns:repeat(7, minmax(34px, 64px)); gap:5px; }
   .day { border-radius:7px; height:44px; font-size:12px; padding:3px 6px; color:var(--ink); border:1px solid var(--line); }
   .day b { display:block; font-size:12.5px; }
@@ -369,6 +388,8 @@
   <section class="card" id="day-panel" hidden>
     <h2 id="day-title"></h2>
     <p class="sub" id="day-sub"></p>
+    <div id="day-conv"></div>
+    <p class="daycap" id="day-cap"></p>
     <div id="day-grid"></div>
     <div class="legend" id="day-legend"></div>
   </section>
@@ -421,6 +442,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261114-2120"></script>
+<script src="app.js?v=20261115-0910"></script>
 </body>
 </html>

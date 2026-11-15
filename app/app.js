@@ -150,6 +150,20 @@ const I18N = {
     daySub: (v, st, fd, n, top) => `${v} hotspots this month (${st}). Hotspots on ${fd} of ${n} days${top ? `; busiest day: ${top}` : ""}.`,
     dayTop: (mo, d, v) => `${mo} ${d} with ${v}`,
     dayRaw: (s) => ` Daily values are raw ${s} detections; only the monthly total is harmonized.`,
+    sat: { Terra: "MODIS Terra", Aqua: "MODIS Aqua", SNPP: "VIIRS Suomi NPP", NOAA20: "VIIRS NOAA-20" },
+    dx: {
+      estimated: (sat, raw, v, lo, hi) => `There was no VIIRS data yet that month. ${sat} has 1 km pixels and misses small fires: it saw ${raw} hotspots. To compare with today, Overlap estimates how many VIIRS Suomi NPP (375 m pixels) would have seen: about ${v}, probably between ${lo} and ${hi}.`,
+      partial: (raw, v, d) => `Month in progress, data through ${d}. Suomi NPP stopped sending data on Nov 2, so only its twin VIIRS NOAA-20 is available: it saw ${raw} hotspots, about ${v} on the Suomi NPP scale.`,
+      observed: (v) => `VIIRS Suomi NPP saw ${v} hotspots this month. It is Overlap's reference satellite, so this number is not converted.`,
+      prov: " Near real-time data: it may change slightly.",
+      top: (mo, d, v) => ` The busiest day was ${mo} ${d}, with ${v}.`,
+      none: " No day with hotspots.",
+      thru: (d, mo) => `${mo[0].toUpperCase() + mo.slice(1)} ${d}`,
+    },
+    cv: { saw: (s) => `What ${s} saw`, days: (fd, n) => `hotspots, on ${fd} of ${n} days`, arrow: "converted to the VIIRS Suomi NPP scale", factor: (f) => `≈ ×${f} this month`,
+      out: "Number comparable across years", range: (lo, hi) => `probably between ${lo} and ${hi}`, direct: "measured directly, no conversion" },
+    cap: { estimated: (sat, sum) => `Each day: hotspots ${sat} saw (they add up to ${sum}). Days show what the satellite saw; only the monthly total is converted.`,
+      observed: (sum) => `Each day: hotspots VIIRS Suomi NPP saw (they add up to ${sum}).`, partial: "Each day: VIIRS NOAA-20 hotspots on the Suomi NPP scale (approximate)." },
     dlg: ["hotspots detected (brighter, more yellow = more)", "observed, no hotspots", "no satellite record", "A day without hotspots can still hide fire under clouds or smoke."],
     dayTipNone: "no satellite record", dayTipHot: (v) => `${v} hotspots`,
     sources: { SNPP: "VIIRS Suomi NPP (observed)", NOAA20: "VIIRS NOAA-20 (scaled)", Aqua: "MODIS Aqua (scaled)", Terra: "MODIS Terra, morning orbit (scaled)" },
@@ -297,6 +311,20 @@ const I18N = {
     daySub: (v, st, fd, n, top) => `${v} focos de calor este mes (${st}). Hubo focos en ${fd} de ${n} días${top ? `; día con más focos: ${top}` : ""}.`,
     dayTop: (mo, d, v) => `${d} de ${mo}, con ${v}`,
     dayRaw: (s) => ` Los valores diarios son detecciones crudas de ${s}; solo el total mensual está armonizado.`,
+    sat: { Terra: "MODIS Terra", Aqua: "MODIS Aqua", SNPP: "VIIRS Suomi NPP", NOAA20: "VIIRS NOAA-20" },
+    dx: {
+      estimated: (sat, raw, v, lo, hi) => `Ese mes aún no había datos de VIIRS. ${sat} tiene píxeles de 1 km y no ve muchos fuegos pequeños: vio ${raw} focos. Para comparar con hoy, Overlap estima cuántos habría visto VIIRS Suomi NPP (píxeles de 375 m): unos ${v}, probablemente entre ${lo} y ${hi}.`,
+      partial: (raw, v, d) => `Mes en curso, datos hasta el ${d}. Suomi NPP dejó de enviar datos el 2 de noviembre, así que solo está su gemelo VIIRS NOAA-20: vio ${raw} focos, unos ${v} en la escala de Suomi NPP.`,
+      observed: (v) => `VIIRS Suomi NPP vio ${v} focos este mes. Es el satélite de referencia de Overlap, así que esta cifra no se convierte.`,
+      prov: " Son datos casi en tiempo real: pueden cambiar levemente.",
+      top: (mo, d, v) => ` El día con más focos fue el ${d} de ${mo}, con ${v}.`,
+      none: " Ningún día con focos.",
+      thru: (d, mo) => `${d} de ${mo}`,
+    },
+    cv: { saw: (s) => `Lo que vio ${s}`, days: (fd, n) => `focos, en ${fd} de ${n} días`, arrow: "convertido a la escala de VIIRS Suomi NPP", factor: (f) => `≈ ×${f} este mes`,
+      out: "Cifra comparable entre años", range: (lo, hi) => `probablemente entre ${lo} y ${hi}`, direct: "medido directo, sin conversión" },
+    cap: { estimated: (sat, sum) => `Cada día: focos que vio ${sat} (suman ${sum}). Los días muestran lo que vio el satélite; solo el total del mes se convierte.`,
+      observed: (sum) => `Cada día: focos que vio VIIRS Suomi NPP (suman ${sum}).`, partial: "Cada día: focos de VIIRS NOAA-20 llevados a la escala de Suomi NPP (aproximado)." },
     dlg: ["focos detectados (más claro y amarillo = más)", "observado, sin focos", "sin registro satelital", "Un día sin focos igual puede ocultar fuego bajo nubes o humo."],
     dayTipNone: "sin registro satelital", dayTipHot: (v) => `${v} focos de calor`,
     sources: { SNPP: "VIIRS Suomi NPP (observado)", NOAA20: "VIIRS NOAA-20 (escalado)", Aqua: "MODIS Aqua (escalado)", Terra: "MODIS Terra, órbita de la mañana (escalado)" },
@@ -1243,21 +1271,33 @@ async function showMonth(key, scroll = true) {
   const offset = (first.getUTCDay() + 6) % 7; // Monday first
   const max = Math.max(...Object.values(daily));
   let html = T.dows.map((d) => `<div class="dow">${d}</div>`).join("") + "<div></div>".repeat(offset);
-  let fireDays = 0, top = [0, null];
+  let fireDays = 0, top = [0, null], sum = 0, seen = 0;
   for (let d = 1; d <= n; d++) {
     const k = `${key}-${String(d).padStart(2, "0")}`, v = daily[k];
     let bg, label, dark = false;
     if (v === undefined) { bg = `repeating-linear-gradient(45deg,${NO_DATA} 0 4px,#2a3d63 4px 6px)`; label = T.dayTipNone; }
-    else if (v === 0) { bg = "#0c1a35"; label = "0"; }
-    else { bg = colour(v, max); label = fmt(v); fireDays++; if (v > top[0]) top = [v, d]; dark = lev(v, max) > 0.62; }
+    else if (v === 0) { bg = "#0c1a35"; label = "0"; seen++; }
+    else { bg = colour(v, max); label = fmt(v); fireDays++; sum += v; seen++; if (v > top[0]) top = [v, d]; dark = lev(v, max) > 0.62; }
     html += `<div class="day" style="background:${bg};${dark ? "color:#0a1430" : ""}" title="${k}: ${v === undefined ? T.dayTipNone : T.dayTipHot(label)}"><b>${d}</b>${v === undefined ? "" : label}</div>`;
   }
   $("day-grid").innerHTML = html;
   $("day-title").textContent = T.dayTitle(T.monthsLong[m - 1], y);
-  const st = r.status === "estimated" ? T.dayStatus.estimated(r.source === "Terra" ? "MODIS Terra" : "MODIS Aqua") : T.dayStatus[r.status] || "";
-  $("day-sub").textContent = r.value == null ? T.dayNone :
-    T.daySub(fmt(r.value), st, fireDays, n, top[1] ? T.dayTop(T.monthsLong[m - 1], top[1], fmt(top[0])) : null)
-    + (r.status === "estimated" ? T.dayRaw(r.source === "Terra" ? "MODIS Terra" : "MODIS Aqua") : "");
+  // One plain sentence, then the conversion drawn as "what the satellite saw -> comparable number".
+  const src = r.source, sat = T.sat[src] || src, raw = r.raw ? r.raw[src] : null;
+  const conv = r.value != null && src !== "SNPP", mo = T.monthsLong[m - 1];
+  const thru = r.through ? T.dx.thru(+r.through.slice(8), T.monthsLong[+r.through.slice(5, 7) - 1]) : "";
+  const tail = (r.status === "provisional" ? T.dx.prov : "") + (top[1] ? T.dx.top(mo, top[1], fmt(top[0])) : T.dx.none);
+  $("day-sub").textContent = r.value == null ? T.dayNone
+    : r.status === "partial" ? T.dx.partial(fmt(raw), fmt(r.value), thru) + tail
+    : conv ? T.dx.estimated(sat, fmt(raw), fmt(r.value), fmt(r.low), fmt(r.high)) + tail
+    : T.dx.observed(fmt(r.value)) + tail;
+  const f = conv && raw ? (r.value / raw).toLocaleString(T.locale, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) : null;
+  $("day-conv").innerHTML = r.value == null ? "" : conv
+    ? `<div class="conv"><div class="cv raw"><small>${T.cv.saw(sat)}</small><b>${fmt(raw)}</b><span>${T.cv.days(fireDays, seen)}</span></div>`
+      + `<div class="cv arrow" aria-hidden="true"><span>${T.cv.arrow}</span><i></i>${f ? `<small>${T.cv.factor(f)}</small>` : ""}</div>`
+      + `<div class="cv out"><small>${T.cv.out}</small><b>≈ ${fmt(r.value)}</b><span>${T.cv.range(fmt(r.low), fmt(r.high))}</span></div></div>`
+    : `<div class="conv one"><div class="cv out"><small>${T.cv.saw(sat)}</small><b>${fmt(r.value)}</b><span>${T.cv.days(fireDays, seen)} · ✓ ${T.cv.direct}</span></div></div>`;
+  $("day-cap").textContent = r.value == null ? "" : r.status === "partial" ? T.cap.partial : conv ? T.cap.estimated(sat, fmt(sum)) : T.cap.observed(fmt(sum));
   $("day-legend").innerHTML = `<span><i class="sw" style="background:${colour(10, max)}"></i>${T.dlg[0]}</span>`
     + `<span><i class="sw" style="background:#0c1a35"></i>${T.dlg[1]}</span>`
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.dlg[2]}</span>`
