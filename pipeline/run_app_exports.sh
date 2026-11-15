@@ -10,5 +10,6 @@ python3 pipeline/14_comunas_for_map.py app/data/geo/comunas.json app/data/geo/re
 python3 pipeline/19_export_points.py "$1" "$2" app/data/points
 python3 pipeline/13_export_gis.py app/data/geo/comunas.json app/data app/data/gis
 python3 pipeline/18_export_region_series.py app/data results/harmonized_monthly_by_region.csv
+python3 pipeline/20_conaf_jump_areas.py
 python3 pipeline/16_early_season_check.py app/data results/prediction_check
 python3 tests/check_app_data.py app/data results

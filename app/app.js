@@ -73,7 +73,7 @@ const I18N = {
     kSub: (a) => `For each hotspot MODIS Aqua sees, how many VIIRS sees in ${a}, season by season, when both watched together.`,
     kPlain: (lo, hi, n) => `VIIRS sees between <b>${lo}</b> and <b>${hi} times</b> more hotspots than MODIS, depending on the season. That is why one number is not enough: the conversion learns from the ${n} seasons when both satellites watched together and is tested on years it never saw.`,
     kLg: ["VIIRS hotspots per MODIS Aqua hotspot, per fire season", "all seasons pooled"],
-    kNote: "It changes with fire sizes, clouds and weather. It is the same factor you see when you open the days of an old month.", ch_trust: "Trust · why these numbers hold",
+    kNote: "It changes with fire sizes, clouds and weather.", ch_trust: "Trust · why these numbers hold",
     more_curve: "See the full curve, month by month",
     seasonIntro: "Fire season 2026–27 (July to June), in hotspots on the VIIRS scale.",
     clockPlainUnclear: (a, b) => `<b>No clear change in 25 seasons.</b> The busiest month was ${a} in the MODIS years (2001–2012) and is ${b} in the VIIRS years (2012–2026), but it varies so much from season to season that there is no firm evidence the season has moved.`, more_clock: "See every season and the trend tests",
@@ -110,7 +110,8 @@ const I18N = {
     scenLg: "scenarios: the rest of the season like past seasons (10–90%)",
     season_h: "This season so far vs every past season",
     seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, on the VIIRS scale, with a multiplying axis. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
-    seasonWarn: " A quiet or busy start is not a forecast: from Valparaíso to La Araucanía, July–October activity did not anticipate November–June in the last 25 seasons.",
+    seasonEarly: (r) => r > 0 ? ` Here the start did go with the rest of the season (Spearman ${r} over 25 seasons), but that is a tendency, not a forecast.` : ` Here a busy start tended to go with a quieter rest of the season (Spearman ${r} over 25 seasons): a tendency, not a forecast.`,
+    seasonWarn: " A quiet or busy start is not a forecast: in most regions, July–October activity did not anticipate November–June in the last 25 seasons.",
     seasonExcl: (l) => ` Atacama desert regions (${l}) are left out of both sides, because their recent data are hidden.`,
     sThrough: (mo) => `Through ${mo}`, sThroughSub: "hotspots so far this season",
     sVs: "Compared with the median past season", sVsSub: (b, n) => `higher than ${b} of ${n} past seasons at this point`,
@@ -153,6 +154,8 @@ const I18N = {
     robustZ: "robust z",
     noteDesert: "Without the Atacama desert regions, hidden this month",
     figRaw: (area) => `Not harmonized · ${area}`, figRawSub: "hotspots per CONAF fire after 2012 vs before: a false jump, caused by the change of satellite",
+    figHLeft: (lo, hi) => `part of the jump remains (95% confidence: between ${lo} and ${hi}): regions outside the four calibrated ones, such as Metropolitana, still have more hotspots per fire after 2012`,
+    figCal: (u, h, lo, hi) => `<b>Maule to La Araucanía</b>, the four calibrated regions (76,002 CONAF fires): ×${u} not harmonized → <b>×${h}</b> harmonized (95%: ${lo}–${hi}): no jump.`,
     figH: "Harmonized", figHSub: (lo, hi) => `≈ 1: no jump (95% confidence: between ${lo} and ${hi})`,
     figAll: "Maule to La Araucanía", figNone: "This area has not been checked against CONAF fire records; the harmonization here was tested on hidden years 2020–2026 (see the trust table).",
     chVIIRS: "VIIRS starts · overlap 2012–2026", chVIIRSshort: "VIIRS starts",
@@ -160,14 +163,15 @@ const I18N = {
     chLgH: "harmonized (one unit for all years)", chLgR: "as each satellite saw it: MODIS before 2012, VIIRS after", chLgNote: "Hotspots per fire season (Jul–Jun), complete seasons only.",
     thRegion: "Region", thJump: "2012 jump vs CONAF<br>(×1 = no jump)", thAqua: "Years estimated from MODIS Aqua<br>2002–2012", thTerra: "Years with only MODIS Terra<br>2000–2002", thMethod: "Method",
     raw: "not harmonized", ci: "95% confidence:",
-    errLine: (f, lo, hi, b, c) => `if we show 100, the real value is usually between <b>${lo} and ${hi}</b><br><small>mean error ×${f} · ${b}${c == null ? "" : ` · the range was right in ${c} of 100 months`}</small>`,
+    errLineT: (f, b) => `mean error <b>×${f}</b><br><small>on average, what VIIRS would have seen was that factor away from the value shown · ${b}</small>`,
+    errLine: (f, lo, hi, b, c) => `if we show 100, what VIIRS would have seen was between <b>${lo} and ${hi}</b> in about half to two thirds of the test months<br><small>mean error ×${f} · ${b}${c == null ? "" : ` · the range was right in ${c} of 100 months`}</small>`,
     biasTxt: (v) => Math.abs(v) < 0.5 ? "no overall bias" : `overall ${dec(Math.abs(v), 1)}% ${v < 0 ? "too low" : "too high"}`,
     testedH: "Other regions: tested on hidden years 2020–2026 and against CONAF fire records",
     testedNote: "The pooled map was fitted on Maule, Ñuble, Biobío and La Araucanía together and tested in regions it never saw; where it lost to the region's own simple ratio, the ratio is used. Against CONAF (109,947 fires in all regions), the false 2012 jump disappears in 9 of the 11 regions with enough fires. Valparaíso is overcorrected and Metropolitana keeps part of the jump; the north and Magallanes have too few CONAF fires to judge. Errors are larger than in the calibrated regions, so treat the years before 2012 there as indicative.",
     thConaf: "2012 jump vs CONAF<br>(×1 = no jump)",
     verdict: { removed: "jump removed", over: (p) => `overcorrected: the years before 2012 come out about ${p}% too high`, under: (p) => `undercorrected: the years before 2012 come out about ${p}% too low`, few_fires: (n) => `only ${n} CONAF fires: cannot judge` },
     figConaf: (v) => `In this region: ${v}.`,
-    trustNote: (f, cov) => `How to read it: with a mean error of ×${f}, if an old month shows 100 hotspots, what VIIRS would have seen is usually between 100 ÷ ${f} and 100 × ${f}. Each month's range should be right 8 times out of 10; for MODIS Aqua, on years the model never saw, it was right ${cov} times out of 100, slightly fewer than promised.`,
+    trustNote: (f, cov) => `How to read it: with a mean error of ×${f}, if an old month shows 100 hotspots, what VIIRS would have seen falls between 100 ÷ ${f} and 100 × ${f} in about half to two thirds of the months (52–66% on the test years); the rest fall further out. Each month's range should be right 8 times out of 10; for MODIS Aqua, on years the model never saw, it was right ${cov} times out of 100, slightly fewer than promised.`,
     method: {
       unit: "All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Before Suomi NPP (2012), MODIS counts are mapped to that unit. ",
       qmap: (r) => `<b>${r}:</b> quantile mapping fitted where both sensors observed (2012–2026), tested on hidden years 2020–2026 and checked against CONAF fire records 2002–2020. Maule, Ñuble, Biobío and La Araucanía together: unharmonized, the series jumps ×4.7 at 2012 relative to real fire activity; harmonized, ×0.89 (95% interval includes 1, no jump). `,
@@ -265,7 +269,7 @@ const I18N = {
     kSub: (a) => `Por cada foco que ve MODIS Aqua, cuántos ve VIIRS en ${a}, temporada por temporada, cuando ambos observaron juntos.`,
     kPlain: (lo, hi, n) => `VIIRS ve entre <b>${lo}</b> y <b>${hi} veces</b> más focos que MODIS, según la temporada. Por eso no basta un solo número: la conversión aprende de las ${n} temporadas en que ambos satélites observaron juntos y se prueba en años que nunca vio.`,
     kLg: ["focos de VIIRS por cada foco de MODIS Aqua, por temporada", "todas las temporadas juntas"],
-    kNote: "Cambia con el tamaño de los fuegos, las nubes y el clima. Es el mismo factor que ves al abrir los días de un mes antiguo.", ch_trust: "Confianza · por qué estas cifras se sostienen",
+    kNote: "Cambia con el tamaño de los fuegos, las nubes y el clima.", ch_trust: "Confianza · por qué estas cifras se sostienen",
     more_curve: "Ver la curva completa, mes a mes",
     seasonIntro: "Temporada de incendios 2026–27 (julio a junio), en focos de calor en escala VIIRS.",
     clockPlainUnclear: (a, b) => `<b>Sin un cambio claro en 25 temporadas.</b> El mes con más focos fue ${a} en los años MODIS (2001–2012) y es ${b} en los años VIIRS (2012–2026), pero varía tanto de una temporada a otra que no hay evidencia firme de que la temporada se haya movido.`, more_clock: "Ver cada temporada y las pruebas de tendencia",
@@ -302,7 +306,8 @@ const I18N = {
     scenLg: "escenarios: el resto de la temporada como las anteriores (10–90 %)",
     season_h: "Esta temporada hasta ahora frente a todas las anteriores",
     seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en escala VIIRS, con eje multiplicativo. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
-    seasonWarn: " Un inicio tranquilo o activo no es un pronóstico: de Valparaíso a La Araucanía, la actividad de julio a octubre no anticipó la de noviembre a junio en las últimas 25 temporadas.",
+    seasonEarly: (r) => r > 0 ? ` Aquí el inicio sí fue de la mano con el resto de la temporada (Spearman ${dec(r)} en 25 temporadas), pero es una tendencia, no un pronóstico.` : ` Aquí un inicio activo tendió a ir con un resto de temporada más tranquilo (Spearman ${dec(r)} en 25 temporadas): una tendencia, no un pronóstico.`,
+    seasonWarn: " Un inicio tranquilo o activo no es un pronóstico: en la mayoría de las regiones, la actividad de julio a octubre no anticipó la de noviembre a junio en las últimas 25 temporadas.",
     seasonExcl: (l) => ` Las regiones del desierto de Atacama (${l}) quedan fuera de ambos lados, porque sus datos recientes están ocultos.`,
     sThrough: (mo) => `Hasta ${mo}`, sThroughSub: "focos de calor acumulados en la temporada",
     sVs: "Frente a la temporada mediana", sVsSub: (b, n) => `mayor que ${b} de ${n} temporadas anteriores a esta altura`,
@@ -345,6 +350,8 @@ const I18N = {
     robustZ: "z robusto",
     noteDesert: "Sin las regiones del desierto de Atacama, ocultas este mes",
     figRaw: (area) => `Sin armonizar · ${area}`, figRawSub: "focos por incendio de CONAF después de 2012 frente a antes: un salto falso, causado por el cambio de satélite",
+    figHLeft: (lo, hi) => `aún queda parte del salto (95 % de confianza: entre ${lo} y ${hi}): regiones fuera de las cuatro calibradas, como la Metropolitana, siguen con más focos por incendio después de 2012`,
+    figCal: (u, h, lo, hi) => `<b>Maule a La Araucanía</b>, las cuatro regiones calibradas (76.002 incendios de CONAF): ×${u} sin armonizar → <b>×${h}</b> armonizado (95 %: ${lo}–${hi}): sin salto.`,
     figH: "Armonizado", figHSub: (lo, hi) => `≈ 1: sin salto (95 % de confianza: entre ${lo} y ${hi})`,
     figAll: "Maule a La Araucanía", figNone: "Esta área no se ha contrastado con los registros de CONAF; la armonización aquí se probó en los años reservados 2020–2026 (ver la tabla de confianza).",
     chVIIRS: "Empieza VIIRS · traslape 2012–2026", chVIIRSshort: "Empieza VIIRS",
@@ -352,14 +359,15 @@ const I18N = {
     chLgH: "armonizado (una sola unidad para todos los años)", chLgR: "como lo vio cada satélite: MODIS antes de 2012, VIIRS después", chLgNote: "Focos de calor por temporada de incendios (jul–jun), solo temporadas completas.",
     thRegion: "Región", thJump: "Salto de 2012 frente a CONAF<br>(×1 = sin salto)", thAqua: "Años estimados desde MODIS Aqua<br>2002–2012", thTerra: "Años con solo MODIS Terra<br>2000–2002", thMethod: "Método",
     raw: "sin armonizar", ci: "95 % de confianza:",
-    errLine: (f, lo, hi, b, c) => `si mostramos 100, lo real suele estar entre <b>${lo} y ${hi}</b><br><small>error medio ×${f} · ${b}${c == null ? "" : ` · el rango acertó ${c} de cada 100 meses`}</small>`,
+    errLineT: (f, b) => `error medio <b>×${f}</b><br><small>en promedio, lo que habría visto VIIRS estuvo a ese factor del valor mostrado · ${b}</small>`,
+    errLine: (f, lo, hi, b, c) => `si mostramos 100, lo que habría visto VIIRS estuvo entre <b>${lo} y ${hi}</b> en cerca de la mitad a dos tercios de los meses de prueba<br><small>error medio ×${f} · ${b}${c == null ? "" : ` · el rango acertó ${c} de cada 100 meses`}</small>`,
     biasTxt: (v) => Math.abs(v) < 0.5 ? "en total, sin sesgo" : `en total, ${dec(Math.abs(v), 1)} % ${v < 0 ? "por debajo" : "por encima"}`,
     testedH: "Otras regiones: probadas en los años reservados 2020–2026 y contra los registros de incendios de CONAF",
     testedNote: "El mapa agrupado se ajustó con Maule, Ñuble, Biobío y La Araucanía juntas y se probó en regiones que nunca vio; donde perdió frente a la razón simple propia de la región, se usa la razón. Contra CONAF (109.947 incendios en todas las regiones), el salto falso de 2012 desaparece en 9 de las 11 regiones con suficientes incendios. Valparaíso queda sobrecorregida y la Metropolitana conserva parte del salto; el norte y Magallanes tienen muy pocos incendios de CONAF para evaluar. Los errores son mayores que en las regiones calibradas, así que allí los años anteriores a 2012 son referenciales.",
     thConaf: "Salto de 2012 frente a CONAF<br>(×1 = sin salto)",
     verdict: { removed: "salto eliminado", over: (p) => `sobrecorregido: los años antes de 2012 quedan cerca de ${p} % más altos`, under: (p) => `subcorregido: los años antes de 2012 quedan cerca de ${p} % más bajos`, few_fires: (n) => `solo ${n} incendios de CONAF: no se puede evaluar` },
     figConaf: (v) => `En esta región: ${v}.`,
-    trustNote: (f, cov) => `Cómo leerlo: con un error medio de ×${f}, si un mes antiguo muestra 100 focos, lo que habría visto VIIRS suele estar entre 100 ÷ ${f} y 100 × ${f}. El rango de cada mes debería acertar 8 de cada 10 veces; con MODIS Aqua, en años que el modelo nunca vio, acertó ${cov} de cada 100, algo menos de lo prometido.`,
+    trustNote: (f, cov) => `Cómo leerlo: con un error medio de ×${f}, si un mes antiguo muestra 100 focos, lo que habría visto VIIRS queda entre 100 ÷ ${f} y 100 × ${f} en cerca de la mitad a dos tercios de los meses (52–66 % en los años de prueba); el resto queda más lejos. El rango de cada mes debería acertar 8 de cada 10 veces; con MODIS Aqua, en años que el modelo nunca vio, acertó ${cov} de cada 100, algo menos de lo prometido.`,
     method: {
       unit: "Todos los valores se expresan como los focos de calor que registraría VIIRS Suomi NPP (un solo satélite, nunca una suma de satélites). Antes de Suomi NPP (2012), los conteos de MODIS se llevan a esa unidad. ",
       qmap: (r) => `<b>${r}:</b> mapeo de cuantiles ajustado donde ambos sensores observaron (2012–2026), probado en los años reservados 2020–2026 y contrastado con los registros de incendios de CONAF 2002–2020. Maule, Ñuble, Biobío y La Araucanía juntas: sin armonizar, la serie salta ×4,7 en 2012 respecto de la actividad real de fuego; armonizada, ×0,89 (el intervalo de 95 % incluye 1: sin salto). `,
@@ -415,6 +423,10 @@ const NO_DATA = "#0f1d38";
 const LEVEL_COLOUR = { "unusually high": "var(--high)", "unusually low": "var(--low)", "within normal": "var(--normal)" };
 // Four-region CONAF check (pipeline/10, results/validation_conaf/jump_at_2012_vs_conaf.csv)
 const CONAF_ALL = { unh: 4.7, h: 0.89, lo: 0.77, hi: 1.07 };
+// 2012 jump for the multi-region areas, with the series the app shows (pipeline/20; same model and bootstrap as pipeline/15)
+// Areas where July-October activity did relate to November-June (Spearman, p < 0.05; results/prediction_check)
+const EARLY = { r2: 0.85, r3: 0.79, r8: -0.41, r11: 0.52, r14: 0.4 };
+const AREA_JUMP = { chile: { unh: 4.41, h: 1.33, lo: 1.18, hi: 1.49 }, biobio_hist: { unh: 5.11, h: 0.96, lo: 0.80, hi: 1.13 } };
 
 const DESERT_AOI = ["r15", "r1", "r2", "r3"];
 const state = { aoi: "r8", rows: "season", mode: "harmonized", lang: pickLang(), aois: [], data: null, daily: {}, max: 1, lastWidth: 0, month: null };
@@ -1148,7 +1160,8 @@ function renderSeason() {
   if (!S || !S.current.length) { card.hidden = true; return; }
   card.hidden = false;
   const seasonMonths = [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5];
-  $("season-sub").textContent = T.seasonIntro + T.seasonWarn + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
+  const er = EARLY[state.aoi];
+  $("season-sub").textContent = T.seasonIntro + (er == null ? T.seasonWarn : T.seasonEarly(er)) + (S.excluded.length ? T.seasonExcl(S.excluded.join(", ")) : "");
   $("season-tech").textContent = T.seasonSub(shortName());
   renderMeter(S, seasonMonths);
   if (S.compare_index != null) {
@@ -1385,9 +1398,13 @@ function renderJump() {
   const T = L(), S = seasonTotals();
   const ok = state.data.trust.filter((t) => t.validated);
   const fig = (area, unh, h, lo, hi) => `<div>${T.figRaw(area)}${num(unh, 2, "×")}${T.figRawSub}</div>`
-    + `<div class="${lo <= 1 && 1 <= hi ? "good" : ""}">${T.figH}${num(h, 2, "×")}${T.figHSub(dec(lo), dec(hi))}</div>`;
+    + `<div class="${lo <= 1 && 1 <= hi ? "good" : ""}">${T.figH}${num(h, 2, "×")}${lo <= 1 && 1 <= hi ? T.figHSub(dec(lo), dec(hi)) : T.figHLeft(dec(lo), dec(hi))}</div>`;
   if (ok.length === 1) { const t = ok[0]; $("jump-figs").innerHTML = fig(t.region, t.jump_unharmonized, ...t.jump_harmonized); }
-  else if (ok.length > 1) $("jump-figs").innerHTML = fig(T.figAll, CONAF_ALL.unh, CONAF_ALL.h, CONAF_ALL.lo, CONAF_ALL.hi);
+  else if (ok.length > 1) {
+    const A = AREA_JUMP[state.aoi];
+    $("jump-figs").innerHTML = A ? fig(state.data.name ? shortName() : T.figAll, A.unh, A.h, A.lo, A.hi) + (state.aoi === "chile" ? `<div>${T.figCal(dec(CONAF_ALL.unh, 1), dec(CONAF_ALL.h), dec(CONAF_ALL.lo), dec(CONAF_ALL.hi))}</div>` : "")
+      : fig(T.figAll, CONAF_ALL.unh, CONAF_ALL.h, CONAF_ALL.lo, CONAF_ALL.hi);
+  }
   else {
     const tc = state.data.trust.length === 1 && state.data.trust[0].conaf;
     $("jump-figs").innerHTML = tc && tc.verdict !== "few_fires"
@@ -1489,6 +1506,7 @@ function verdictText(c) {
 
 function renderTrust() {
   const T = L(), TR = state.data.trust, ok = TR.filter((t) => t.validated), tested = TR.filter((t) => !t.validated);
+  const errT = (e) => T.errLineT(dec(e.typical_factor), T.biasTxt(e.bias_pct));
   const err = (e) => T.errLine(dec(e.typical_factor), fmt(100 / e.typical_factor), fmt(100 * e.typical_factor), T.biasTxt(e.bias_pct), e.coverage80_pct == null ? null : Math.round(e.coverage80_pct));
   let html = "";
   if (ok.length) {
@@ -1500,7 +1518,7 @@ function renderTrust() {
   }
   if (tested.length) {
     html += `<h3 style="font-size:14.5px;margin:14px 0 6px">${T.testedH}</h3><div class="tablewrap"><table class="trust"><thead><tr><th>${T.thRegion}</th><th>${T.thConaf}</th><th>${T.thAqua}</th><th>${T.thTerra}</th></tr></thead><tbody>`
-      + tested.map((t) => `<tr><td><b>${t.region}</b><br><small>${T.methodName[t.Aqua.method]}</small></td><td>${t.conaf ? `${T.raw} ×${dec(t.conaf.unh)} → <b>×${dec(t.conaf.h[0])}</b><br><small>${T.ci} ${dec(t.conaf.h[1])}–${dec(t.conaf.h[2])} · ${verdictText(t.conaf)}</small>` : "—"}</td><td>${err(t.Aqua)}</td><td>${err(t.Terra)}</td></tr>`).join("")
+      + tested.map((t) => `<tr><td><b>${t.region}</b><br><small>${T.methodName[t.Aqua.method]}</small></td><td>${t.conaf ? `${T.raw} ×${dec(t.conaf.unh)} → <b>×${dec(t.conaf.h[0])}</b><br><small>${T.ci} ${dec(t.conaf.h[1])}–${dec(t.conaf.h[2])} · ${verdictText(t.conaf)}</small>` : "—"}</td><td>${errT(t.Aqua)}</td><td>${errT(t.Terra)}</td></tr>`).join("")
       + `</tbody></table></div><p class="sub" style="margin-top:10px">${T.testedNote}</p>`;
   }
   $("trust").innerHTML = html;
@@ -1555,8 +1573,9 @@ async function showMonth(key, scroll = true) {
 }
 
 function downloadCSV() {
-  const head = "month,value_snpp_equivalent,low_80,high_80,status,source,methods,anomaly,robust_z,terra_raw,aqua_raw,snpp_raw,noaa20_raw,noaa21_raw";
-  const lines = state.data.months.map((r) => [r.month, r.value ?? "", r.low ?? "", r.high ?? "", r.status, r.source ?? "", (r.methods || []).join("+"), r.anomaly ?? "", r.z ?? "",
+  const head = "month,value_snpp_equivalent,low_80,high_80,band_type,status,source,methods,anomaly,robust_z,terra_raw,aqua_raw,snpp_raw,noaa20_raw,noaa21_raw";
+  const band = (r) => r.status !== "estimated" && r.status !== "partial" ? "" : (r.methods || []).every((m) => m === "ratio") ? "p10-p90 of yearly ratios (spread, not a tested 80% interval)" : (r.methods || []).includes("ratio") ? "mixed: quantile-map 80% bands and ratio spreads" : "80% band (tested on hidden years)";
+  const lines = state.data.months.map((r) => [r.month, r.value ?? "", r.low ?? "", r.high ?? "", `"${band(r)}"`, r.status, r.source ?? "", (r.methods || []).join("+"), r.anomaly ?? "", r.z ?? "",
     r.raw.Terra ?? "", r.raw.Aqua ?? "", r.raw.SNPP ?? "", r.raw.NOAA20 ?? "", r.raw.NOAA21 ?? ""].join(","));
   const blob = new Blob([[head, ...lines].join("\n")], { type: "text/csv" });
   const a = document.createElement("a");

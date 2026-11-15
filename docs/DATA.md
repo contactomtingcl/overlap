@@ -54,3 +54,9 @@ Atacama desert regions in recent months. Columns: `date`, `time_utc`, `satellite
 The fire is somewhere inside the pixel, not necessarily at its centre. In QGIS: Layer › Add Delimited Text Layer, X = longitude,
 Y = latitude, EPSG:4326.
 
+## Monthly series CSV (app button "CSV")
+
+`band_type` says what `low_80` / `high_80` are for each estimated month: the 80 % band of the quantile map (tested on hidden years),
+or, in Los Ríos, Los Lagos and Aysén, the 10–90 % spread of yearly ratios (not a tested 80 % interval).
+195 Suomi NPP hotspots of the overlap (0.06 %) fall outside the simplified region polygons (`codregion = 0`) and are not in any region or in Chile.
+

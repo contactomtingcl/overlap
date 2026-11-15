@@ -7,14 +7,18 @@ Each region is harmonized on its own and areas are sums of regions:
 - estimated:   MODIS Aqua (2002-07 to 2012-01) or Terra (2000-11 to 2002-06) mapped to Suomi NPP
   * Maule, Ñuble, Biobío, Araucanía: quantile mapping on log(1 + monthly hotspots) with Karla's tables
     (results/harmonization_qmap/quantiles_all.csv, fitted on 2012-02 to 2026-07; validated on hidden years
-    and against CONAF). 80 % band: 10th-90th percentile of log errors on the hidden years 2020-2026.
+    and against CONAF). 80 % band: the R script's out-of-bag bootstrap interval (pipeline/07: fitted on
+    2012-02 to 2019-12, qmap_low / qmap_high in test_predictions.csv), carried to any month by interpolating its
+    log offsets on log(1 + sensor hotspots); it held 73-82 % of the hidden-year months for MODIS Aqua.
   * other regions: Karla's pooled quantile map (results/harmonization_qmap/pooled, fitted on the four regions
     together, whole overlap) wherever it beat the region's own simple ratio on the hidden years 2020-2026
     (pipeline/11); 80 % band: 10th-90th percentile of log errors of the 2012-2019 fit on 2020-2026 in that
-    region. Elsewhere (Los Lagos, Aysén, Los Ríos) simple ratio k = sum(SNPP) / sum(sensor) on the overlap
-    (national ratio if too few hotspots); band: 10th-90th percentile of yearly ratios.
-    Tested on hidden years, not checked against CONAF.
-- provisional: Aug-Oct 2026, Suomi NPP near real-time data; partial: Nov 2026 (to Nov 7), NOAA-20 x ratio.
+    region. Elsewhere (Los Lagos, Aysén, Los Ríos) the region's own simple ratio k = sum(SNPP) / sum(sensor) on
+    the overlap (national ratio if too few hotspots, except Aysén, which keeps its own ratio: that is the series
+    checked against CONAF); band: 10th-90th percentile of yearly ratios (a spread, not a tested 80 % interval).
+    All of them tested on hidden years and checked against CONAF (pipeline/15).
+- provisional: Aug-Oct 2026, Suomi NPP near real-time data; partial: Nov 2026 (to Nov 7), NOAA-20 x the
+  region's NOAA-20 ratio (also for the daily values, so days add up to the month).
   Recent months over the Atacama desert (regions 15, 1, 2, 3) are withheld (daytime false detections).
 - no_data: no satellite record (never zero).
 Normal: median by calendar month over the seasons 2000-01 to 2025-26. Anomaly (as in results/normal):
@@ -46,6 +50,7 @@ START = {"Terra": "2000-11", "Aqua": "2002-07", "SNPP": "2012-02", "NOAA20": "20
 END, RECENT, PARTIAL = "2026-07", ["2026-08", "2026-09", "2026-10"], "2026-11"
 MONTHS = list(pd.period_range("2000-11", END, freq="M").astype(str))
 MIN_OVERLAP = {"Aqua": 300, "Terra": 150, "NOAA20": 300}
+OWN_RATIO = {11}  # Aysén: own ratio despite few overlap hotspots, as validated against CONAF (pipeline/15)
 
 d = pd.read_csv(src, usecols=["date", "satellite", "codregion"])
 d["month"] = d["date"].str[:7]
@@ -119,11 +124,11 @@ def monthly_table(regions):
     return m[SATS]
 
 
-def ratio_factors(m, national=None):
+def ratio_factors(m, national=None, own=False):
     f = {}
     for sat in ["NOAA20", "Aqua", "Terra"]:
         both = m[m["SNPP"].notna() & m[sat].notna()]
-        if national and both[sat].sum() < MIN_OVERLAP[sat]:
+        if national and both[sat].sum() < MIN_OVERLAP[sat] and not (own and sat != "NOAA20"):
             f[sat] = dict(national[sat], scope="national")
             continue
         yearly = both.groupby(both.index.str[:4])[["SNPP", sat]].sum()
@@ -140,9 +145,11 @@ def qm_model(region, sensor):
              & (qtab.season_group == "all_year") & (qtab.fit_period == "2012-02_2026-07")]
     g = t.groupby("sensor_value").snpp_value.apply(lambda s: np.log1p(s).mean())  # R approx(): ties = mean
     pred = pd.read_csv(qdir / f"region_{region:02d}_{sensor.lower()}" / "test_predictions.csv")
-    le = np.log((pred.snpp_observed + 1) / (pred.qmap + 1))
+    # the R band: log offsets of qmap_low / qmap_high around qmap, as a function of the sensor count
+    b = pd.DataFrame({"x": np.log1p(pred.src.astype(float)), "lo": np.log((pred.qmap_low + 1) / (pred.qmap + 1)),
+                      "hi": np.log((pred.qmap_high + 1) / (pred.qmap + 1))}).groupby("x").mean().sort_index()
     return {"x": np.log1p(g.index.values.astype(float)), "y": g.values,
-            "q10": float(le.quantile(.1)), "q90": float(le.quantile(.9))}
+            "bx": b.index.values, "blo": b.lo.values, "bhi": b.hi.values}
 
 
 def table_model(t):
@@ -164,7 +171,11 @@ def pooled_model(region, sensor, m):
 
 def qm_apply(model, v):
     p = max(float(np.expm1(np.interp(np.log1p(v), model["x"], model["y"]))), 0.0)
-    return p, max((p + 1) * np.exp(model["q10"]) - 1, 0.0), (p + 1) * np.exp(model["q90"]) - 1
+    if "bx" in model:
+        lo, hi = np.interp(np.log1p(v), model["bx"], model["blo"]), np.interp(np.log1p(v), model["bx"], model["bhi"])
+    else:
+        lo, hi = model["q10"], model["q90"]
+    return p, max((p + 1) * np.exp(lo) - 1, 0.0), (p + 1) * np.exp(hi) - 1
 
 
 NATIONAL = ratio_factors(monthly_table(list(REGIONS)))
@@ -173,7 +184,7 @@ NATIONAL = ratio_factors(monthly_table(list(REGIONS)))
 def region_rows(r):
     """Harmonized monthly rows for one region (dict month -> row)."""
     m = monthly_table([r])
-    f = ratio_factors(m, NATIONAL)
+    f = ratio_factors(m, NATIONAL, own=r in OWN_RATIO)
     if r in QM_REGIONS:
         qm = {s: dict(qm_model(r, s), method="qmap") for s in ["Aqua", "Terra"]}
     else:
@@ -214,9 +225,10 @@ def region_rows(r):
     return rows, f, {s: mod["method"] for s, mod in qm.items()}
 
 
-REGION_ROWS, REGION_FACTORS, REGION_QM = {}, {}, {}
+REGION_ROWS, REGION_FACTORS, REGION_QM, K20 = {}, {}, {}, {}
 for r in REGIONS:
     REGION_ROWS[r], REGION_FACTORS[r], REGION_QM[r] = region_rows(r)
+    K20[r] = REGION_FACTORS[r]["NOAA20"]["k"]
 
 ORDER = {"no_data": 0, "observed": 1, "provisional": 2, "partial": 3, "estimated": 4}
 
@@ -262,7 +274,7 @@ def daily(regions):
             regs, tab = regions, std_d
         get = lambda sat: sum(int(tab.get((r, day, sat), 0)) for r in regs)
         if mo == PARTIAL:
-            v = get("NOAA20") * NATIONAL["NOAA20"]["k"]
+            v = sum(int(tab.get((r, day, "NOAA20"), 0)) * K20[r] for r in regs)
         elif mo >= "2012-02":
             v = get("SNPP")
         elif day >= "2002-07-04":

@@ -131,6 +131,19 @@ for r in REG:
         n = pts.get((mo, C["sensor"][i]), 0)
         check(abs(n - tot) < 0.5, f"points r{r} {mo}: {n} points vs {tot} in the commune layer")
 
+# 8. each region's series in the app = the series validated against CONAF (pipeline/15): the quantile-map series,
+#    or the region's own ratio where the app uses a ratio (Los Ríos, Los Lagos, Aysén)
+import pandas as _pd
+val = _pd.read_csv(results / "validation_conaf" / "all_regions" / "region_month_all_regions.csv")
+for r, g in val.groupby("codregion"):
+    M = {m["month"]: m for m in json.loads((data / f"r{r}.json").read_text())["months"]}
+    for _, row in g.iterrows():
+        m = M.get(row.month)
+        if not m or m["value"] is None:
+            continue
+        ref = row.hot_ratio_own if "ratio" in (m.get("methods") or [m.get("method")]) else row.hot_harmonized
+        check(abs(m["value"] - ref) < 0.5, f"r{r} {row.month}: app {m['value']:.1f} vs CONAF-validated series {ref:.1f}")
+
 print("\n".join("note: " + n for n in notes))
 if fails:
     print(f"FAILED {len(fails)} checks")
