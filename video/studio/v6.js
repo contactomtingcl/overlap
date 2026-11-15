@@ -39,7 +39,7 @@
     $s("k").textContent = ["Validación · registros de CONAF", "El salto de 2012 · Maule a La Araucanía", "Años que el modelo nunca vio"][ph];
     const n = Math.round(76002 * out(seg(t, 0.4, 2.8)));
     $s("big").innerHTML = [`<b>${fmt(n)}</b> incendios`, `×4,7 <span style="opacity:.5">→</span> <b>×0,89</b>`, `Años <b>ocultos</b>`][ph];
-    $s("sub").textContent = ["Registrados por CONAF en las cuatro regiones calibradas, temporadas 2002–03 a 2019–20", "Focos por incendio, después de 2012 frente a antes: ×1 = sin salto", "Si un mes antiguo muestra 100 focos, lo real suele estar entre 68 y 147"][ph];
+    $s("sub").textContent = ["Registrados por CONAF en las cuatro regiones calibradas, temporadas 2002–03 a 2019–20", "Focos por incendio, después de 2012 frente a antes: ×1 = sin salto", "En la mitad a dos tercios de los meses, el error fue menor que ×1,47"][ph];
     css($s("fade"), { opacity: 1 - out(seg(t, 0, 0.9)) });
     // jump card rises, figures count, the chart wipes in
     if (t >= 0.2 && !S.done.j) { S.done.j = 1; state.chartAnim = true; renderJump(); state.chartAnim = false; }
