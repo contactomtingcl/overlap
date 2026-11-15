@@ -1,0 +1,14 @@
+1
+00:00:00,300 --> 00:00:03,600
+Does it work? We tested it
+against 76,002 CONAF fire records:
+
+2
+00:00:03,700 --> 00:00:09,000
+without harmonization, the false 2012 jump is 4.7 times;
+harmonized, 0.89: it disappears.
+
+3
+00:00:09,200 --> 00:00:16,600
+And on years the model never saw,
+the mean monthly error is 1.47 times.

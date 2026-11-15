@@ -1,0 +1,13 @@
+1
+00:00:00,300 --> 00:00:07,400
+VIIRS sees between 4 and 7 times more hotspots than MODIS,
+depending on the season: from 4.1 to 6.8.
+
+2
+00:00:07,500 --> 00:00:10,400
+A fixed factor doesn't work.
+
+3
+00:00:10,500 --> 00:00:13,700
+Multiplying is not enough:
+the whole relationship has to be learned.

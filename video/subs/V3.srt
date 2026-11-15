@@ -1,0 +1,33 @@
+1
+00:00:00,300 --> 00:00:02,600
+This is Chile, region by region.
+
+2
+00:00:02,600 --> 00:00:05,600
+Each colour compares the month with what is normal
+for that same month over 25 years:
+
+3
+00:00:05,600 --> 00:00:09,000
+blue, far fewer hotspots; dark, normal;
+orange, far more.
+
+4
+00:00:09,100 --> 00:00:11,600
+Look at January 2017…
+
+5
+00:00:12,900 --> 00:00:15,300
+…and February 2023.
+
+6
+00:00:16,000 --> 00:00:19,600
+One click takes us into the region;
+
+7
+00:00:20,000 --> 00:00:23,000
+another, into the commune,
+
+8
+00:00:23,000 --> 00:00:27,600
+with its history month by month.

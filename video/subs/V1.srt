@@ -1,0 +1,12 @@
+1
+00:00:00,300 --> 00:00:05,000
+In 2012 VIIRS arrived, and it sees
+many more small fires than MODIS.
+
+2
+00:00:05,100 --> 00:00:07,900
+Joined as they are, fire seems to explode.
+
+3
+00:00:08,000 --> 00:00:10,800
+But it's not the fire: it's the satellite.

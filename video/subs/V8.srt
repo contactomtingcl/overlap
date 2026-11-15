@@ -1,0 +1,8 @@
+1
+00:00:00,300 --> 00:00:03,400
+The clock shows when each season burns.
+
+2
+00:00:03,500 --> 00:00:10,600
+In O'Higgins, the busiest moment came about 59 days earlier
+per decade, and it is confirmed with a single satellite.

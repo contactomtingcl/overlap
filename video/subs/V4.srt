@@ -1,0 +1,14 @@
+1
+00:00:00,300 --> 00:00:03,700
+Each square is a real hotspot,
+the size of the pixel that detected it:
+
+2
+00:00:03,800 --> 00:00:07,600
+one kilometre with MODIS,
+375 metres with VIIRS.
+
+3
+00:00:07,800 --> 00:00:14,600
+Type a coordinate and Overlap tells you
+where the nearest hotspot fell.
