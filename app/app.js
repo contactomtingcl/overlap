@@ -15,57 +15,62 @@ const I18N = {
     logo_alt: "Overlap logo: a coarse-pixel band and a fine-dot band crossing in a glowing square",
     def_hotspot: "A <b>hotspot</b> is a spot on the ground, about 375 m to 1 km wide, where a satellite measured unusual heat as it passed over. It can be a forest fire, an agricultural burn or another fire; one large fire produces many hotspots.",
     info_anom: "<b>Anomaly</b> compares this month with the same month in the previous 25 seasons, in the same area. <b>Normal</b> is the middle value: half of those years had less, half had more. <b>Unusually high</b> or <b>low</b> means far from normal, something that almost never happens in 25 years.<br><small>Technically: robust z on a log scale beyond ±2.</small>",
-    info_unit: "Each cell counts the hotspots of one month <b>as if the same satellite (VIIRS Suomi NPP) had watched all 25 years</b>. Before 2012 the count is estimated from MODIS, which sees fewer small fires; hover a cell to see its range.",
+    info_unit: "Every number is on the <b>VIIRS scale</b>: hotspots counted as if today's satellite (VIIRS Suomi NPP, 375 m pixels) had watched all 25 years. Before 2012 only MODIS existed, which sees fewer small fires, so those months are estimated and show their range. Hover a cell to see it.",
     info_lbl: "What does this mean?",
     read_climate: "<b>Weather and climate.</b> El Niño, droughts and heat waves change how much fire there really is: Overlap shows that a month or a season is unusual, not why. The conversion between sensors was learned over 14 seasons that include El Niño, La Niña and the 2017 and 2023 megafires, and tested on years it never saw. Not yet done: adjusting the season-clock trends for El Niño, and testing the drift of the MODIS orbits after 2021.",
 
     title: "Overlap · two satellites, <em>one honest</em> burning calendar",
     tag: "25 years of NASA FIRMS fire hotspots from MODIS (coarse pixels, since 2000) and VIIRS (fine pixels, since 2012), harmonized into one comparable series for Chile. Every estimate shows how much to trust it.",
     controls: "Controls", area: "Area", rows: "Rows", opt_season: "Fire season (Jul–Jun)", opt_year: "Calendar year (Jan–Dec)",
-    mode_h: "Harmonized", mode_r: "Raw (no harmonization)", csv: "Download CSV",
-    cal_h: "Burning activity calendar",
+    mode_h: "Harmonized (comparable)", mode_r: "As each satellite saw it", csv: "Download CSV",
+    cal_h: "Hotspot calendar, month by month",
     cvd: "Colour-blind palette", share: "Copy link", copied: "Link copied", play: "Play or pause the months",
     loadErr: "The data could not be loaded. Check your connection and reload the page.",
-    likeNote: (l) => ` Compared like for like, without the Atacama desert regions (${l}), whose recent near real-time data are withheld.`,
-    desertNote: " In this region the months after July 2026 are withheld: near real-time data over the Atacama desert hold many daytime false detections.",
+    likeNote: (l) => ` Compared like for like, without the Atacama desert regions (${l}), whose recent data are hidden.`,
+    desertNote: " In this region the months after July 2026 are hidden: over the Atacama desert, provisional data hold many false daytime hotspots.",
     clockPlainShift: (a, d, dir) => `The busiest time of the fire season is still around <b>${a}</b>, but it is coming <b>${d} days ${dir < 0 ? "earlier" : "later"} per decade</b>, and the change holds in the VIIRS-only years.`, gis_lead: "Download for GIS (QGIS, ArcGIS):",
     gis_note: "Region polygons (WGS84, BCN boundaries, referential and simplified) with the latest month, plus a monthly table for every region since 2000. In QGIS, join regions_monthly to regions on codregion; month is a date, so the Temporal Controller can animate it.",
     back: "← Chile", whereH: (r) => `Where in ${r}`,
-    whereNote: (sen) => `Raw ${sen} detections per commune, not harmonized: they show where the hotspots fall, not totals to compare across years.`,
-    whereNone: "No hotspots detected in any commune this month.", whereWithheld: "Withheld this month (near real-time data over the Atacama desert).",
+    whereNote: (sen) => `Hotspots ${sen} saw in each commune: they show where they fall, as the satellite saw them.`,
+    whereNone: "No hotspots detected in any commune this month.", whereWithheld: "Hidden this month: over the Atacama desert, provisional data hold many false hotspots.",
+    comConv: (sat, raw, v) => `<b>Whole region:</b> ${sat} saw <b>${raw}</b> hotspots <span class="arr">→</span> <b class="lime">≈ ${v}</b> on the VIIRS scale. Only the region total is converted; communes show what the satellite saw.`,
+    comEra: (mo) => `The map is at ${mo}, in the MODIS era. This chart starts in 2012, with VIIRS, so it only compares numbers from the same satellite.`,
+    gis_sum: "Download for GIS (QGIS, ArcGIS)",
+    mlgNorth: "North hidden in recent months: over the Atacama desert, provisional data hold many false daytime hotspots. It will appear with the final data.",
+    tipClick: "Click: see its days",
     cTip: (v, sh) => `${v} hotspots${sh == null ? "" : ` · ${sh} of the region`}`,
     map_hint: "Click a region to open it and zoom into its communes.",
     map_h: "Chile, region by region", mm_z: "Anomaly", mm_v: "Hotspots",
-    map_sub: "Each region against its own normal for that month (robust z on the harmonized series). Press ▶ to watch 25 years, month by month.",
+    map_sub: "Each region compared with normal for that same month over its 25 years. Press ▶ to watch 25 years, month by month.",
     north: "◂ North (Arica)", south: "South (Magallanes) ▸",
-    mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots / month (log)`, mlgNo: "no data, withheld or month in progress", mlgC: (m) => `communes: 0 – ${m} raw detections / month (log)`,
-    mTip: (v, z) => `${v} hotspots${z == null ? "" : ` · robust z = ${z}`}`,
+    mlgZ: ["much lower than normal", "normal", "much higher than normal"], mlgV: (m) => `0 – ${m} hotspots a month · multiplying scale (1, 10, 100…)`, mlgNo: "hatched: no data or month in progress", mlgC: (m) => `communes: 0 – ${m} hotspots a month, as the satellite saw them · multiplying scale`,
+    mTip: (v, lvl) => `${v} hotspots (VIIRS scale)${lvl ? `<br>${lvl}` : ""}`,
     ch_where: "Where · pick a region", ch_now: "Now · this month and this season", ch_history: "Calendar · 25 years in one unit",
     nav: ["Where", "Now", "Calendar", "Trust"], cta: "See the 25-year calendar", share_s: "Link", cvd_s: "Colour-blind", csv_s: "CSV",
     comH: (c, r) => `${c} <span class="muted">· ${r}</span>`,
-    comNow: (mo, v, sh) => `${mo}: <b>${v}</b> hotspot detections${sh == null ? "" : `, ${sh} of the region`}.`,
-    comSeasons: "Detections per fire season (VIIRS Suomi NPP, 2012–13 to 2025–26)",
-    comMonthly: "Month by month since 2012 (VIIRS Suomi NPP) · the yellow line follows the map",
-    comMo: (mo) => `detections in ${mo}`, comShare: (p) => `${p} of the region's detections this month`,
+    comNow: (mo, v, sh) => `${mo}: <b>${v}</b> hotspots${sh == null ? "" : `, ${sh} of the region`}.`,
+    comSeasons: "Hotspots per fire season (VIIRS Suomi NPP, 2012–13 to 2025–26)",
+    comMonthly: "Month by month since 2012, with VIIRS · the yellow line marks the map's month",
+    comMo: (mo, sat) => `hotspots ${sat} saw in ${mo}`, comShare: (p) => `${p} of the region's hotspots this month`,
     comBefore: "Before 2012 another sensor counted (MODIS): not shown here",
     comBest: (mo, v) => `Busiest month on record: ${mo} (${v}).`,
-    comNote: "Raw detections of one sensor, comparable between these seasons only. Not harmonized: before 2012 a different sensor counted, so those years are left out here.",
+    comNote: "Hotspots as one satellite (VIIRS) saw them, comparable between these seasons. MODIS years are left out here because that satellite sees fewer small fires and the conversion is done per region, not per commune.",
     comNone: "No hotspots detected in this commune since 2012.",
     backTo: (r) => `← ${r}`, comHint: "Click a commune to zoom in and see its history.",
-    kH: "Is the conversion between sensors stable?",
-    kSub: (a) => `How many hotspots VIIRS Suomi NPP counts for each one of MODIS Aqua, season by season, in ${a}.`,
-    kPlain: (lo, hi, n) => `Between seasons the ratio ranges from <b>×${lo}</b> to <b>×${hi}</b>. One overlap year would give a different answer, so the quantile maps learn from all ${n} seasons of overlap and are tested on years they never saw.`,
-    kLg: ["VIIRS / MODIS Aqua, per fire season", "all seasons pooled"],
-    kNote: "The ratio depends on the season (fire sizes, clouds, weather), which is why a single fixed factor is not used. Next step: test the ratio against El Niño indices (NOAA CPC) and the drift of the MODIS orbits after 2021.", ch_trust: "Trust · why these numbers hold",
+    kH: "How many more hotspots does VIIRS see than MODIS?",
+    kSub: (a) => `For each hotspot MODIS Aqua sees, how many VIIRS sees in ${a}, season by season, when both watched together.`,
+    kPlain: (lo, hi, n) => `VIIRS sees between <b>${lo}</b> and <b>${hi} times</b> more hotspots than MODIS, depending on the season. That is why one number is not enough: the conversion learns from the ${n} seasons when both satellites watched together and is tested on years it never saw.`,
+    kLg: ["VIIRS hotspots per MODIS Aqua hotspot, per fire season", "all seasons pooled"],
+    kNote: "It changes with fire sizes, clouds and weather. It is the same factor you see when you open the days of an old month. Next step: test it against El Niño indices (NOAA CPC) and the drift of the MODIS orbits after 2021.", ch_trust: "Trust · why these numbers hold",
     more_curve: "See the full curve, month by month",
-    seasonIntro: "Fire season 2026–27 (July to June), in Suomi NPP-equivalent hotspots.",
-    clockPlainUnclear: (a, b) => `The busiest month was ${a} in the MODIS years (2001–2012) and is <b>${b}</b> in the VIIRS years (2012–2026), but over 25 seasons the shift is not statistically clear.`, more_clock: "See every season and the trend tests",
+    seasonIntro: "Fire season 2026–27 (July to June), in hotspots on the VIIRS scale.",
+    clockPlainUnclear: (a, b) => `<b>No clear change in 25 seasons.</b> The busiest month was ${a} in the MODIS years (2001–2012) and is ${b} in the VIIRS years (2012–2026), but it varies so much from season to season that there is no firm evidence the season has moved.`, more_clock: "See every season and the trend tests",
     seasonPlain: (area, mo, cur, med, lo, hi, lvl) => `${area} has <b>${cur}</b> hotspots so far this season (to ${mo}). A normal season has about ${med} by now; 8 of every 10 seasons had between ${lo} and ${hi}. <span class="${lvl}">${lvl === "lo" ? "So far, a quiet season." : lvl === "hi" ? "So far, a busy season." : "So far, a normal season."}</span>`,
-    meterLg: ["8 of every 10 past seasons", "normal (median)", "this season"],
+    meterLg: ["usual range: 8 of every 10 past seasons were here", "normal", "this season"],
     dialThen: "seasons 2001–02 to 2011–12", dialNow: "seasons 2012–13 to 2025–26",
     clockPlainMoved: (a, b) => `The busiest time of the fire season <b>moved from ${a} to ${b}</b>, and the change holds in the VIIRS-only years.`,
-    clockPlainMaybe: (a, b) => `The busiest time may have moved from ${a} to ${b}, but it is not confirmed in the VIIRS-only years.`,
-    clockPlainSame: (a) => `The busiest time of the fire season is still around <b>${a}</b>: no clear shift in 25 seasons.`,
+    clockPlainMaybe: (a, b) => `<b>Possible change, not confirmed.</b> The busiest time may have moved from ${a} to ${b}, but it is not confirmed in the VIIRS-only years.`,
+    clockPlainSame: (a) => `<b>No clear change in 25 seasons.</b> The busiest time of the fire season is still around ${a}.`,
     dialLg: ["each wedge: share of the season's hotspots in that month", "now: seasons 2012–13 to 2025–26 (VIIRS)", "before: seasons 2001–02 to 2011–12 (estimated from MODIS)", "hand = busiest month"],
     clock_h: "Season clock: is the fire season shifting?",
     clockIntro: "When in the year do the hotspots happen, and has that changed? The dial is the year: January at 1 o'clock, December at 12. Climate cycles such as El Niño can create or hide an apparent shift over 25 seasons; trends are not adjusted for them yet.",
@@ -80,15 +85,15 @@ const I18N = {
     scen: (v, a, b) => `If the rest of the season is like past seasons: about ${v} hotspots by June (${a}–${b}). A scenario, not a forecast.`,
     scenLg: "scenarios: the rest of the season like past seasons (10–90%)",
     season_h: "This season so far vs every past season",
-    seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, in Suomi NPP-equivalent units, on a log scale. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
+    seasonSub: (area) => `${area}, fire season 2026–27 (July to June): hotspots added up month by month, on the VIIRS scale, with a multiplying axis. The band holds 8 of every 10 past seasons (2001–02 to 2025–26).`,
     seasonWarn: " A quiet or busy start is not a forecast: from Valparaíso to La Araucanía, July–October activity did not anticipate November–June in the last 25 seasons.",
-    seasonExcl: (l) => ` Atacama desert regions (${l}) are left out of both sides, because their recent near real-time data are withheld.`,
+    seasonExcl: (l) => ` Atacama desert regions (${l}) are left out of both sides, because their recent data are hidden.`,
     sThrough: (mo) => `Through ${mo}`, sThroughSub: "hotspots so far this season",
     sVs: "Compared with the median past season", sVsSub: (b, n) => `higher than ${b} of ${n} past seasons at this point`,
     sCur: "Season 2026–27 (open dots: provisional; dashed: November in progress)", sMed: "median of past seasons", sBand: "10th–90th percentile of past seasons",
     sTop: (s) => `${s} (most active)`, sPt: (mo, v, st) => `${mo}: ${v} hotspots so far${st}`, sProv: " (provisional)", sPart: " (partial, through Nov 7)",
     jump_h: "The 2012 jump, before and after",
-    jump_sub: "When VIIRS arrives in 2012 it sees many more small fires than MODIS. Joined as they are, the record seems to explode overnight. Harmonized, every year speaks the same unit.",
+    jump_sub: "When VIIRS arrives in 2012 it sees many more small fires than MODIS: joined as they are, the numbers seem to explode from one year to the next. The test: for each fire in CONAF's records, how many hotspots appear after 2012 compared with before? If the numbers are comparable, the answer is ×1.",
     trust_h: "How much to trust these numbers",
     trust_sub: "Joining two sensors is never exact. We measured the error on years the model never saw (2020–2026) and against CONAF fire records of 2002–2020 (76,002 fires in the four calibrated regions; 109,947 in all of Chile).",
     read_h: "How to read this",
@@ -99,44 +104,46 @@ const I18N = {
     aoi: { chile: "Chile (whole country)", biobio_hist: "Biobío + Ñuble (historical Biobío region, CONAF validation area)" },
     aoiShort: { chile: "Chile", biobio_hist: "Biobío + Ñuble" },
     level: { "unusually high": "unusually high", "unusually low": "unusually low", "within normal": "within normal" },
-    headline: (mo, y, area, lvl) => `${mo} ${y} in ${area}: ${lvl} burning activity`,
+    headline: (mo, y, area, lvl) => `${mo} ${y} in ${area}: ${lvl}`,
+    levelHead: { "unusually high": "far more hotspots than normal", "unusually low": "far fewer hotspots than normal", "within normal": "hotspots within normal" },
     kicker: (prov) => `Latest complete month${prov ? " · provisional, near real-time data" : ""}`,
-    statusSub: (prov, mo) => (prov ? "It may change slightly when science-quality data arrives; November 2026 is still in progress. " : "") + `Unusual = more than 2 robust deviations from the ${mo} median on a log scale.`,
-    kThis: "This month", kThisSub: "hotspots, Suomi NPP-equivalent",
-    kNormal: (mo) => `Normal for ${mo}`, kNormalSub: "median, seasons 2000–01 to 2025–26",
-    kAgainst: (n, mo) => `Against ${n} previous ${mo}s`, kAgainstSub: (b, n, z) => `higher than ${b} of ${n} · robust z = ${z}`,
+    statusSub: (prov, mo) => (prov ? "Provisional, near real-time data: it may change slightly. November 2026 is still in progress. " : "") + `"Far more" or "far fewer" means something that almost never happens in 25 years of ${mo}.`,
+    kThis: "This month", kThisSub: (est) => est ? "hotspots, estimated on the VIIRS scale" : "hotspots, measured by VIIRS",
+    kNormal: (mo) => `Normal for ${mo}`, kNormalSub: "the middle value over seasons 2000–01 to 2025–26",
+    kAgainst: (n, mo) => `Against ${n} previous ${mo}s`, kAgainstSub: (b, n, mo) => b === 0 ? `no previous ${mo} had fewer hotspots` : b === n ? `no previous ${mo} had more hotspots` : `${b} of ${n} had fewer hotspots`,
     kTop: "Most active season", kTopSub: (v) => `${v} hotspots (Jul–Jun)`,
-    calSub: (area) => `${area}. Colour = hotspots per month in Suomi NPP-equivalent units (brighter, more yellow = more). Hover a month for its range; click it to see its days.`,
-    calSubRaw: "<b>Raw view:</b> each sensor's own count, joined as they are. Notice how activity seems to jump when VIIRS starts in 2012: that jump is the sensor, not the fire.",
-    lgRamp: (max) => `${max} hotspots / month (log)`, lgNoData: "no data (not zero)", lgProv: "provisional (near real-time)",
-    lgModis: "estimated from MODIS (coarse pixels)", lgViirs: "observed by VIIRS (fine pixels)", lgEra: "VIIRS era begins (2012)",
-    srcModis: (s) => `MODIS ${s}`, srcViirs: "VIIRS", srcNoaa: "NOAA-20",
-    tipWithheld: "Withheld: near real-time data over the Atacama desert holds many daytime false detections. Shown when science-quality data arrives.",
+    calSub: (area) => `${area}. Colour = hotspots in the month on the VIIRS scale (brighter, more yellow = more). Hover a month to see what the satellite saw and its range; click it to see its days.`,
+    calSubRaw: "<b>As each satellite saw it:</b> each one's own count, joined as they are. Notice how hotspots seem to jump when VIIRS starts in 2012: that jump is the satellite, not the fire.",
+    lgRamp: (max) => `${max} hotspots a month · multiplying scale (1, 10, 100…)`, lgNoData: "no data (not zero)", lgProv: "provisional (near real-time)",
+    lgModis: "estimated from MODIS (1 km pixels)", lgViirs: "measured by VIIRS (375 m pixels)", lgEra: "VIIRS era begins (2012)",
+    srcModis: (s) => `estimated · MODIS ${s}`, srcViirs: "measured · VIIRS", srcNoaa: "measured · NOAA-20",
+    tipWithheld: "Hidden: over the Atacama desert, provisional data hold many false daytime hotspots. Shown with the final data.",
     tipNoData: "No satellite record for this month (not zero fire).",
-    tipValue: (v) => `${v} hotspots, harmonized (Suomi NPP-equivalent)`,
-    tipRaw: (sen, v) => `Raw ${sen}: ${v}`, tipRange: (a, b) => `80% range: ${a}–${b}`,
+    tipValue: (v, est) => `<b class="tv">${est ? "≈ " : ""}${v}</b> hotspots on the VIIRS scale`,
+    tipRaw: (sen, v) => `What ${sen} saw: ${v}`, tipRange: (a, b) => `Probably between ${a} and ${b}`,
     tipMethod: "Method", methodName: { qmap: "own quantile map", qmap_pooled: "pooled quantile map", ratio: "simple ratio", mixed: "mixed (summed regions)" },
-    tipProv: "Provisional: near real-time Suomi NPP data, final values arrive later",
+    tipProv: "Provisional: near real-time data, may change slightly",
     tipPartial: (d) => `Partial month: data through ${d}, from NOAA-20 (Suomi NPP stopped on Nov 2, 2026)`,
-    tipObs: "Observed by VIIRS Suomi NPP", tipMedian: (mo, v) => `Median for ${mo}: ${v}`,
+    tipObs: "Measured directly by VIIRS Suomi NPP", tipMedian: (mo, v) => `Normal for ${mo}: ${v}`,
     tipAnom: { "unusually high": "Unusually high", "unusually low": "Unusually low", "within normal": "Within normal" },
     robustZ: "robust z",
-    noteDesert: "Atacama desert regions withheld for this month",
-    figRaw: (area) => `False jump at 2012, ${area}, vs CONAF fire records`, figRawSub: "raw, joined as they are",
-    figH: "After harmonization", figHSub: (lo, hi) => `95% CI ${lo}–${hi} (1 = no jump)`,
+    noteDesert: "Without the Atacama desert regions, hidden this month",
+    figRaw: (area) => `Not harmonized · ${area}`, figRawSub: "hotspots per CONAF fire after 2012 vs before: a false jump, caused by the change of satellite",
+    figH: "Harmonized", figHSub: (lo, hi) => `≈ 1: no jump (95% confidence: between ${lo} and ${hi})`,
     figAll: "Maule to La Araucanía", figNone: "This area has not been checked against CONAF fire records; the harmonization here was tested on hidden years 2020–2026 (see the trust table).",
     chVIIRS: "VIIRS starts · overlap 2012–2026", chVIIRSshort: "VIIRS starts",
     chTitle: (s, h, r) => `${s}: harmonized ${h}, raw ${r}`,
-    chLgH: "harmonized (one unit for all years)", chLgR: "raw: MODIS before 2012, VIIRS after", chLgNote: "Hotspots per fire season (Jul–Jun), complete seasons only.",
-    thRegion: "Region", thJump: "False jump at 2012 vs CONAF<br>(1 = no jump)", thAqua: "MODIS Aqua years<br>2002–2012", thTerra: "MODIS Terra years<br>2000–2002", thMethod: "Method",
-    raw: "raw", ci: "95% CI",
-    errLine: (f, b, c) => `mean monthly error ×${f}<br><small>total bias ${b}${c == null ? "" : ` · 80% band held ${c}% of months`}</small>`,
+    chLgH: "harmonized (one unit for all years)", chLgR: "as each satellite saw it: MODIS before 2012, VIIRS after", chLgNote: "Hotspots per fire season (Jul–Jun), complete seasons only.",
+    thRegion: "Region", thJump: "2012 jump vs CONAF<br>(×1 = no jump)", thAqua: "Years estimated from MODIS Aqua<br>2002–2012", thTerra: "Years with only MODIS Terra<br>2000–2002", thMethod: "Method",
+    raw: "not harmonized", ci: "95% confidence:",
+    errLine: (f, lo, hi, b, c) => `if we show 100, the real value is usually between <b>${lo} and ${hi}</b><br><small>mean error ×${f} · ${b}${c == null ? "" : ` · the range was right in ${c} of 100 months`}</small>`,
+    biasTxt: (v) => Math.abs(v) < 0.5 ? "no overall bias" : `overall ${dec(Math.abs(v), 1)}% ${v < 0 ? "too low" : "too high"}`,
     testedH: "Other regions: tested on hidden years 2020–2026 and against CONAF fire records",
     testedNote: "The pooled map was fitted on Maule, Ñuble, Biobío and La Araucanía together and tested in regions it never saw; where it lost to the region's own simple ratio, the ratio is used. Against CONAF (109,947 fires in all regions), the false 2012 jump disappears in 9 of the 11 regions with enough fires. Valparaíso is overcorrected and Metropolitana keeps part of the jump; the north and Magallanes have too few CONAF fires to judge. Errors are larger than in the calibrated regions, so treat the years before 2012 there as indicative.",
-    thConaf: "False jump at 2012 vs CONAF<br>(1 = no jump)",
+    thConaf: "2012 jump vs CONAF<br>(×1 = no jump)",
     verdict: { removed: "jump removed", over: (p) => `overcorrected: the years before 2012 come out about ${p}% too high`, under: (p) => `undercorrected: the years before 2012 come out about ${p}% too low`, few_fires: (n) => `only ${n} CONAF fires: cannot judge` },
     figConaf: (v) => `In this region: ${v}.`,
-    trustNote: (f, cov) => `A mean error of ×${f} means the harmonized value of a month is usually within that factor of what Suomi NPP would have recorded. The 80% band on estimated months should contain 8 of 10 months; for MODIS Aqua on the hidden years it held ${cov}%, slightly fewer than promised.`,
+    trustNote: (f, cov) => `How to read it: with a mean error of ×${f}, if an old month shows 100 hotspots, what VIIRS would have seen is usually between 100 ÷ ${f} and 100 × ${f}. Each month's range should be right 8 times out of 10; for MODIS Aqua, on years the model never saw, it was right ${cov} times out of 100, slightly fewer than promised.`,
     method: {
       unit: "All values are expressed as hotspots that VIIRS Suomi NPP would record (one satellite, never a sum of satellites). Before Suomi NPP (2012), MODIS counts are mapped to that unit. ",
       qmap: (r) => `<b>${r}:</b> quantile mapping fitted where both sensors observed (2012–2026), tested on hidden years 2020–2026 and checked against CONAF fire records 2002–2020. Maule, Ñuble, Biobío and La Araucanía together: unharmonized, the series jumps ×4.7 at 2012 relative to real fire activity; harmonized, ×0.89 (95% interval includes 1, no jump). `,
@@ -160,7 +167,7 @@ const I18N = {
       none: " No day with hotspots.",
       thru: (d, mo) => `${mo[0].toUpperCase() + mo.slice(1)} ${d}`,
     },
-    cv: { saw: (s) => `What ${s} saw`, days: (fd, n) => `hotspots, on ${fd} of ${n} days`, arrow: "converted to the VIIRS Suomi NPP scale", factor: (f) => `≈ ×${f} this month`,
+    cv: { saw: (s) => `What ${s} saw`, days: (fd, n) => `hotspots, on ${fd} of ${n} days`, arrow: "converted to the VIIRS scale", factor: (f) => `≈ ×${f} this month`,
       out: "Number comparable across years", range: (lo, hi) => `probably between ${lo} and ${hi}`, direct: "measured directly, no conversion" },
     cap: { estimated: (sat, sum) => `Each day: hotspots ${sat} saw (they add up to ${sum}). Days show what the satellite saw; only the monthly total is converted.`,
       observed: (sum) => `Each day: hotspots VIIRS Suomi NPP saw (they add up to ${sum}).`, partial: "Each day: VIIRS NOAA-20 hotspots on the Suomi NPP scale (approximate)." },
@@ -176,62 +183,67 @@ const I18N = {
     logo_alt: "Logo de Overlap: una franja de píxeles gruesos y otra de puntos finos que se cruzan en un cuadrado luminoso",
     def_hotspot: "Un <b>foco de calor</b> es un punto de la superficie, de unos 375 m a 1 km, donde un satélite midió un calor anormal al pasar. Puede ser un incendio forestal, una quema agrícola u otro fuego; un incendio grande produce muchos focos.",
     info_anom: "La <b>anomalía</b> compara este mes con el mismo mes de las 25 temporadas anteriores, en la misma área. <b>Lo normal</b> es el valor del medio: la mitad de esos años tuvo menos y la mitad tuvo más. <b>Inusualmente alta</b> o <b>baja</b> significa muy lejos de lo normal, algo que casi nunca pasa en 25 años.<br><small>Técnicamente: z robusto en escala logarítmica más allá de ±2.</small>",
-    info_unit: "Cada celda cuenta los focos de un mes <b>como si el mismo satélite (VIIRS Suomi NPP) hubiera observado los 25 años</b>. Antes de 2012 la cifra se estima desde MODIS, que ve menos fuegos pequeños; pasa el cursor sobre una celda para ver su rango.",
+    info_unit: "Todas las cifras están en <b>escala VIIRS</b>: cuentan los focos como si el satélite de hoy (VIIRS Suomi NPP, píxeles de 375 m) hubiera observado los 25 años. Antes de 2012 solo existía MODIS, que ve menos fuegos pequeños, así que esos meses se estiman y muestran su rango. Pasa el cursor sobre una celda para verlo.",
     info_lbl: "¿Qué significa esto?",
     read_climate: "<b>Tiempo y clima.</b> El Niño, las sequías y las olas de calor cambian cuánto fuego hay realmente: Overlap muestra que un mes o una temporada es inusual, no por qué. La conversión entre sensores se aprendió en 14 temporadas que incluyen El Niño, La Niña y los megaincendios de 2017 y 2023, y se probó en años que nunca vio. Pendiente: ajustar por El Niño las tendencias del reloj de la temporada y probar la deriva de las órbitas de MODIS después de 2021.",
 
     title: "Overlap · dos satélites, <em>un solo calendario</em> honesto de quemas",
     tag: "25 años de focos de calor de NASA FIRMS, de MODIS (píxeles gruesos, desde 2000) y VIIRS (píxeles finos, desde 2012), armonizados en una sola serie comparable para Chile. Cada estimación muestra cuánto confiar en ella.",
     controls: "Controles", area: "Área", rows: "Filas", opt_season: "Temporada de incendios (jul–jun)", opt_year: "Año calendario (ene–dic)",
-    mode_h: "Armonizado", mode_r: "Crudo (sin armonizar)", csv: "Descargar CSV",
-    cal_h: "Calendario de actividad de quemas",
+    mode_h: "Armonizado (comparable)", mode_r: "Como lo vio cada satélite", csv: "Descargar CSV",
+    cal_h: "Calendario de focos de calor, mes a mes",
     cvd: "Paleta para daltonismo", share: "Copiar link", copied: "Link copiado", play: "Reproducir o pausar los meses",
     loadErr: "No se pudieron cargar los datos. Revisa tu conexión y recarga la página.",
-    likeNote: (l) => ` Comparación equivalente, sin las regiones del desierto de Atacama (${l}), cuyos datos recientes casi en tiempo real están retenidos.`,
-    desertNote: " En esta región los meses posteriores a julio de 2026 están retenidos: los datos casi en tiempo real sobre el desierto de Atacama tienen muchas detecciones falsas diurnas.",
+    likeNote: (l) => ` Comparación equivalente, sin las regiones del desierto de Atacama (${l}), cuyos datos recientes están ocultos.`,
+    desertNote: " En esta región los meses posteriores a julio de 2026 están ocultos: sobre el desierto de Atacama los datos provisorios traen muchos focos falsos de día.",
     clockPlainShift: (a, d, dir) => `El momento de más focos de la temporada sigue siendo cerca de <b>${a}</b>, pero llega <b>${d} días ${dir < 0 ? "antes" : "después"} por década</b>, y el cambio se mantiene en los años solo VIIRS.`, gis_lead: "Descarga para SIG (QGIS, ArcGIS):",
     gis_note: "Polígonos de las regiones (WGS84, límites de la BCN, referenciales y simplificados) con el último mes, más una tabla mensual de cada región desde 2000. En QGIS, une regions_monthly con regions por codregion; month es una fecha, así que el Controlador temporal puede animarla.",
     back: "← Chile", whereH: (r) => `Dónde, en ${r}`,
-    whereNote: (sen) => `Detecciones crudas de ${sen} por comuna, sin armonizar: muestran dónde caen los focos, no totales para comparar entre años.`,
-    whereNone: "No se detectaron focos en ninguna comuna este mes.", whereWithheld: "Retenido este mes (datos casi en tiempo real sobre el desierto de Atacama).",
+    whereNote: (sen) => `Focos que vio ${sen} en cada comuna: muestran dónde caen, tal como los vio el satélite.`,
+    whereNone: "No se detectaron focos en ninguna comuna este mes.", whereWithheld: "Oculto este mes: sobre el desierto de Atacama los datos provisorios traen muchos focos falsos.",
+    comConv: (sat, raw, v) => `<b>Toda la región:</b> ${sat} vio <b>${raw}</b> focos <span class="arr">→</span> <b class="lime">≈ ${v}</b> en escala VIIRS. Solo el total de la región se convierte; las comunas muestran lo que vio el satélite.`,
+    comEra: (mo) => `El mapa está en ${mo}, en la era MODIS. Este gráfico parte en 2012, con VIIRS, para comparar solo cifras del mismo satélite.`,
+    gis_sum: "Descargar para SIG (QGIS, ArcGIS)",
+    mlgNorth: "Norte oculto en los meses recientes: sobre el desierto de Atacama los datos provisorios traen muchos focos falsos de día. Aparecerá con los datos definitivos.",
+    tipClick: "Clic: ver sus días",
     cTip: (v, sh) => `${v} focos de calor${sh == null ? "" : ` · ${sh} de la región`}`,
     map_hint: "Haz clic en una región para abrirla y acercarte a sus comunas.",
     map_h: "Chile, región por región", mm_z: "Anomalía", mm_v: "Focos de calor",
-    map_sub: "Cada región frente a su propio normal para ese mes (z robusto sobre la serie armonizada). Presiona ▶ para ver 25 años, mes a mes.",
+    map_sub: "Cada región comparada con lo normal en ese mismo mes de sus 25 años. Presiona ▶ para ver 25 años, mes a mes.",
     north: "◂ Norte (Arica)", south: "Sur (Magallanes) ▸",
-    mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos / mes (log)`, mlgNo: "sin datos, retenido o mes en curso", mlgC: (m) => `comunas: 0 – ${m} detecciones crudas / mes (log)`,
-    mTip: (v, z) => `${v} focos de calor${z == null ? "" : ` · z robusto = ${z}`}`,
+    mlgZ: ["mucho menor que lo normal", "normal", "mucho mayor que lo normal"], mlgV: (m) => `0 – ${m} focos al mes · escala multiplicativa (1, 10, 100…)`, mlgNo: "achurado: sin datos o mes en curso", mlgC: (m) => `comunas: 0 – ${m} focos al mes, como los vio el satélite · escala multiplicativa`,
+    mTip: (v, lvl) => `${v} focos (escala VIIRS)${lvl ? `<br>${lvl}` : ""}`,
     ch_where: "Dónde · elige una región", ch_now: "Ahora · este mes y esta temporada", ch_history: "Calendario · 25 años en una sola unidad",
     nav: ["Dónde", "Ahora", "Calendario", "Confianza"], cta: "Ver el calendario de 25 años", share_s: "Link", cvd_s: "Daltonismo", csv_s: "CSV",
     comH: (c, r) => `${c} <span class="muted">· ${r}</span>`,
-    comNow: (mo, v, sh) => `${mo}: <b>${v}</b> detecciones de focos${sh == null ? "" : `, ${sh} de la región`}.`,
-    comSeasons: "Detecciones por temporada (VIIRS Suomi NPP, 2012–13 a 2025–26)",
-    comMonthly: "Mes a mes desde 2012 (VIIRS Suomi NPP) · la línea amarilla sigue al mapa",
-    comMo: (mo) => `detecciones en ${mo}`, comShare: (p) => `${p} de las detecciones de la región este mes`,
+    comNow: (mo, v, sh) => `${mo}: <b>${v}</b> focos${sh == null ? "" : `, ${sh} de la región`}.`,
+    comSeasons: "Focos por temporada (VIIRS Suomi NPP, 2012–13 a 2025–26)",
+    comMonthly: "Mes a mes desde 2012, con VIIRS · la línea amarilla marca el mes del mapa",
+    comMo: (mo, sat) => `focos que vio ${sat} en ${mo}`, comShare: (p) => `${p} de los focos de la región este mes`,
     comBefore: "Antes de 2012 contaba otro sensor (MODIS): no se muestra aquí",
     comBest: (mo, v) => `Mes con más focos registrado: ${mo} (${v}).`,
-    comNote: "Detecciones crudas de un solo sensor, comparables solo entre estas temporadas. Sin armonizar: antes de 2012 contaba otro sensor, por eso esos años no se muestran aquí.",
+    comNote: "Focos tal como los vio un solo satélite (VIIRS), comparables entre estas temporadas. Los años MODIS no se muestran aquí porque ese satélite ve menos fuegos pequeños y la conversión se hace por región, no por comuna.",
     comNone: "No se detectaron focos en esta comuna desde 2012.",
     backTo: (r) => `← ${r}`, comHint: "Haz clic en una comuna para acercarte y ver su historia.",
-    kH: "¿Es estable la conversión entre sensores?",
-    kSub: (a) => `Cuántos focos cuenta VIIRS Suomi NPP por cada uno de MODIS Aqua, temporada por temporada, en ${a}.`,
-    kPlain: (lo, hi, n) => `Entre temporadas la razón va de <b>×${lo}</b> a <b>×${hi}</b>. Un solo año de traslape daría otra respuesta; por eso los mapas de cuantiles aprenden de las ${n} temporadas de traslape y se prueban en años que nunca vieron.`,
-    kLg: ["VIIRS / MODIS Aqua, por temporada", "todas las temporadas juntas"],
-    kNote: "La razón depende de la temporada (tamaño de los fuegos, nubes, clima); por eso no se usa un factor fijo. Siguiente paso: contrastarla con los índices de El Niño (NOAA CPC) y con la deriva de las órbitas de MODIS después de 2021.", ch_trust: "Confianza · por qué estas cifras se sostienen",
+    kH: "¿Cuántos focos más ve VIIRS que MODIS?",
+    kSub: (a) => `Por cada foco que ve MODIS Aqua, cuántos ve VIIRS en ${a}, temporada por temporada, cuando ambos observaron juntos.`,
+    kPlain: (lo, hi, n) => `VIIRS ve entre <b>${lo}</b> y <b>${hi} veces</b> más focos que MODIS, según la temporada. Por eso no basta un solo número: la conversión aprende de las ${n} temporadas en que ambos satélites observaron juntos y se prueba en años que nunca vio.`,
+    kLg: ["focos de VIIRS por cada foco de MODIS Aqua, por temporada", "todas las temporadas juntas"],
+    kNote: "Cambia con el tamaño de los fuegos, las nubes y el clima. Es el mismo factor que ves al abrir los días de un mes antiguo. Siguiente paso: contrastarlo con los índices de El Niño (NOAA CPC) y con la deriva de las órbitas de MODIS después de 2021.", ch_trust: "Confianza · por qué estas cifras se sostienen",
     more_curve: "Ver la curva completa, mes a mes",
-    seasonIntro: "Temporada de incendios 2026–27 (julio a junio), en focos de calor equivalentes a Suomi NPP.",
-    clockPlainUnclear: (a, b) => `El mes con más focos era ${a} en los años MODIS (2001–2012) y es <b>${b}</b> en los años VIIRS (2012–2026), pero en 25 temporadas el cambio no es estadísticamente claro.`, more_clock: "Ver cada temporada y las pruebas de tendencia",
+    seasonIntro: "Temporada de incendios 2026–27 (julio a junio), en focos de calor en escala VIIRS.",
+    clockPlainUnclear: (a, b) => `<b>Sin un cambio claro en 25 temporadas.</b> El mes con más focos fue ${a} en los años MODIS (2001–2012) y es ${b} en los años VIIRS (2012–2026), pero varía tanto de una temporada a otra que no hay evidencia firme de que la temporada se haya movido.`, more_clock: "Ver cada temporada y las pruebas de tendencia",
     seasonPlain: (area, mo, cur, med, lo, hi, lvl) => `${area} lleva <b>${cur}</b> focos de calor en esta temporada (hasta ${mo}). Una temporada normal lleva cerca de ${med} a esta altura; 8 de cada 10 temporadas tenían entre ${lo} y ${hi}. <span class="${lvl}">${lvl === "lo" ? "Por ahora, una temporada tranquila." : lvl === "hi" ? "Por ahora, una temporada activa." : "Por ahora, una temporada normal."}</span>`,
-    meterLg: ["8 de cada 10 temporadas anteriores", "lo normal (mediana)", "esta temporada"],
+    meterLg: ["rango habitual: 8 de cada 10 temporadas anteriores estaban aquí", "lo normal", "esta temporada"],
     dialThen: "temporadas 2001–02 a 2011–12", dialNow: "temporadas 2012–13 a 2025–26",
     clockPlainMoved: (a, b) => `El momento de más focos de la temporada <b>se movió de ${a} a ${b}</b>, y el cambio se mantiene en los años solo VIIRS.`,
-    clockPlainMaybe: (a, b) => `El momento de más focos podría haberse movido de ${a} a ${b}, pero no se confirma en los años solo VIIRS.`,
-    clockPlainSame: (a) => `El momento de más focos de la temporada sigue siendo cerca de <b>${a}</b>: sin un cambio claro en 25 temporadas.`,
+    clockPlainMaybe: (a, b) => `<b>Posible cambio, sin confirmar.</b> El momento de más focos podría haberse movido de ${a} a ${b}, pero no se confirma en los años solo VIIRS.`,
+    clockPlainSame: (a) => `<b>Sin un cambio claro en 25 temporadas.</b> El momento de más focos de la temporada sigue siendo cerca de ${a}.`,
     dialLg: ["cada sector: parte de los focos de la temporada en ese mes", "ahora: temporadas 2012–13 a 2025–26 (VIIRS)", "antes: temporadas 2001–02 a 2011–12 (estimado desde MODIS)", "aguja = mes con más focos"],
     clock_h: "Reloj de la temporada: ¿se está desplazando la temporada de incendios?",
     clockIntro: "¿En qué momento del año ocurren los focos, y ha cambiado eso? El reloj es el año: enero a la 1, diciembre a las 12. Ciclos climáticos como El Niño pueden crear u ocultar un desplazamiento aparente en 25 temporadas; las tendencias aún no se ajustan por ellos.",
     clockSub: "Cada barra es una temporada: empieza cuando ocurrió el 10 % de sus focos, termina al 90 %, y el punto marca el mes con más focos. Las tendencias usan pendientes de Theil-Sen y la prueba de Mann-Kendall sobre 25 temporadas; un desplazamiento se considera confirmado solo si también aparece en las temporadas solo VIIRS (2012–13 a 2025–26). Las temporadas de focos incluyen las quemas agrícolas.",
-    clockDesert: "No se muestra para las regiones del desierto de Atacama: sus focos incluyen detecciones falsas persistentes, así que la forma de la temporada no tiene sentido.",
+    clockDesert: "No se muestra para las regiones del desierto de Atacama: sus focos incluyen focos falsos persistentes, así que la forma de la temporada no tiene sentido.",
     clockMetric: { onset: "Inicio (10 %)", peak: "Mes con más focos", end: "Fin (90 %)", length: "Duración" },
     clockVal: (k, v) => k === "length" ? `${dec(Math.abs(v), 1)} días ${v < 0 ? "más corta" : "más larga"} por década` : `${dec(Math.abs(v), 1)} días ${v < 0 ? "antes" : "después"} por década`,
     clockV: { robust: "confirmado en los años solo VIIRS", possible: "posible, no confirmado en los años solo VIIRS", none: "sin cambio claro" },
@@ -241,15 +253,15 @@ const I18N = {
     scen: (v, a, b) => `Si el resto de la temporada fuera como las anteriores: cerca de ${v} focos a junio (${a}–${b}). Es un escenario, no un pronóstico.`,
     scenLg: "escenarios: el resto de la temporada como las anteriores (10–90 %)",
     season_h: "Esta temporada hasta ahora frente a todas las anteriores",
-    seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en unidades equivalentes a Suomi NPP, en escala logarítmica. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
+    seasonSub: (area) => `${area}, temporada de incendios 2026–27 (julio a junio): focos de calor acumulados mes a mes, en escala VIIRS, con eje multiplicativo. La franja contiene 8 de cada 10 temporadas anteriores (2001–02 a 2025–26).`,
     seasonWarn: " Un inicio tranquilo o activo no es un pronóstico: de Valparaíso a La Araucanía, la actividad de julio a octubre no anticipó la de noviembre a junio en las últimas 25 temporadas.",
-    seasonExcl: (l) => ` Las regiones del desierto de Atacama (${l}) quedan fuera de ambos lados, porque sus datos recientes casi en tiempo real están retenidos.`,
+    seasonExcl: (l) => ` Las regiones del desierto de Atacama (${l}) quedan fuera de ambos lados, porque sus datos recientes están ocultos.`,
     sThrough: (mo) => `Hasta ${mo}`, sThroughSub: "focos de calor acumulados en la temporada",
     sVs: "Frente a la temporada mediana", sVsSub: (b, n) => `mayor que ${b} de ${n} temporadas anteriores a esta altura`,
     sCur: "Temporada 2026–27 (puntos huecos: provisorio; punteado: noviembre en curso)", sMed: "mediana de las temporadas anteriores", sBand: "percentil 10–90 de las temporadas anteriores",
     sTop: (s) => `${s} (la más activa)`, sPt: (mo, v, st) => `${mo}: ${v} focos acumulados${st}`, sProv: " (provisorio)", sPart: " (parcial, hasta el 7 de noviembre)",
     jump_h: "El salto de 2012, antes y después",
-    jump_sub: "Cuando VIIRS llega en 2012 ve muchos más fuegos pequeños que MODIS. Unidas tal cual, las series parecen dispararse de un día para otro. Armonizadas, todos los años quedan en la misma unidad.",
+    jump_sub: "Cuando VIIRS llega en 2012 ve muchos más fuegos pequeños que MODIS: unidas tal cual, las cifras parecen dispararse de un año a otro. La prueba: por cada incendio registrado por CONAF, ¿cuántos focos se ven después de 2012 frente a antes? Si las cifras son comparables, la respuesta es ×1.",
     trust_h: "Cuánto confiar en estas cifras",
     trust_sub: "Unir dos sensores nunca es exacto. Medimos el error en años que el modelo nunca vio (2020–2026) y contra los registros de incendios de CONAF de 2002–2020 (76.002 incendios en las cuatro regiones calibradas; 109.947 en todo Chile).",
     read_h: "Cómo leer esto",
@@ -260,44 +272,46 @@ const I18N = {
     aoi: { chile: "Chile (todo el país)", biobio_hist: "Biobío + Ñuble (antigua Región del Biobío, área validada con CONAF)" },
     aoiShort: { chile: "Chile", biobio_hist: "Biobío + Ñuble" },
     level: { "unusually high": "inusualmente alta", "unusually low": "inusualmente baja", "within normal": "dentro de lo normal" },
-    headline: (mo, y, area, lvl) => `${mo[0].toUpperCase() + mo.slice(1)} de ${y} en ${area}: actividad de quemas ${lvl}`,
+    headline: (mo, y, area, lvl) => `${mo[0].toUpperCase() + mo.slice(1)} de ${y} en ${area}: ${lvl}`,
+    levelHead: { "unusually high": "muchos más focos de lo normal", "unusually low": "muchos menos focos de lo normal", "within normal": "focos dentro de lo normal" },
     kicker: (prov) => `Último mes completo${prov ? " · provisorio, datos casi en tiempo real" : ""}`,
-    statusSub: (prov, mo) => (prov ? "Puede cambiar levemente cuando lleguen los datos definitivos; noviembre de 2026 sigue en curso. " : "") + `Inusual = más de 2 desviaciones robustas respecto de la mediana de ${mo}, en escala logarítmica.`,
-    kThis: "Este mes", kThisSub: "focos de calor, equivalentes a Suomi NPP",
-    kNormal: (mo) => `Lo normal para ${mo}`, kNormalSub: "mediana, temporadas 2000–01 a 2025–26",
-    kAgainst: (n, mo) => `Frente a los ${n} meses de ${mo} anteriores`, kAgainstSub: (b, n, z) => `mayor que ${b} de ${n} · z robusto = ${z}`,
+    statusSub: (prov, mo) => (prov ? "Datos provisorios, casi en tiempo real: pueden cambiar levemente. Noviembre de 2026 sigue en curso. " : "") + `"Muchos más" o "muchos menos" significa algo que casi nunca pasa en 25 años de ${mo}.`,
+    kThis: "Este mes", kThisSub: (est) => est ? "focos de calor, estimados en escala VIIRS" : "focos de calor, medidos por VIIRS",
+    kNormal: (mo) => `Lo normal para ${mo}`, kNormalSub: "el valor del medio en las temporadas 2000–01 a 2025–26",
+    kAgainst: (n, mo) => `Frente a los ${n} meses de ${mo} anteriores`, kAgainstSub: (b, n, mo) => b === 0 ? `ningún ${mo} anterior tuvo menos focos` : b === n ? `ningún ${mo} anterior tuvo más focos` : `${b} de ${n} tuvieron menos focos`,
     kTop: "Temporada más activa", kTopSub: (v) => `${v} focos de calor (jul–jun)`,
-    calSub: (area) => `${area}. Color = focos de calor por mes en unidades equivalentes a Suomi NPP (más claro y amarillo = más focos). Pasa el cursor sobre un mes para ver su rango; haz clic para ver sus días.`,
-    calSubRaw: "<b>Vista cruda:</b> el conteo propio de cada sensor, unido tal cual. Fíjate cómo la actividad parece saltar cuando empieza VIIRS en 2012: ese salto es del sensor, no del fuego.",
-    lgRamp: (max) => `${max} focos / mes (log)`, lgNoData: "sin datos (no es cero)", lgProv: "provisorio (casi en tiempo real)",
-    lgModis: "estimado desde MODIS (píxeles gruesos)", lgViirs: "observado por VIIRS (píxeles finos)", lgEra: "comienza la era VIIRS (2012)",
-    srcModis: (s) => `MODIS ${s}`, srcViirs: "VIIRS", srcNoaa: "NOAA-20",
-    tipWithheld: "Retenido: los datos casi en tiempo real sobre el desierto de Atacama tienen muchas detecciones falsas diurnas. Se mostrará cuando lleguen los datos definitivos.",
+    calSub: (area) => `${area}. Color = focos de calor del mes en escala VIIRS (más claro y amarillo = más focos). Pasa el cursor sobre un mes para ver lo que vio el satélite y su rango; haz clic para ver sus días.`,
+    calSubRaw: "<b>Como lo vio cada satélite:</b> el conteo propio de cada uno, unido tal cual. Fíjate cómo los focos parecen saltar cuando empieza VIIRS en 2012: ese salto es del satélite, no del fuego.",
+    lgRamp: (max) => `${max} focos al mes · escala multiplicativa (1, 10, 100…)`, lgNoData: "sin datos (no es cero)", lgProv: "provisorio (casi en tiempo real)",
+    lgModis: "estimado desde MODIS (píxeles de 1 km)", lgViirs: "medido por VIIRS (píxeles de 375 m)", lgEra: "comienza la era VIIRS (2012)",
+    srcModis: (s) => `estimado · MODIS ${s}`, srcViirs: "medido · VIIRS", srcNoaa: "medido · NOAA-20",
+    tipWithheld: "Oculto: sobre el desierto de Atacama los datos provisorios traen muchos focos falsos de día. Se mostrará con los datos definitivos.",
     tipNoData: "Sin registro satelital para este mes (no significa cero fuego).",
-    tipValue: (v) => `${v} focos de calor, armonizado (equivalente a Suomi NPP)`,
-    tipRaw: (sen, v) => `${sen} crudo: ${v}`, tipRange: (a, b) => `Rango 80 %: ${a}–${b}`,
+    tipValue: (v, est) => `<b class="tv">${est ? "≈ " : ""}${v}</b> focos en escala VIIRS`,
+    tipRaw: (sen, v) => `Lo que vio ${sen}: ${v}`, tipRange: (a, b) => `Probablemente entre ${a} y ${b}`,
     tipMethod: "Método", methodName: { qmap: "mapa de cuantiles propio", qmap_pooled: "mapa de cuantiles agrupado", ratio: "razón simple", mixed: "mixto (suma de regiones)" },
-    tipProv: "Provisorio: datos Suomi NPP casi en tiempo real; los valores definitivos llegan después",
+    tipProv: "Provisorio: datos casi en tiempo real, pueden cambiar levemente",
     tipPartial: (d) => `Mes parcial: datos hasta el ${d}, de NOAA-20 (Suomi NPP dejó de entregar datos el 2 de noviembre de 2026)`,
-    tipObs: "Observado por VIIRS Suomi NPP", tipMedian: (mo, v) => `Mediana de ${mo}: ${v}`,
+    tipObs: "Medido directo por VIIRS Suomi NPP", tipMedian: (mo, v) => `Lo normal en ${mo}: ${v}`,
     tipAnom: { "unusually high": "Inusualmente alto", "unusually low": "Inusualmente bajo", "within normal": "Dentro de lo normal" },
     robustZ: "z robusto",
-    noteDesert: "Regiones del desierto de Atacama retenidas este mes",
-    figRaw: (area) => `Salto falso en 2012, ${area}, frente a los registros de CONAF`, figRawSub: "crudo, unido tal cual",
-    figH: "Después de armonizar", figHSub: (lo, hi) => `IC 95 % ${lo}–${hi} (1 = sin salto)`,
+    noteDesert: "Sin las regiones del desierto de Atacama, ocultas este mes",
+    figRaw: (area) => `Sin armonizar · ${area}`, figRawSub: "focos por incendio de CONAF después de 2012 frente a antes: un salto falso, causado por el cambio de satélite",
+    figH: "Armonizado", figHSub: (lo, hi) => `≈ 1: sin salto (95 % de confianza: entre ${lo} y ${hi})`,
     figAll: "Maule a La Araucanía", figNone: "Esta área no se ha contrastado con los registros de CONAF; la armonización aquí se probó en los años reservados 2020–2026 (ver la tabla de confianza).",
     chVIIRS: "Empieza VIIRS · traslape 2012–2026", chVIIRSshort: "Empieza VIIRS",
     chTitle: (s, h, r) => `${s}: armonizado ${h}, crudo ${r}`,
-    chLgH: "armonizado (una sola unidad para todos los años)", chLgR: "crudo: MODIS antes de 2012, VIIRS después", chLgNote: "Focos de calor por temporada de incendios (jul–jun), solo temporadas completas.",
-    thRegion: "Región", thJump: "Salto falso en 2012 frente a CONAF<br>(1 = sin salto)", thAqua: "Años de MODIS Aqua<br>2002–2012", thTerra: "Años de MODIS Terra<br>2000–2002", thMethod: "Método",
-    raw: "crudo", ci: "IC 95 %",
-    errLine: (f, b, c) => `error mensual medio ×${f}<br><small>sesgo total ${b}${c == null ? "" : ` · la banda 80 % contuvo el ${c} % de los meses`}</small>`,
+    chLgH: "armonizado (una sola unidad para todos los años)", chLgR: "como lo vio cada satélite: MODIS antes de 2012, VIIRS después", chLgNote: "Focos de calor por temporada de incendios (jul–jun), solo temporadas completas.",
+    thRegion: "Región", thJump: "Salto de 2012 frente a CONAF<br>(×1 = sin salto)", thAqua: "Años estimados desde MODIS Aqua<br>2002–2012", thTerra: "Años con solo MODIS Terra<br>2000–2002", thMethod: "Método",
+    raw: "sin armonizar", ci: "95 % de confianza:",
+    errLine: (f, lo, hi, b, c) => `si mostramos 100, lo real suele estar entre <b>${lo} y ${hi}</b><br><small>error medio ×${f} · ${b}${c == null ? "" : ` · el rango acertó ${c} de cada 100 meses`}</small>`,
+    biasTxt: (v) => Math.abs(v) < 0.5 ? "en total, sin sesgo" : `en total, ${dec(Math.abs(v), 1)} % ${v < 0 ? "por debajo" : "por encima"}`,
     testedH: "Otras regiones: probadas en los años reservados 2020–2026 y contra los registros de incendios de CONAF",
     testedNote: "El mapa agrupado se ajustó con Maule, Ñuble, Biobío y La Araucanía juntas y se probó en regiones que nunca vio; donde perdió frente a la razón simple propia de la región, se usa la razón. Contra CONAF (109.947 incendios en todas las regiones), el salto falso de 2012 desaparece en 9 de las 11 regiones con suficientes incendios. Valparaíso queda sobrecorregida y la Metropolitana conserva parte del salto; el norte y Magallanes tienen muy pocos incendios de CONAF para evaluar. Los errores son mayores que en las regiones calibradas, así que allí los años anteriores a 2012 son referenciales.",
-    thConaf: "Salto falso en 2012 frente a CONAF<br>(1 = sin salto)",
+    thConaf: "Salto de 2012 frente a CONAF<br>(×1 = sin salto)",
     verdict: { removed: "salto eliminado", over: (p) => `sobrecorregido: los años antes de 2012 quedan cerca de ${p} % más altos`, under: (p) => `subcorregido: los años antes de 2012 quedan cerca de ${p} % más bajos`, few_fires: (n) => `solo ${n} incendios de CONAF: no se puede evaluar` },
     figConaf: (v) => `En esta región: ${v}.`,
-    trustNote: (f, cov) => `Un error medio de ×${f} significa que el valor armonizado de un mes suele estar dentro de ese factor de lo que habría registrado Suomi NPP. La banda 80 % de los meses estimados debería contener 8 de cada 10 meses; para MODIS Aqua en los años reservados contuvo el ${cov} %, algo menos de lo prometido.`,
+    trustNote: (f, cov) => `Cómo leerlo: con un error medio de ×${f}, si un mes antiguo muestra 100 focos, lo que habría visto VIIRS suele estar entre 100 ÷ ${f} y 100 × ${f}. El rango de cada mes debería acertar 8 de cada 10 veces; con MODIS Aqua, en años que el modelo nunca vio, acertó ${cov} de cada 100, algo menos de lo prometido.`,
     method: {
       unit: "Todos los valores se expresan como los focos de calor que registraría VIIRS Suomi NPP (un solo satélite, nunca una suma de satélites). Antes de Suomi NPP (2012), los conteos de MODIS se llevan a esa unidad. ",
       qmap: (r) => `<b>${r}:</b> mapeo de cuantiles ajustado donde ambos sensores observaron (2012–2026), probado en los años reservados 2020–2026 y contrastado con los registros de incendios de CONAF 2002–2020. Maule, Ñuble, Biobío y La Araucanía juntas: sin armonizar, la serie salta ×4,7 en 2012 respecto de la actividad real de fuego; armonizada, ×0,89 (el intervalo de 95 % incluye 1: sin salto). `,
@@ -321,7 +335,7 @@ const I18N = {
       none: " Ningún día con focos.",
       thru: (d, mo) => `${d} de ${mo}`,
     },
-    cv: { saw: (s) => `Lo que vio ${s}`, days: (fd, n) => `focos, en ${fd} de ${n} días`, arrow: "convertido a la escala de VIIRS Suomi NPP", factor: (f) => `≈ ×${f} este mes`,
+    cv: { saw: (s) => `Lo que vio ${s}`, days: (fd, n) => `focos, en ${fd} de ${n} días`, arrow: "convertido a escala VIIRS", factor: (f) => `≈ ×${f} este mes`,
       out: "Cifra comparable entre años", range: (lo, hi) => `probablemente entre ${lo} y ${hi}`, direct: "medido directo, sin conversión" },
     cap: { estimated: (sat, sum) => `Cada día: focos que vio ${sat} (suman ${sum}). Los días muestran lo que vio el satélite; solo el total del mes se convierte.`,
       observed: (sum) => `Cada día: focos que vio VIIRS Suomi NPP (suman ${sum}).`, partial: "Cada día: focos de VIIRS NOAA-20 llevados a la escala de Suomi NPP (aproximado)." },
@@ -612,14 +626,16 @@ function tip(e, key) {
   if (r && r.withheld) html += T.tipWithheld;
   else if (!r || r.value == null) html += T.tipNoData;
   else {
-    html += `${T.tipValue(fmt(r.value))}<br>`;
-    if (r.status === "estimated") html += `${T.tipRaw(r.source === "Terra" ? "MODIS Terra" : "MODIS Aqua", fmt(rawValue(r)))}<br>${T.tipRange(fmt(r.low), fmt(r.high))}<br>${T.tipMethod}: ${methodLabel(r.methods)}<br>`;
+    const est = r.status === "estimated" || r.status === "partial";
+    html += `${T.tipValue(fmt(r.value), est)}<br>`;
+    if (r.status === "estimated") html += `<span class="tq">${T.tipRange(fmt(r.low), fmt(r.high))}</span><br>${T.tipRaw(r.source === "Terra" ? "MODIS Terra" : "MODIS Aqua", fmt(rawValue(r)))}<br>`;
     else if (r.status === "provisional") html += `${T.tipProv}<br>`;
     else if (r.status === "partial") html += `${T.tipPartial(r.through)}<br>`;
     else html += `${T.tipObs}<br>`;
     html += T.tipMedian(T.monthsLong[+m - 1], fmt(r.median_like ?? state.data.climatology_median[+m]));
-    if (r.anomaly) html += `<br>${T.tipAnom[r.anomaly]} (${T.robustZ} = ${dec(r.z)})`;
+    if (r.anomaly) html += ` · <span style="color:${LEVEL_COLOUR[r.anomaly]}">${T.tipAnom[r.anomaly]}</span>`;
     if (r.note) html += `<br>${T.noteDesert}`;
+    html += `<br><span class="tq">${T.tipClick}</span>`;
   }
   const t = $("tip");
   t.classList.remove("infotip"); t.innerHTML = html; t.style.display = "block";
@@ -652,15 +668,15 @@ function renderStatus() {
   const an = Lt.anomaly || "within normal";
   const prov = Lt.status === "provisional";
   $("status-kicker").innerHTML = `<span class="live"></span>${T.kicker(prov)}`;
-  $("headline").innerHTML = T.headline(mo, y, shortName(), `<span class="lvl" style="color:${LEVEL_COLOUR[an]}">${T.level[an]}</span>`) + ` <button type="button" class="info" data-info="info_anom">i</button>`;
+  $("headline").innerHTML = T.headline(mo, y, shortName(), `<span class="lvl" style="color:${LEVEL_COLOUR[an]}">${T.levelHead[an]}</span>`) + ` <button type="button" class="info" data-info="info_anom">i</button>`;
   bindInfo();
   $("status-sub").textContent = T.statusSub(prov, mo) + ((Lt.excluded || []).length ? T.likeNote(Lt.excluded.join(", ")) : "") + (DESERT_AOI.includes(state.aoi) ? T.desertNote : "");
   const top = seasonTotals().sort((a, b) => b.h - a.h)[0];
   const pos = Math.max(0, Math.min(100, 50 + (Lt.z / 4) * 50));
   $("status").innerHTML = `
-    <div class="kpi"><small>${T.kThis}</small>${num(Lt.value)}<small>${T.kThisSub}</small></div>
+    <div class="kpi"><small>${T.kThis}</small>${num(Lt.value)}<small>${T.kThisSub(["estimated", "partial"].includes(Lt.status))}</small></div>
     <div class="kpi"><small>${T.kNormal(mo)}</small>${num(Lt.median)}<small>${T.kNormalSub}</small></div>
-    <div class="kpi"><small>${T.kAgainst(nSame, mo)}</small><div class="gauge"><i style="left:${state.animNext ? 50 : pos}%" data-pos="${pos}"></i></div><small>${T.kAgainstSub(below, nSame, dec(Lt.z))}</small></div>
+    <div class="kpi"><small>${T.kAgainst(nSame, mo)}</small><div class="gauge"><i style="left:${state.animNext ? 50 : pos}%" data-pos="${pos}"></i></div><small>${T.kAgainstSub(below, nSame, mo)}</small></div>
     ${top ? `<div class="kpi"><small>${T.kTop}</small><b>${top.s}–${String(top.s + 1).slice(2)}</b><small>${T.kTopSub(fmt(top.h))}</small></div>` : ""}`;
   if (state.animNext) {
     countUp($("status"));
@@ -740,7 +756,7 @@ function flyTo(target, height, instant) {
 }
 
 // Wide screens: when zoomed, the map moves to the left and the live panel takes the right half.
-const SPLIT_H = 500;
+const SPLIT_H = 600;
 function zoomFrame() {
   const wrap = document.querySelector(".mapwrap"), split = innerWidth >= 900 && !map.vert;
   wrap.classList.toggle("split", split);
@@ -854,7 +870,16 @@ function paintComunas() {
     return;
   }
   map.panel = null; map.panelKey = null;
-  $("map-side").innerHTML = `<h3>${T.whereH(name)}</h3>${body}<p class="sub" style="margin:8px 0 0">${T.whereNote(sen)} ${T.comHint}</p>`;
+  $("map-side").innerHTML = `<h3>${T.whereH(name)}</h3>${regionConv(r)}${body}<p class="sub" style="margin:8px 0 0">${T.whereNote(sen)} ${T.comHint}</p>`;
+}
+
+// Before 2012 the region figure is converted but communes show what MODIS saw, so say how the two relate.
+function regionConv(r) {
+  const C = map.com[r], sen = C.data.sensor[map.i];
+  if (!sen || sen === "SNPP") return "";
+  const raw = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(r, c) || 0), 0), v = map.reg.regions[r].v[map.i];
+  if (v == null || comValue(r, Object.keys(C.geo.paths)[0]) === undefined) return "";
+  return `<p class="rconv">${L().comConv(SENSOR_NAME[sen], fmt(raw), fmt(v))}</p>`;
 }
 
 // The commune panel is built once per commune and then updated in place on every month change (slider, ▶),
@@ -887,12 +912,13 @@ function buildCommunePanel(r, cod) {
     <div class="cp-head"><div><div class="cp-kicker">${map.reg.regions[r].name}</div><h3 class="cp-name">${C.geo.names[cod]}</h3></div><span class="cp-chip" id="cp-sensor"></span></div>
     <div class="cp-now"><div><b id="cp-val">0</b><span id="cp-mo"></span></div>
       <div class="cp-share"><div class="cp-track"><i id="cp-share-fill"></i></div><span id="cp-share-txt"></span></div></div>
+    <div id="cp-conv"></div>
     <p class="cp-label">${T.comMonthly}</p>
+    <p class="cp-era" id="cp-era" hidden></p>
     <svg class="cp-spark" viewBox="0 0 ${W} ${H}">
       <defs><linearGradient id="cpg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${RAMP[0]}" stop-opacity=".35"/><stop offset=".6" stop-color="${RAMP[Math.floor(RAMP.length * .6)]}" stop-opacity=".75"/><stop offset="1" stop-color="${RAMP.at(-1)}" stop-opacity=".95"/></linearGradient></defs>
       ${gl}${years}<path d="${area}" fill="url(#cpg)"/><polyline points="${pts.join(" ")}" fill="none" stroke="#fca50a" stroke-width="1.2" opacity=".9"/>
       <g id="cp-cursor" class="cp-cursor"><line x1="0" x2="0" y1="${t}" y2="${H - b}" stroke="#eaff28" stroke-width="1.6"/><circle id="cp-dot" cx="0" cy="${H - b}" r="5" fill="#eaff28" stroke="#071536" stroke-width="2"/></g>
-      <text id="cp-before" x="${l + 6}" y="${t + 14}" font-size="11" fill="#c9d6ea" display="none">${T.comBefore}</text>
     </svg>
     <p class="cp-label">${T.comSeasons}</p>
     <svg class="cp-seasons" viewBox="0 0 ${SW} ${SH}">${bars}</svg>
@@ -905,7 +931,8 @@ function updateCommunePanel() {
   const T = L(), C = map.com[P.r], i = map.i, mo = C.data.months[i], [y, m] = mo.split("-");
   const here = comValue(P.r, P.cod), tot = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(P.r, c) || 0), 0);
   $("cp-val").textContent = here === undefined ? "—" : fmt(here);
-  $("cp-mo").textContent = here === undefined ? T.whereWithheld : T.comMo(`${T.monthsLong[+m - 1]} ${y}`);
+  $("cp-mo").textContent = here === undefined ? T.whereWithheld : T.comMo(`${T.monthsLong[+m - 1]} ${y}`, SENSOR_NAME[C.data.sensor[i]]);
+  $("cp-conv").innerHTML = regionConv(P.r);
   $("cp-sensor").textContent = SENSOR_NAME[C.data.sensor[i]];
   const sh = here && tot ? (100 * here) / tot : 0;
   $("cp-share-fill").style.width = `${Math.max(0, Math.min(100, sh))}%`;
@@ -913,8 +940,12 @@ function updateCommunePanel() {
   const k = P.S.idx.indexOf(i), cur = $("cp-cursor");
   if (k >= 0) {
     cur.style.transform = `translateX(${P.x(k).toFixed(1)}px)`; cur.style.opacity = 1;
-    $("cp-dot").setAttribute("cy", P.y(P.S.v[i] || 0).toFixed(1)); $("cp-before").setAttribute("display", "none");
-  } else { cur.style.opacity = 0; $("cp-before").setAttribute("display", mo < "2012-02" ? "inline" : "none"); }
+    $("cp-dot").setAttribute("cy", P.y(P.S.v[i] || 0).toFixed(1)); $("cp-era").hidden = true;
+  } else {
+    cur.style.opacity = 0;
+    $("cp-era").hidden = mo >= "2012-02";
+    $("cp-era").textContent = T.comEra(`${T.monthsLong[+m - 1]} ${y}`);
+  }
   const s = +m >= 7 ? +y : +y - 1;
   document.querySelectorAll(".cp-sbar").forEach((b) => b.classList.toggle("on", +b.dataset.s === s));
 }
@@ -934,14 +965,15 @@ function paintMap() {
   $("map-legend").innerHTML = Cz ? `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgC(fmt(Cz.cmax))}</span><span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>` : (map.mode === "z"
     ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad((state.cvd ? ZPAL.cvd : ZPAL.brand).map((x) => x[1]))}"></i> ${T.mlgZ[2]}</span>`
     : `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgV(fmt(map.vmax))}</span>`)
-    + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>`;
+    + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>`
+    + (!Cz && mo >= "2026-08" && ["15", "1", "2", "3"].some((k) => map.reg.regions[k] && map.reg.regions[k].v[map.i] == null) ? `<span class="north">${T.mlgNorth}</span>` : "");
   document.querySelectorAll("[data-mm]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mm === map.mode));
 }
 
 function mapTip(e, r) {
   const T = L(), R = map.reg.regions[r], mo = map.reg.months[map.i], [y, m] = mo.split("-");
   const v = R.v[map.i], z = R.z[map.i];
-  $("tip").classList.remove("infotip"); $("tip").innerHTML = `<b>${R.name}</b><br>${T.monthsLong[+m - 1]} ${y}<br>${v == null ? T.mlgNo : T.mTip(fmt(v), z == null ? null : dec(z))}`;
+  $("tip").classList.remove("infotip"); $("tip").innerHTML = `<b>${R.name}</b><br>${T.monthsLong[+m - 1]} ${y}<br>${v == null ? T.mlgNo : T.mTip(fmt(v), z == null ? null : T.tipAnom[z >= 2 ? "unusually high" : z <= -2 ? "unusually low" : "within normal"])}`;
   $("tip").style.display = "block";
   $("tip").style.left = Math.min(e.clientX + 14, innerWidth - 300) + "px";
   $("tip").style.top = Math.min(e.clientY + 14, innerHeight - $("tip").offsetHeight - 8) + "px";
@@ -1032,6 +1064,11 @@ function renderMeter(S, seasonMonths) {
   const W = Math.max(320, Math.min(1100, $("season-meter").clientWidth || 900)), H = 74, pad = 16;
   const top = Math.max(hi, cur) * 1.12, x = (v) => pad + (v / top) * (W - 2 * pad);
   const mk = lvl === "lo" ? "#4db8ff" : lvl === "hi" ? "#ff8a3d" : "#eaff28";
+  // The ends of the usual range go above the bar unless the "normal" label is there, then below unless "this season" is.
+  const endLabel = (px, txt, anchor) => {
+    const dx = anchor === "start" ? 22 : -22, yTop = Math.abs(px + dx - x(med)) > 95 ? 14 : Math.abs(px + dx - x(cur)) > 95 ? 66 : null;
+    return yTop == null ? "" : `<text x="${px}" y="${yTop}" text-anchor="${anchor}" font-size="11.5" font-weight="600" fill="#4db8ff">${txt}</text>`;
+  };
   $("season-meter").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${T.season_h}">
     <rect x="${pad}" y="26" width="${W - 2 * pad}" height="14" rx="7" fill="#10203d"/>
     <rect x="${x(lo)}" y="26" width="${x(hi) - x(lo)}" height="14" rx="7" fill="rgba(1,151,248,.38)"/>
@@ -1039,8 +1076,7 @@ function renderMeter(S, seasonMonths) {
     <text x="${x(med)}" y="14" text-anchor="middle" font-size="11.5" fill="#c9d6ea">${T.meterLg[1]} · ${fmt(med)}</text>
     <circle cx="${x(cur)}" cy="33" r="10" fill="${mk}" stroke="#071536" stroke-width="2" style="filter:drop-shadow(0 0 8px ${mk})"/>
     <text x="${x(cur)}" y="66" text-anchor="middle" font-size="12.5" font-weight="600" fill="${mk}">${T.meterLg[2]} · ${fmt(cur)}</text>
-    <text x="${x(lo)}" y="66" text-anchor="start" font-size="11" fill="#8fa6cc">${Math.abs(x(cur) - x(lo)) > 120 ? fmt(lo) : ""}</text>
-    <text x="${x(hi)}" y="66" text-anchor="end" font-size="11" fill="#8fa6cc">${Math.abs(x(cur) - x(hi)) > 120 ? fmt(hi) : ""}</text>
+    ${endLabel(x(lo), fmt(lo), "start")}${endLabel(x(hi), fmt(hi), "end")}
   </svg><div class="legend"><span><i class="sw" style="background:rgba(1,151,248,.38)"></i>${T.meterLg[0]}</span></div>`;
 }
 
@@ -1242,7 +1278,7 @@ function verdictText(c) {
 
 function renderTrust() {
   const T = L(), TR = state.data.trust, ok = TR.filter((t) => t.validated), tested = TR.filter((t) => !t.validated);
-  const err = (e) => T.errLine(dec(e.typical_factor), pct(e.bias_pct), e.coverage80_pct == null ? null : Math.round(e.coverage80_pct));
+  const err = (e) => T.errLine(dec(e.typical_factor), fmt(100 / e.typical_factor), fmt(100 * e.typical_factor), T.biasTxt(e.bias_pct), e.coverage80_pct == null ? null : Math.round(e.coverage80_pct));
   let html = "";
   if (ok.length) {
     html += `<div class="tablewrap"><table class="trust"><thead><tr><th>${T.thRegion}</th><th>${T.thJump}</th><th>${T.thAqua}</th><th>${T.thTerra}</th></tr></thead><tbody>`
@@ -1323,6 +1359,15 @@ function render(animate) {
   state.animNext = false; state.chartAnim = false;
 }
 
+// The chapter menu marks the section you are reading.
+function spyNav() {
+  let cur = "ch1";
+  ["ch1", "ch2", "ch3", "ch4"].forEach((id) => { const h = $(id); if (h && h.getBoundingClientRect().top < innerHeight * 0.35) cur = id; });
+  document.querySelectorAll(".chnav a").forEach((a) => { const on = a.dataset.go === cur; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
+}
+let spyQueued = false;
+addEventListener("scroll", () => { if (!spyQueued) { spyQueued = true; requestAnimationFrame(() => { spyQueued = false; spyNav(); }); } }, { passive: true });
+
 // Cards rise into view as you scroll; the cursor lights the card under it.
 const io = new IntersectionObserver((entries) => entries.forEach((e) => {
   if (!e.isIntersecting) return;
@@ -1349,6 +1394,7 @@ async function init() {
   await load();
   if (!state.data) return;
   try { await initMap(); } catch (e) { showError(e); return; }
+  spyNav();
   if (q.get("view") === "raw") setMode("raw");
   const m = q.get("m");
   if (m && /^\d{4}-\d{2}$/.test(m) && state.data.months.some((r) => r.month === m)) {
