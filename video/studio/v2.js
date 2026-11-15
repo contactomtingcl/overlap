@@ -10,7 +10,7 @@
     #stage .wm { position:absolute; left:700px; top:388px; font:800 190px/1 "Inter Display",sans-serif; letter-spacing:-.045em; color:#eaf1ff; white-space:nowrap; }
     #stage .tl2 { position:absolute; left:708px; top:600px; font:600 46px/1.2 "Inter Display",sans-serif; letter-spacing:-.01em; color:#c9d6ea; white-space:nowrap; }
     #stage .tl2 b { color:#eaff28; }
-    #stage .ev { position:absolute; left:0; right:0; bottom:90px; text-align:center; font:600 22px "Inter",sans-serif; letter-spacing:.24em; text-transform:uppercase; color:#8fa6cc; }
+    #stage .ev { position:absolute; left:0; right:0; bottom:230px; text-align:center; font:600 22px "Inter",sans-serif; letter-spacing:.24em; text-transform:uppercase; color:#8fa6cc; }
     #stage .ai { position:absolute; left:80px; bottom:40px; font:600 16px "Inter",sans-serif; color:rgba(201,214,234,.75); letter-spacing:.04em; }`;
   document.head.appendChild(sty);
   const st = document.createElement("div"); st.id = "stage";
