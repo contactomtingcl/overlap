@@ -1,0 +1,4 @@
+date,time_utc,satellite,latitude,longitude,scan_km,track_km,frp_mw,confidence,daynight,cod_comuna
+2000-11-26,15:07,Terra,-47.1036,-72.713,1.1,1.0,10.0,43,D,11301
+2000-11-27,14:12,Terra,-47.1014,-72.6923,2.7,1.6,43.1,30,D,11301
+2000-11-28,14:55,Terra,-45.7886,-71.9073,1.0,1.0,7.3,52,D,11101

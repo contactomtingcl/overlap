@@ -38,6 +38,18 @@ const I18N = {
     gis_sum: "Download for GIS (QGIS, ArcGIS)",
     mlgNorth: "North hidden in recent months: over the Atacama desert, provisional data hold many false daytime hotspots. It will appear with the final data.",
     tipClick: "Click: see its days",
+    coord_lbl: "Go to a coordinate", coord_go: "Go", coord_ph: "-36.83, -73.05",
+    coord_bad: "Type latitude and longitude in decimal degrees, for example -36.83, -73.05.",
+    coord_out: "That point falls outside mainland Chile on this map (sea, border or simplified limits).",
+    coord_ok: (c, r) => `Point in ${c}, ${r}.`, coord_reg: (r) => `Point in ${r}, near a simplified commune limit.`,
+    fday: (d, mo, y) => `${mo[0].toUpperCase() + mo.slice(1)} ${d}, ${y}`,
+    pinH: (lat, lon) => `Your point · ${lat}, ${lon}`,
+    pinNear: (km, d, sat) => `Nearest ${sat} hotspot this month: <b>${km} km</b> away (${d}).`, pinNone: (sat) => `No ${sat} hotspots in this region this month.`,
+    ptsDl: "Download this month's hotspots (CSV with coordinates)", ptsYear: (y) => `all of ${y} in the region (CSV)`,
+    ptsN: (n, sat) => `${n} ${sat} hotspots drawn as pixels, to scale.`,
+    ptsNote: "Each hotspot is the centre of the satellite pixel that detected it (FIRMS): the fire is somewhere in that pixel, about 1 km for MODIS and 375 m for VIIRS. The download holds every satellite; the map draws only the one that counts this month. The anomaly is computed per region; the pixels show where the hotspots fell.",
+    ptTip: (d, t, sat, lat, lon, sc, tr, frp) => `<b>Hotspot</b><br>${d} · ${t} UTC · ${sat}<br>Pixel centre: <b class="tv">${lat}, ${lon}</b><br>Pixel ${sc} × ${tr} km · fire radiative power ${frp} MW<br><span class="tq">The fire is somewhere in that pixel</span>`,
+    mlgPts: "pixel with a hotspot, to scale (MODIS 1 km · VIIRS 375 m)",
     cTip: (v, sh) => `${v} hotspots${sh == null ? "" : ` · ${sh} of the region`}`,
     map_hint: "Click a region to open it and zoom into its communes.",
     map_h: "Chile, region by region", mm_z: "Anomaly", mm_v: "Hotspots",
@@ -218,6 +230,18 @@ const I18N = {
     gis_sum: "Descargar para SIG (QGIS, ArcGIS)",
     mlgNorth: "Norte oculto en los meses recientes: sobre el desierto de Atacama los datos provisorios traen muchos focos falsos de día. Aparecerá con los datos definitivos.",
     tipClick: "Clic: ver sus días",
+    coord_lbl: "Ir a una coordenada", coord_go: "Ir", coord_ph: "-36.83, -73.05",
+    coord_bad: "Escribe latitud y longitud en grados decimales, por ejemplo -36.83, -73.05.",
+    coord_out: "Ese punto queda fuera de Chile continental en este mapa (mar, frontera o límites simplificados).",
+    coord_ok: (c, r) => `Punto en ${c}, ${r}.`, coord_reg: (r) => `Punto en ${r}, cerca de un límite comunal simplificado.`,
+    fday: (d, mo, y) => `${d} de ${mo} de ${y}`,
+    pinH: (lat, lon) => `Tu punto · ${lat}, ${lon}`,
+    pinNear: (km, d, sat) => `Foco de ${sat} más cercano este mes: a <b>${km} km</b> (${d}).`, pinNone: (sat) => `Sin focos de ${sat} en esta región este mes.`,
+    ptsDl: "Descargar los focos de este mes (CSV con coordenadas)", ptsYear: (y) => `todo ${y} en la región (CSV)`,
+    ptsN: (n, sat) => `${n} focos de ${sat} dibujados como píxeles, a escala.`,
+    ptsNote: "Cada foco es el centro del píxel del satélite que lo detectó (FIRMS): el fuego está en algún punto de ese píxel, de unos 1 km en MODIS y 375 m en VIIRS. La descarga trae todos los satélites; el mapa dibuja solo el que cuenta este mes. La anomalía se calcula por región; los píxeles muestran dónde cayeron los focos.",
+    ptTip: (d, t, sat, lat, lon, sc, tr, frp) => `<b>Foco de calor</b><br>${d} · ${t} UTC · ${sat}<br>Centro del píxel: <b class="tv">${lat}, ${lon}</b><br>Píxel de ${sc} × ${tr} km · potencia del fuego ${frp} MW<br><span class="tq">El fuego está en algún punto de ese píxel</span>`,
+    mlgPts: "píxel con foco, a escala (MODIS 1 km · VIIRS 375 m)",
     cTip: (v, sh) => `${v} focos de calor${sh == null ? "" : ` · ${sh} de la región`}`,
     map_hint: "Haz clic en una región para abrirla y acercarte a sus comunas.",
     map_h: "Chile, región por región", mm_z: "Anomalía", mm_v: "Focos de calor",
@@ -488,6 +512,7 @@ function applyStatic() {
   document.title = state.lang === "es" ? "Overlap · Calendario armonizado de actividad de quemas" : "Overlap · Harmonized burning activity calendar";
   document.querySelectorAll("[data-i18n]").forEach((el) => { const v = L()[el.dataset.i18n]; if (typeof v === "string") el.innerHTML = v; });
   document.querySelectorAll("[data-i18n-alt]").forEach((el) => { el.alt = L()[el.dataset.i18nAlt]; });
+  document.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = L()[el.dataset.i18nPh]; });
   document.querySelectorAll("[data-i18n-label]").forEach((el) => { el.setAttribute("aria-label", L()[el.dataset.i18nLabel]); });
   document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === state.lang));
   document.querySelectorAll("[data-nav]").forEach((el) => { el.textContent = L().nav[+el.dataset.nav]; });
@@ -504,6 +529,7 @@ function updateURL() {
   if (state.mode === "raw") q.set("view", "raw"); else q.delete("view");
   if (state.month && !$("day-panel").hidden) q.set("m", state.month); else q.delete("m");
   if (state.cvd) q.set("cvd", "1"); else q.delete("cvd");
+  if (map.pin) q.set("pt", `${map.pin.lat.toFixed(5)},${map.pin.lon.toFixed(5)}`); else q.delete("pt");
   history.replaceState(null, "", u);
 }
 
@@ -752,7 +778,7 @@ function buildMap() {
   map.vb = mapHome();
   $("map").innerHTML = `<svg viewBox="${map.vb.join(" ")}" style="height:${mapHomeHeight()}px" role="img" aria-label="${L().map_h}">
     <defs><pattern id="mhatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="${NO_DATA}"/><line x1="0" y1="0" x2="0" y2="4" stroke="#2a3d63" stroke-width="1.5"/></pattern></defs>
-    <g${map.vert ? "" : ` transform="translate(0,${w}) rotate(-90)"`}><g id="mregs">${Object.entries(map.geo.regions).map(([k, d]) => `<path class="reg" data-r="${k}" d="${d}" vector-effect="non-scaling-stroke"/>`).join("")}</g><g id="mcoms"></g></g></svg>
+    <g${map.vert ? "" : ` transform="translate(0,${w}) rotate(-90)"`}><g id="mregs">${Object.entries(map.geo.regions).map(([k, d]) => `<path class="reg" data-r="${k}" d="${d}" vector-effect="non-scaling-stroke"/>`).join("")}</g><g id="mcoms"></g><g id="mpts"></g><g id="mpin"></g></g></svg>
     <button type="button" id="map-back" class="mapback" hidden></button>`;
   $("map-back").addEventListener("click", () => { if (map.com_sel && map.zoom) { map.com_sel = null; map.panelKey = null; zoomTo(map.zoom); } else zoomOut(); });
   $("map").querySelectorAll(".reg").forEach((el) => {
@@ -762,6 +788,7 @@ function buildMap() {
   });
   document.querySelector(".ns").hidden = map.vert;
   map.zoom = null; $("map-side").innerHTML = "";
+  $("map").querySelector("svg").addEventListener("mousemove", pointTip);
   paintMap();
 }
 
@@ -769,6 +796,7 @@ function buildMap() {
 function setViewBox(vb) { map.vb = vb; $("map").querySelector("svg").setAttribute("viewBox", vb.map((v) => v.toFixed(2)).join(" ")); }
 function flyTo(target, height, instant) {
   const svg = $("map").querySelector("svg"), from = map.vb.slice(), t0 = performance.now(), dur = instant || REDUCED ? 0 : 1100;
+  map.vbTarget = target.slice();
   svg.style.height = height + "px";
   cancelAnimationFrame(map.anim);
   const step = (t) => {
@@ -846,7 +874,7 @@ function zoomToCommune(r, cod, instant) {
 function zoomOut() {
   map.zoom = null; map.com_sel = null; map.panelKey = null;
   document.querySelector(".mapwrap").classList.remove("split");
-  $("mcoms").innerHTML = "";
+  $("mcoms").innerHTML = ""; $("mpts").innerHTML = ""; $("mpin").innerHTML = ""; map.pin = null; map.ptsNow = null;
   $("map").querySelectorAll(".reg").forEach((p) => p.classList.remove("dim", "under"));
   $("map-back").hidden = true;
   document.querySelector(".ns").hidden = map.vert;
@@ -891,10 +919,12 @@ function paintComunas() {
     const key = `${r}:${map.com_sel}:${state.lang}:${state.cvd}`;
     if (map.panelKey !== key) { buildCommunePanel(r, map.com_sel); map.panelKey = key; }
     updateCommunePanel();
+    paintPoints();
     return;
   }
   map.panel = null; map.panelKey = null;
-  $("map-side").innerHTML = `<h3>${T.whereH(name)}</h3>${regionConv(r)}${body}<p class="sub" style="margin:8px 0 0">${T.whereNote(sen)} ${T.comHint}</p>`;
+  $("map-side").innerHTML = `<h3>${T.whereH(name)}</h3><div id="pin-box"></div>${regionConv(r)}${body}<p class="sub" style="margin:8px 0 0">${T.whereNote(sen)} ${T.comHint}</p><div id="pts-box" class="ptsbox"></div>`;
+  paintPoints();
 }
 
 // Before 2012 the region figure is converted but communes show what MODIS saw, so say how the two relate.
@@ -904,6 +934,98 @@ function regionConv(r) {
   const raw = Object.keys(C.geo.paths).reduce((a, c) => a + (comValue(r, c) || 0), 0), v = map.reg.regions[r].v[map.i];
   if (v == null || comValue(r, Object.keys(C.geo.paths)[0]) === undefined) return "";
   return `<p class="rconv">${L().comConv(SENSOR_NAME[sen], fmt(raw), fmt(v))}</p>`;
+}
+
+// ---- hotspot pixels: where each hotspot fell, with its pixel-centre coordinates (pipeline/19) ----
+map.pts = {};
+const KM = () => map.geo.proj.scale / 111.2; // map units per km (north-south; east-west is close at these latitudes)
+function project(lat, lon) {
+  const P = map.geo.proj, k = Math.cos((P.lat0 * Math.PI) / 180);
+  return [(lon * k - P.minx) * P.scale, (-lat - P.miny) * P.scale];
+}
+async function pointsFor(r, year) {
+  const key = `${r}/${year}`;
+  if (!map.pts[key]) map.pts[key] = fetch(DATA(`points/r${r}/${year}.csv`)).then((x) => (x.ok ? x.text() : "")).then((txt) => {
+    const by = {}, lines = txt.trim().split("\n"), head = lines.shift() || "";
+    lines.forEach((ln) => { const f = ln.split(","); if (f.length < 11) return; const mo = f[0].slice(0, 7); (by[mo] || (by[mo] = [])).push(f); });
+    return { head, by };
+  }).catch(() => ({ head: "", by: {} }));
+  return map.pts[key];
+}
+const haversine = (a, b, c, d) => { const R = 6371, t = Math.PI / 180, x = Math.sin(((c - a) * t) / 2) ** 2 + Math.cos(a * t) * Math.cos(c * t) * Math.sin(((d - b) * t) / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); };
+const fdate = (iso) => { const [y, m, d] = iso.split("-").map(Number); return L().fday(d, L().monthsLong[m - 1], y); };
+
+async function paintPoints() {
+  const r = map.zoom; if (!r || !map.com[r]) return;
+  const C = map.com[r], i = map.i, mo = C.data.months[i], sen = C.data.sensor[i];
+  const P = await pointsFor(r, mo.slice(0, 4));
+  if (map.zoom !== r || map.i !== i) return;
+  const T = L(), all = P.by[mo] || [], cod = map.com_sel, rows = all.filter((f) => f[2] === sen);
+  const u = KM(), minU = ((map.vbTarget || map.vb)[2] / ($("map").clientWidth || 1000)) * 2.6;
+  let d = "";
+  const pts = rows.map((f) => { const [x, y] = project(+f[3], +f[4]); const w = Math.max(minU, +f[5] * u), h = Math.max(minU, +f[6] * u);
+    d += `M${(x - w / 2).toFixed(2)},${(y - h / 2).toFixed(2)}h${w.toFixed(2)}v${h.toFixed(2)}h${(-w).toFixed(2)}Z`; return { f, x, y, w, h }; });
+  map.ptsNow = pts;
+  $("mpts").innerHTML = d ? `<path class="px" d="${d}"/>` : "";
+  // pin
+  if (map.pin) {
+    const [x, y] = project(map.pin.lat, map.pin.lon), rr = minU * 3.2;
+    $("mpin").innerHTML = `<circle class="pinring" cx="${x}" cy="${y}" r="${rr * 2}"/><circle class="pin" cx="${x}" cy="${y}" r="${rr}"/>`;
+    let best = null;
+    rows.forEach((f) => { const k = haversine(map.pin.lat, map.pin.lon, +f[3], +f[4]); if (!best || k < best[0]) best = [k, f]; });
+    const pb = $("pin-box");
+    if (pb) pb.innerHTML = `<div class="pinbox"><b>${T.pinH(map.pin.lat.toFixed(4), map.pin.lon.toFixed(4))}</b><br>${best ? T.pinNear(dec(best[0], 1), fdate(best[1][0]), SENSOR_NAME[sen]) : T.pinNone(SENSOR_NAME[sen])}</div>`;
+  } else $("mpin").innerHTML = "";
+  // download box
+  const box = $("pts-box"); if (!box) return;
+  const mine = cod ? all.filter((f) => f[10] === cod) : all, shown = cod ? rows.filter((f) => f[10] === cod).length : rows.length;
+  const [y] = mo.split("-");
+  box.innerHTML = `<p class="ptsn"><i class="pxsw"></i>${T.ptsN(fmt(shown), SENSOR_NAME[sen])}</p>`
+    + `<button type="button" class="ptsdl" id="pts-dl" ${mine.length ? "" : "disabled"}>↓ ${T.ptsDl}</button> <a class="ptsyear" href="${DATA(`points/r${r}/${y}.csv`)}" download="overlap_hotspots_r${r}_${y}.csv">${T.ptsYear(y)}</a>`
+    + `<p class="sub"><small>${T.ptsNote}</small></p>`;
+  $("pts-dl").onclick = () => {
+    const blob = new Blob([[P.head, ...mine.map((f) => f.join(","))].join("\n")], { type: "text/csv" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `overlap_hotspots_r${r}${cod ? `_${cod}` : ""}_${mo}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  };
+}
+
+// Hovering near a pixel shows that hotspot (on top of the commune tooltip).
+function pointTip(e) {
+  if (!map.zoom || !map.ptsNow || !map.ptsNow.length) return;
+  const g = $("mpts"), m = g.getScreenCTM(); if (!m) return;
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+  const tol = ((map.vbTarget || map.vb)[2] / ($("map").clientWidth || 1000)) * 6;
+  let best = null, bd = Infinity;
+  map.ptsNow.forEach((q) => { const dx = Math.max(0, Math.abs(p.x - q.x) - q.w / 2), dy = Math.max(0, Math.abs(p.y - q.y) - q.h / 2), dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; best = q; } });
+  if (!best || Math.sqrt(bd) > tol) return;
+  const T = L(), f = best.f, t = $("tip");
+  t.classList.remove("infotip");
+  t.innerHTML = T.ptTip(fdate(f[0]), f[1], SENSOR_NAME[f[2]] || f[2], f[3], f[4], dec(+f[5], 2), dec(+f[6], 2), dec(+f[7], 1));
+  t.style.display = "block";
+  t.style.left = Math.min(e.clientX + 14, innerWidth - t.offsetWidth - 8) + "px";
+  t.style.top = Math.min(e.clientY + 14, innerHeight - t.offsetHeight - 8) + "px";
+}
+
+// Go to a coordinate: find its region and commune on the map itself (same projection as the paths).
+async function goCoord(txt) {
+  const T = L(), msg = $("coord-msg"), nums = (String(txt).match(/-?\d+(?:[.,]\d+)?/g) || []).map((x) => +x.replace(",", "."));
+  let [lat, lon] = nums;
+  if (nums.length !== 2 || isNaN(lat) || isNaN(lon)) { msg.textContent = T.coord_bad; return; }
+  if (lat < -60 && lon > -60) [lat, lon] = [lon, lat]; // typed as lon, lat
+  if (lat > 0) lat = -lat; if (lon > 0) lon = -lon;   // Chile is south and west
+  if (lat < -56.5 || lat > -17 || lon < -76.5 || lon > -66) { msg.textContent = T.coord_out; return; }
+  const [x, y] = project(lat, lon), pt = new DOMPoint(x, y);
+  const reg = [...$("map").querySelectorAll(".reg")].find((el) => el.isPointInFill(pt));
+  if (!reg) { msg.textContent = T.coord_out; return; }
+  const r = reg.dataset.r;
+  map.pin = { lat, lon };
+  state.aoi = `r${r}`; $("aoi").value = state.aoi; $("day-panel").hidden = true; load();
+  await zoomTo(r);
+  const com = [...$("mcoms").querySelectorAll(".com")].find((el) => el.isPointInFill(pt));
+  if (com) { zoomToCommune(r, com.dataset.c); msg.textContent = T.coord_ok(map.com[r].geo.names[com.dataset.c], map.reg.regions[r].name); }
+  else { paintPoints(); msg.textContent = T.coord_reg(map.reg.regions[r].name); }
+  updateURL();
+  $("map-card").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
 }
 
 // The commune panel is built once per commune and then updated in place on every month change (slider, ▶),
@@ -934,6 +1056,7 @@ function buildCommunePanel(r, cod) {
   map.panel = { r, cod, S, x, y, vmax };
   $("map-side").innerHTML = `<div class="cp">
     <div class="cp-head"><div><div class="cp-kicker">${map.reg.regions[r].name}</div><h3 class="cp-name">${C.geo.names[cod]}</h3></div><span class="cp-chip" id="cp-sensor"></span></div>
+    <div id="pin-box"></div>
     <div class="cp-now"><div><b id="cp-val">0</b><span id="cp-mo"></span></div>
       <div class="cp-share"><div class="cp-track"><i id="cp-share-fill"></i></div><span id="cp-share-txt"></span></div></div>
     <div id="cp-conv"></div>
@@ -947,7 +1070,7 @@ function buildCommunePanel(r, cod) {
     <p class="cp-label">${T.comSeasons}</p>
     <svg class="cp-seasons" viewBox="0 0 ${SW} ${SH}">${bars}</svg>
     <p class="sub cp-best">${S.best[1] ? T.comBest(`${T.monthsLong[+bm - 1]} ${by}`, fmt(S.best[0])) : T.comNone}</p>
-    <p class="sub"><small>${T.comNote}</small></p></div>`;
+    <p class="sub"><small>${T.comNote}</small></p><div id="pts-box" class="ptsbox"></div></div>`;
 }
 
 function updateCommunePanel() {
@@ -986,7 +1109,7 @@ function paintMap() {
   paintComunas();
   const grad = (stops) => `linear-gradient(90deg,${stops.join(",")})`;
   const Cz = map.zoom && map.com[map.zoom];
-  $("map-legend").innerHTML = Cz ? `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgC(fmt(Cz.cmax))}</span><span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>` : (map.mode === "z"
+  $("map-legend").innerHTML = Cz ? `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgC(fmt(Cz.cmax))}</span><span><i class="pxsw"></i>${T.mlgPts}</span><span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>` : (map.mode === "z"
     ? `<span class="ramp">${T.mlgZ[0]} <i style="background:${grad((state.cvd ? ZPAL.cvd : ZPAL.brand).map((x) => x[1]))}"></i> ${T.mlgZ[2]}</span>`
     : `<span class="ramp"><i style="background:${grad(RAMP)}"></i> ${T.mlgV(fmt(map.vmax))}</span>`)
     + `<span><i class="sw" style="background:repeating-linear-gradient(45deg,${NO_DATA} 0 3px,#2a3d63 3px 5px)"></i>${T.mlgNo}</span>`
@@ -1486,6 +1609,8 @@ async function init() {
   if (!state.data) return;
   try { await initMap(); } catch (e) { showError(e); return; }
   spyNav();
+  $("coord-form").addEventListener("submit", (e) => { e.preventDefault(); goCoord($("coord").value); });
+  if (q.get("pt")) { $("coord").value = q.get("pt"); goCoord(q.get("pt")); }
   if (q.get("view") === "raw") setMode("raw");
   const m = q.get("m");
   if (m && /^\d{4}-\d{2}$/.test(m) && state.data.months.some((r) => r.month === m)) {

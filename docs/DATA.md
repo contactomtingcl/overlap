@@ -43,3 +43,14 @@ with the harmonization method, CONAF check and latest month; plus the table `reg
 month since 2000-11, `month` as DATE). In QGIS, join `regions_monthly` to `regions` on `codregion` and use the
 Temporal Controller on `month`. No GeoTIFF: the harmonized product is a region-month series, so a raster would either
 repeat region values or show raw, unharmonized counts.
+
+## Hotspot points (`app/data/points/r<region>/<year>.csv`)
+
+Built by `pipeline/19_export_points.py` from the clean detections with their commune (`pipeline/02c`), with the same months
+as the commune layer: science-quality data up to 2026-07, near real-time data from 2026-08 to 2026-11-07, without the
+Atacama desert regions in recent months. Columns: `date`, `time_utc`, `satellite` (Terra, Aqua, SNPP, NOAA20, NOAA21),
+`latitude`, `longitude` (centre of the satellite pixel, WGS84), `scan_km`, `track_km` (pixel size at that position),
+`frp_mw` (fire radiative power), `confidence`, `daynight`, `cod_comuna` (0 = outside every simplified commune polygon).
+The fire is somewhere inside the pixel, not necessarily at its centre. In QGIS: Layer › Add Delimited Text Layer, X = longitude,
+Y = latitude, EPSG:4326.
+

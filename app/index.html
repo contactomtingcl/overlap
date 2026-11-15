@@ -268,6 +268,26 @@
   #cvd[aria-pressed="true"] { background:var(--blue); color:#fff; border-color:var(--blue); }
   .gis { color:var(--quiet); font-size:13px; }
   .gis p { margin:8px 0 0; }
+  .coord { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:-4px 0 12px; }
+  .coord label { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#c9d6ea; }
+  .coord label svg { color:var(--lime); }
+  .coord input { width:190px; min-height:38px; padding:0 12px; border-radius:10px; border:1px solid var(--line); background:#0b1a3a; color:var(--ink); font:500 14px Inter, system-ui, sans-serif; }
+  .coord input:focus { outline:none; border-color:var(--lime); box-shadow:0 0 0 3px rgba(234,255,40,.15); }
+  .coord button { min-height:38px; padding:0 16px; border-radius:10px; border:0; background:var(--lime); color:#0a1430; font:700 13px Inter, system-ui, sans-serif; cursor:pointer; }
+  .coordmsg { font-size:12.5px; color:var(--quiet); }
+  #mpts .px { fill:#ffd23f; fill-opacity:.88; stroke:#fff6c2; stroke-width:.6; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 2px rgba(255,190,60,.9)); pointer-events:none; }
+  #mpin { pointer-events:none; }
+  #mpin .pin { fill:var(--lime); stroke:#071536; stroke-width:2; vector-effect:non-scaling-stroke; }
+  #mpin .pinring { fill:none; stroke:var(--lime); stroke-width:2; vector-effect:non-scaling-stroke; animation:pinpulse 1.6s ease-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes pinpulse { from { opacity:.9; transform:scale(.5); } to { opacity:0; transform:scale(1.6); } }
+  .pxsw { display:inline-block; width:10px; height:10px; margin-right:6px; vertical-align:-1px; background:#ffd23f; box-shadow:0 0 6px rgba(255,190,60,.9); border:1px solid #fff6c2; }
+  .ptsbox { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .ptsbox .ptsn { margin:0 0 8px; font-size:13px; color:#c9d6ea; }
+  .ptsdl { appearance:none; cursor:pointer; font:600 12.5px Inter, system-ui, sans-serif; color:#0a1430; background:var(--lime); border:0; border-radius:9px; padding:8px 12px; min-height:36px; }
+  .ptsdl:disabled { opacity:.4; cursor:default; }
+  .ptsyear { font-size:12.5px; color:var(--lime); margin-left:6px; }
+  .pinbox { margin:0 0 10px; padding:10px 12px; border-radius:12px; font-size:13px; color:#c9d6ea; background:rgba(234,255,40,.08); border:1px solid rgba(234,255,40,.4); }
+  .pinbox b:first-child { color:var(--lime); }
   .legend .north { flex-basis:100%; color:#c9d6ea; font-size:12.5px; padding:8px 12px; border-radius:10px; background:rgba(140,180,255,.06); border:1px dashed rgba(140,180,255,.25); }
   .rconv, .cp-era { margin:10px 0 12px; padding:10px 12px; border-radius:12px; font-size:13px; line-height:1.45; color:#c9d6ea;
     background:linear-gradient(135deg, rgba(234,255,40,.08), rgba(18,38,80,.55)); border:1px solid rgba(234,255,40,.3); animation:rise .6s cubic-bezier(.16,1,.3,1) both; }
@@ -381,6 +401,8 @@
     <div class="maphead"><h2 data-i18n="map_h"></h2>
       <div class="calctl"><div class="seg" role="group"><button type="button" data-mm="z" aria-pressed="true" data-i18n="mm_z"></button><button type="button" data-mm="v" aria-pressed="false" data-i18n="mm_v"></button></div><button type="button" class="info" data-info="info_anom">i</button></div></div>
     <p class="sub"><span data-i18n="map_sub"></span> <span data-i18n="map_hint"></span></p>
+    <form id="coord-form" class="coord" autocomplete="off"><label for="coord"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-i18n="coord_lbl"></span></label>
+      <input id="coord" type="text" inputmode="text" data-i18n-ph="coord_ph"><button type="submit" data-i18n="coord_go"></button><span id="coord-msg" class="coordmsg" aria-live="polite"></span></form>
     <div class="player"><button type="button" id="play" class="playbtn" data-i18n-title="play">▶</button>
       <div class="mlabel" id="map-month"></div>
       <input type="range" id="map-slider" min="0" max="0" value="0" aria-label="Month"></div>
@@ -486,6 +508,6 @@
   <footer data-i18n="footer"></footer>
 </main>
 <div id="tip" role="tooltip"></div>
-<script src="app.js?v=20261115-1050"></script>
+<script src="app.js?v=20261115-1100"></script>
 </body>
 </html>

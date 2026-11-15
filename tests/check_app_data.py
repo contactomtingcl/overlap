@@ -114,6 +114,23 @@ for r in REG:
         if raw is not None:
             check(tot <= raw + 0.5, f"communes r{r} {mo}: {tot} > region raw {raw}")
 
+# 7. hotspot points (pipeline/19) of the month's sensor add up to the commune layer, region by region
+import csv as _csv
+for r in REG:
+    C = json.loads((data / "comunas_monthly" / f"r{r}.json").read_text())
+    pts = {}
+    for f in (data / "points" / f"r{r}").glob("*.csv"):
+        for row in _csv.DictReader(open(f)):
+            k = (row["date"][:7], row["satellite"])
+            if row["cod_comuna"] != "0":
+                pts[k] = pts.get(k, 0) + 1
+    for i, mo in enumerate(C["months"]):
+        if i in C["withheld"]:
+            continue
+        tot = sum(o.get(str(i), 0) for o in C["v"].values())
+        n = pts.get((mo, C["sensor"][i]), 0)
+        check(abs(n - tot) < 0.5, f"points r{r} {mo}: {n} points vs {tot} in the commune layer")
+
 print("\n".join("note: " + n for n in notes))
 if fails:
     print(f"FAILED {len(fails)} checks")
