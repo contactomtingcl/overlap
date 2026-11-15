@@ -17,7 +17,7 @@ const I18N = {
     info_anom: "<b>Anomaly</b> compares this month with the same month in the previous 25 seasons, in the same area. <b>Normal</b> is the middle value: half of those years had less, half had more. <b>Unusually high</b> or <b>low</b> means far from normal, something that almost never happens in 25 years.<br><small>Technically: robust z on a log scale beyond ±2.</small>",
     info_unit: "Every number is on the <b>VIIRS scale</b>: hotspots counted as if today's satellite (VIIRS Suomi NPP, 375 m pixels) had watched all 25 years. Before 2012 only MODIS existed, which sees fewer small fires, so those months are estimated and show their range. Hover a cell to see it.",
     info_lbl: "What does this mean?",
-    read_climate: "<b>Weather and climate.</b> El Niño, droughts and heat waves change how much fire there really is: Overlap shows that a month or a season is unusual, not why. The conversion between sensors was learned over 14 seasons that include El Niño, La Niña and the 2017 and 2023 megafires, and tested on years it never saw. Not yet done: adjusting the season-clock trends for El Niño, and testing the drift of the MODIS orbits after 2021.",
+    read_climate: "<b>Weather and climate.</b> El Niño, droughts and heat waves change how much fire there really is: Overlap shows that a month or a season is unusual, not why. The conversion between sensors was learned over 14 seasons that include El Niño, La Niña and the 2017 and 2023 megafires, and tested on years it never saw.",
 
     title: "Overlap · two satellites, <em>one honest</em> burning calendar",
     tag: "25 years of NASA FIRMS fire hotspots from MODIS (coarse pixels, since 2000) and VIIRS (fine pixels, since 2012), harmonized into one comparable series for Chile. Every estimate shows how much to trust it.",
@@ -61,7 +61,7 @@ const I18N = {
     kSub: (a) => `For each hotspot MODIS Aqua sees, how many VIIRS sees in ${a}, season by season, when both watched together.`,
     kPlain: (lo, hi, n) => `VIIRS sees between <b>${lo}</b> and <b>${hi} times</b> more hotspots than MODIS, depending on the season. That is why one number is not enough: the conversion learns from the ${n} seasons when both satellites watched together and is tested on years it never saw.`,
     kLg: ["VIIRS hotspots per MODIS Aqua hotspot, per fire season", "all seasons pooled"],
-    kNote: "It changes with fire sizes, clouds and weather. It is the same factor you see when you open the days of an old month. Next step: test it against El Niño indices (NOAA CPC) and the drift of the MODIS orbits after 2021.", ch_trust: "Trust · why these numbers hold",
+    kNote: "It changes with fire sizes, clouds and weather. It is the same factor you see when you open the days of an old month.", ch_trust: "Trust · why these numbers hold",
     more_curve: "See the full curve, month by month",
     seasonIntro: "Fire season 2026–27 (July to June), in hotspots on the VIIRS scale.",
     clockPlainUnclear: (a, b) => `<b>No clear change in 25 seasons.</b> The busiest month was ${a} in the MODIS years (2001–2012) and is ${b} in the VIIRS years (2012–2026), but it varies so much from season to season that there is no firm evidence the season has moved.`, more_clock: "See every season and the trend tests",
@@ -81,6 +81,7 @@ const I18N = {
       return lo < 0 && hi > 0 ? `the trend could be anything from ${w(lo)} to ${w(hi)} per decade; since that includes zero, no change can be claimed` : `between ${w(lo)} and ${w(hi)} per decade`; },
     clockP: (p) => `Mann-Kendall test: p = ${p}`,
     clockHint: "Hover or tap a bar to see that season's story.",
+    clockTip: (n, a, pk, b, d, tot) => `<b>Season ${n}</b><br>Start (10% of hotspots): <b class="tv">${a}</b><br>Centre of the busiest 31 days (dot): <b class="tv">${pk}</b><br>End (90%): <b class="tv">${b}</b><br>Length: ${d} days · ${tot} hotspots<br><span class="tq">Click to keep it in the panel</span>`,
     cd: { title: (s) => `Season ${s}`, top: "the most active in 25 seasons", last: "the latest complete season",
       body: (a, b, n, pk, tot) => `Most of its hotspots (from 10% to 90%) happened between <b>${a}</b> and <b>${b}</b>: <b>${n} days</b>. Its busiest 31 days were centred around <b>${pk}</b>. In total, <b>${tot}</b> hotspots on the VIIRS scale.`,
       typical: (a, b, n) => `A typical season here runs from ${a} to ${b} (${n} days).`,
@@ -196,7 +197,7 @@ const I18N = {
     info_anom: "La <b>anomalía</b> compara este mes con el mismo mes de las 25 temporadas anteriores, en la misma área. <b>Lo normal</b> es el valor del medio: la mitad de esos años tuvo menos y la mitad tuvo más. <b>Inusualmente alta</b> o <b>baja</b> significa muy lejos de lo normal, algo que casi nunca pasa en 25 años.<br><small>Técnicamente: z robusto en escala logarítmica más allá de ±2.</small>",
     info_unit: "Todas las cifras están en <b>escala VIIRS</b>: cuentan los focos como si el satélite de hoy (VIIRS Suomi NPP, píxeles de 375 m) hubiera observado los 25 años. Antes de 2012 solo existía MODIS, que ve menos fuegos pequeños, así que esos meses se estiman y muestran su rango. Pasa el cursor sobre una celda para verlo.",
     info_lbl: "¿Qué significa esto?",
-    read_climate: "<b>Tiempo y clima.</b> El Niño, las sequías y las olas de calor cambian cuánto fuego hay realmente: Overlap muestra que un mes o una temporada es inusual, no por qué. La conversión entre sensores se aprendió en 14 temporadas que incluyen El Niño, La Niña y los megaincendios de 2017 y 2023, y se probó en años que nunca vio. Pendiente: ajustar por El Niño las tendencias del reloj de la temporada y probar la deriva de las órbitas de MODIS después de 2021.",
+    read_climate: "<b>Tiempo y clima.</b> El Niño, las sequías y las olas de calor cambian cuánto fuego hay realmente: Overlap muestra que un mes o una temporada es inusual, no por qué. La conversión entre sensores se aprendió en 14 temporadas que incluyen El Niño, La Niña y los megaincendios de 2017 y 2023, y se probó en años que nunca vio.",
 
     title: "Overlap · dos satélites, <em>un solo calendario</em> honesto de quemas",
     tag: "25 años de focos de calor de NASA FIRMS, de MODIS (píxeles gruesos, desde 2000) y VIIRS (píxeles finos, desde 2012), armonizados en una sola serie comparable para Chile. Cada estimación muestra cuánto confiar en ella.",
@@ -240,7 +241,7 @@ const I18N = {
     kSub: (a) => `Por cada foco que ve MODIS Aqua, cuántos ve VIIRS en ${a}, temporada por temporada, cuando ambos observaron juntos.`,
     kPlain: (lo, hi, n) => `VIIRS ve entre <b>${lo}</b> y <b>${hi} veces</b> más focos que MODIS, según la temporada. Por eso no basta un solo número: la conversión aprende de las ${n} temporadas en que ambos satélites observaron juntos y se prueba en años que nunca vio.`,
     kLg: ["focos de VIIRS por cada foco de MODIS Aqua, por temporada", "todas las temporadas juntas"],
-    kNote: "Cambia con el tamaño de los fuegos, las nubes y el clima. Es el mismo factor que ves al abrir los días de un mes antiguo. Siguiente paso: contrastarlo con los índices de El Niño (NOAA CPC) y con la deriva de las órbitas de MODIS después de 2021.", ch_trust: "Confianza · por qué estas cifras se sostienen",
+    kNote: "Cambia con el tamaño de los fuegos, las nubes y el clima. Es el mismo factor que ves al abrir los días de un mes antiguo.", ch_trust: "Confianza · por qué estas cifras se sostienen",
     more_curve: "Ver la curva completa, mes a mes",
     seasonIntro: "Temporada de incendios 2026–27 (julio a junio), en focos de calor en escala VIIRS.",
     clockPlainUnclear: (a, b) => `<b>Sin un cambio claro en 25 temporadas.</b> El mes con más focos fue ${a} en los años MODIS (2001–2012) y es ${b} en los años VIIRS (2012–2026), pero varía tanto de una temporada a otra que no hay evidencia firme de que la temporada se haya movido.`, more_clock: "Ver cada temporada y las pruebas de tendencia",
@@ -260,6 +261,7 @@ const I18N = {
       return lo < 0 && hi > 0 ? `la tendencia podría ir de ${w(lo)} a ${w(hi)} por década; como incluye el cero, no se puede afirmar un cambio` : `entre ${w(lo)} y ${w(hi)} por década`; },
     clockP: (p) => `prueba de Mann-Kendall: p = ${p}`,
     clockHint: "Pasa el cursor o toca una barra para ver la historia de esa temporada.",
+    clockTip: (n, a, pk, b, d, tot) => `<b>Temporada ${n}</b><br>Inicio (10 % de los focos): <b class="tv">${a}</b><br>Centro de los 31 días con más focos (punto): <b class="tv">${pk}</b><br>Fin (90 %): <b class="tv">${b}</b><br>Duración: ${d} días · ${tot} focos<br><span class="tq">Clic para dejarla fija en el panel</span>`,
     cd: { title: (s) => `Temporada ${s}`, top: "la más activa en 25 temporadas", last: "la última temporada completa",
       body: (a, b, n, pk, tot) => `La mayoría de sus focos (del 10 % al 90 %) ocurrió entre el <b>${a}</b> y el <b>${b}</b>: <b>${n} días</b>. Sus 31 días con más focos se centran alrededor del <b>${pk}</b>. En total, <b>${tot}</b> focos en escala VIIRS.`,
       typical: (a, b, n) => `Una temporada típica aquí va del ${a} al ${b} (${n} días).`,
@@ -1192,7 +1194,8 @@ function renderClock() {
   $("clock").querySelectorAll(".crow").forEach((el) => {
     const i = +el.dataset.i;
     el.addEventListener("mouseenter", () => focusSeason(i));
-    el.addEventListener("mouseleave", () => focusSeason(state.clockSel));
+    el.addEventListener("mousemove", (e) => seasonTip(e, i));
+    el.addEventListener("mouseleave", () => { $("tip").style.display = "none"; focusSeason(state.clockSel); });
     el.addEventListener("click", () => { state.clockSel = i; $("clock").classList.add("used"); focusSeason(i); });
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.dispatchEvent(new Event("click")); } });
     el.addEventListener("focus", () => focusSeason(i));
@@ -1207,6 +1210,15 @@ function renderClock() {
 // ---------- 2012 jump ----------
 // One season, explained: highlight its row, label its start, busiest moment and end, and tell its story beside the chart.
 const seasonDate = (season, d) => { const t = new Date(Date.UTC(season, 6, 1) + d * 864e5); return [t.getUTCDate(), t.getUTCMonth(), t.getUTCFullYear()]; };
+function seasonTip(e, i) {
+  const T = L(), s = state.clockGeo.S[i], d = (x) => { const [dd, mm] = seasonDate(s.season, x); return T.dx.thru(dd, T.monthsLong[mm]); };
+  const t = $("tip");
+  t.classList.remove("infotip");
+  t.innerHTML = T.clockTip(`${s.season}–${String(s.season + 1).slice(2)}`, d(s.onset), d(s.peak), d(s.end), s.end - s.onset, fmt(s.total));
+  t.style.display = "block";
+  t.style.left = Math.min(e.clientX + 14, innerWidth - t.offsetWidth - 8) + "px";
+  t.style.top = Math.min(e.clientY + 14, innerHeight - t.offsetHeight - 8) + "px";
+}
 function focusSeason(i) {
   const G = state.clockGeo; if (!G) return;
   const T = L(), S = G.S, s = S[i]; if (!s) return;
